@@ -84,6 +84,9 @@ class Profile:
         Entries marked "rejected" by the steward are always left out; entries
         still "suggested" (proposed by the LLM, not yet checked) are included
         only when the profile allows it, and are flagged as unverified.
+        Suggestions the model made from memory ("origin": "llm-memory") are
+        never included before a steward verifies them: a first run showed a
+        4B model inventing laws and impeachments when not grounded on a source.
         """
         if include_suggested is None:
             include_suggested = self.raw.get("events_include_suggested", True)
@@ -97,7 +100,9 @@ class Profile:
         out = []
         for ev in events:
             status = ev.get("status", "verified")
-            if status == "rejected" or (status == "suggested" and not include_suggested):
+            if status == "rejected":
+                continue
+            if status == "suggested" and (not include_suggested or ev.get("origin") == "llm-memory"):
                 continue
             out.append({**ev, "status": status})
         return sorted(out, key=lambda e: e["month"])

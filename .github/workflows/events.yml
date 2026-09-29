@@ -51,7 +51,7 @@ jobs:
         run: |
           set -o pipefail
           python main.py suggest-events --profile "${{ inputs.profile }}" \
-            ${{ inputs.online && '' || '--offline' }} \
+            ${{ !inputs.online && '--offline' || '' }} \
             ${{ inputs.years != '' && format('--years {0}', inputs.years) || '' }} 2>&1 | tee /tmp/suggest.log
 
       - name: Open pull request for review

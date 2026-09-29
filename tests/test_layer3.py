@@ -378,10 +378,14 @@ def test_event_status_filtering(tmp_path, monkeypatch):
         {"month": "2020-01", "kind": "policy", "label": "a", "source": "s"},
         {"month": "2020-02", "kind": "policy", "label": "b", "source": "s", "status": "suggested"},
         {"month": "2020-03", "kind": "policy", "label": "c", "source": "s", "status": "rejected"},
+        {"month": "2020-04", "kind": "policy", "label": "d", "source": "s", "status": "suggested",
+         "origin": "llm-memory"},
+        {"month": "2020-05", "kind": "policy", "label": "e", "source": "s", "status": "verified",
+         "origin": "llm-memory"},
     ]}), encoding="utf-8")
     p = make_profile(tmp_path, events_file="ev.json")
-    assert [e["label"] for e in p.events()] == ["a", "b"]
-    assert [e["label"] for e in p.events(include_suggested=False)] == ["a"]
+    assert [e["label"] for e in p.events()] == ["a", "b", "e"]  # ungrounded suggestion "d" never used
+    assert [e["label"] for e in p.events(include_suggested=False)] == ["a", "e"]
     near = [{**e, "offset_months": 0} for e in p.events()]
     assert "[unverified suggestion]" in "\n".join(
         f"{e['label']}" + (" [unverified suggestion]" if e["status"] == "suggested" else "") for e in near)
