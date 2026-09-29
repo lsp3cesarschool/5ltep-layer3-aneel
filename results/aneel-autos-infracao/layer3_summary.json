@@ -1,0 +1,143 @@
+{
+ "toolkit": "5ltep-layer3 v0.1.0",
+ "generated_at": "2026-09-29T19:25:30+00:00",
+ "profile": {
+  "id": "aneel-autos-infracao",
+  "title": "ANEEL infraction notices (Autos de Infração), Brazil",
+  "filters": [],
+  "period": {
+   "start": null,
+   "end": null
+  }
+ },
+ "source": {
+  "profile": "aneel-autos-infracao",
+  "profile_sha256": "fd6b5b4b77d305d62529a2dbf40e81ea5bc99d9085fb7a4cef200ad30e327a49",
+  "as_of": "2026-09-29T19:05:33.287521",
+  "dataset_id": "auto-de-infracao",
+  "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/auto-de-infracao",
+  "dataset_metadata_modified": "2026-09-28T08:01:17.035771",
+  "license": "Open Data Commons Open Database License (ODbL)",
+  "resource_id": "f221158a-93a3-423f-b794-4312b6985a24",
+  "resource_name": "auto-infracao.csv",
+  "resource_url": "https://dadosabertos.aneel.gov.br/dataset/4d690c9d-8158-4b04-ae44-7d3de8616271/resource/f221158a-93a3-423f-b794-4312b6985a24/download/auto-infracao.csv",
+  "download_started_at": "2026-09-29T19:05:43+00:00",
+  "size_bytes": 702933,
+  "checksum_sha256": "fc59416c977cedcd1f7f127b025480f7f38d05c679b31587a57e0040aae2bd6d",
+  "aggregation": {
+   "rows_read": 1601,
+   "rows_after_filters": 1601,
+   "rows_invalid_date": 0,
+   "rows_missing_key": 0,
+   "rows_duplicate_key_dropped": 11,
+   "rows_excluded": 0,
+   "rows_future_date": 0,
+   "rows_without_penalty_total_brl": 18,
+   "first_month": "2018-06",
+   "last_complete_month": "2026-08"
+  },
+  "analysis_period": [
+   "2018-06",
+   "2026-08"
+  ]
+ },
+ "series": {
+  "notices": "Number of infraction notices issued in the month by ANEEL and the state agencies acting on its behalf",
+  "penalty_total_brl": "Total value of the penalties imposed in the notices of the month, in Reais (value at issuance, before appeals)"
+ },
+ "analysis_period": [
+  "2018-06",
+  "2026-08"
+ ],
+ "months": 99,
+ "method_parameters": {
+  "baseline_window": 12,
+  "zscore_k": 3.0,
+  "mad_k": 3.0,
+  "if_contamination": 0.05,
+  "lstm_window": 12,
+  "lstm_units": 64,
+  "lstm_dropout": 0.2,
+  "lstm_epochs": 60,
+  "lstm_percentile": 99.0,
+  "ensemble_min_votes": 2,
+  "ph_delta": 0.5,
+  "ph_lambda": 12.0,
+  "drift_tolerance_months": 2,
+  "random_seed": 42,
+  "llm_model": "gemma3:4b",
+  "llm_runs": 3,
+  "llm_temperature": 0.7,
+  "llm_seeds": [
+   11,
+   22,
+   33
+  ],
+  "llm_num_predict": 400,
+  "llm_num_ctx": 4096,
+  "context_months": 12,
+  "event_window_months": 6,
+  "prompt_version": "v2",
+  "advisory_consistency": 0.6,
+  "l3_window_months": 12
+ },
+ "environment": {
+  "python": "3.11.16",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "packages": {
+   "pandas": "3.0.6",
+   "numpy": "2.4.6",
+   "scikit-learn": "1.9.1",
+   "torch": "2.14.0+cpu",
+   "requests": "2.34.2"
+  }
+ },
+ "anomalies": {
+  "flagged": 10,
+  "by_series": {
+   "penalty_total_brl": 6,
+   "notices": 4
+  },
+  "judged": 10,
+  "pending_judgment": 0,
+  "drift_points": {
+   "notices": 0,
+   "penalty_total_brl": 0
+  }
+ },
+ "llm": {
+  "model": "gemma3:4b",
+  "model_digest": "a2af6cc3eb7fa8be8504abaf9b04e88f17a119ec3f04a3addf55f92841195f5a",
+  "categories": {
+   "SP": 6,
+   "GES": 2,
+   "DQE": 2
+  },
+  "mean_consistency": 0.9,
+  "unanimous_rate": 0.7
+ },
+ "hitl": {
+  "issues": 0,
+  "decided": 0,
+  "open_by_level": {},
+  "human_llm_agreement": null
+ },
+ "layer3": {
+  "window": [
+   "2025-09",
+   "2026-08"
+  ],
+  "pairs_evaluated": 24,
+  "l3_rate": 0.9583,
+  "l3_pass": false,
+  "anomaly_flags": [
+   {
+    "column": "penalty_total_brl",
+    "period": "2026-02",
+    "category": "DQE",
+    "decided_by": "llm",
+    "fails": true
+   }
+  ]
+ }
+}

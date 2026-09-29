@@ -1,0 +1,9 @@
+{
+ "profiles": [
+  {
+   "id": "aneel-autos-infracao",
+   "title": "ANEEL infraction notices (Autos de Infração), Brazil"
+  }
+ ],
+ "default": "aneel-autos-infracao"
+}
