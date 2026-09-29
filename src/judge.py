@@ -194,7 +194,7 @@ class OllamaClient:
             "options": {
                 "temperature": config.LLM_TEMPERATURE if temperature is None else temperature,
                 "seed": seed,
-                "num_predict": config.LLM_NUM_PREDICT if num_ctx is None else 1200,
+                "num_predict": config.LLM_NUM_PREDICT if num_ctx is None else 2048,
                 "num_ctx": num_ctx or config.LLM_NUM_CTX,
             },
         }

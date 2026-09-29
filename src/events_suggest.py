@@ -35,28 +35,44 @@ MAX_SOURCE_CHARS = 12000
 
 SYSTEM = """You help curate a calendar of events that may explain anomalies in open government data.
 {domain}
-Only list events that could plausibly change how many {records} were produced or recorded, or
-their values: laws and regulations, changes of government or of the agency, large disasters or
-crises that shift enforcement priorities, strikes, system changes. Ignore sports, culture and
-events without such a link. Listing nothing is a valid answer."""
+Only list events with a direct link to how many {records} were produced or recorded, or to their
+values: laws and regulations of that sector, changes of federal government or of the agency,
+disasters or crises in that sector (e.g. environmental disasters for environmental enforcement),
+strikes or shutdowns of public services, pandemics. Never list sports, culture, celebrities, crime,
+accidents or foreign visits without such a link. Most years have zero to two such events: an empty
+list is a normal answer."""
 
 PROMPT_ONLINE = """The monthly series built from these {records} showed anomalies in: {months}.
+Already in the calendar for {year} (do not repeat): {known}.
 
-Below is the list of events of {year} from {source}. Select at most {max_events} events that could
-have affected the {records}, preferring those close to the anomalous months. For each, give the
-month (YYYY-MM), a kind ({kinds}), a short English label, why it is relevant, and "evidence":
-the sentence from the text, copied exactly.
+Below is the list of events of {year} from {source}. Select at most {max_events} events with a direct
+link to the {records}. For each, give the month (YYYY-MM), a kind ({kinds}), a short English label,
+why it is relevant, a relevance score from 0 to 1, and "evidence": one sentence from the text,
+copied exactly, at most 200 characters.
 
 --- SOURCE TEXT ---
 {text}
 --- END ---"""
 
 PROMPT_OFFLINE = """The monthly series built from these {records} showed anomalies in: {months}.
+Already in the calendar for {year} (do not repeat): {known}.
 
-From your own knowledge, list at most {max_events} events of {year} in {country} that could have
-affected the {records}. For each, give the month (YYYY-MM), a kind ({kinds}), a short English label,
-why it is relevant, and "evidence": the law number, decree or other reference you rely on. Do not
-guess: if you are not sure an event happened in that month, leave it out."""
+From your own knowledge, list at most {max_events} events of {year} in {country} with a direct link
+to the {records}. For each, give the month (YYYY-MM), a kind ({kinds}), a short English label, why it
+is relevant, a relevance score from 0 to 1, and "evidence": the law number, decree or other
+reference you rely on (at most 200 characters). Do not guess: if you are not sure an event happened
+in that month, leave it out."""
+
+MIN_RELEVANCE = 0.6
+MONTHS = {
+    "janeiro": 1, "fevereiro": 2, "marco": 3, "abril": 4, "maio": 5, "junho": 6, "julho": 7,
+    "agosto": 8, "setembro": 9, "outubro": 10, "novembro": 11, "dezembro": 12,
+    "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6, "july": 7,
+    "august": 8, "september": 9, "october": 10, "november": 11, "december": 12,
+}
+_MONTH_NAMES = "|".join(MONTHS)
+# Dates as they open Wikipedia list items: "25 de janeiro" (pt) or "January 25" (en).
+DATE_RE = re.compile(rf"\b(\d{{1,2}}) de ({_MONTH_NAMES})\b|\b({_MONTH_NAMES}) (\d{{1,2}})\b")
 
 
 def schema() -> dict:
@@ -69,9 +85,10 @@ def schema() -> dict:
                 "kind": {"type": "string", "enum": list(KINDS)},
                 "label": {"type": "string"},
                 "relevance": {"type": "string"},
+                "relevance_score": {"type": "number"},
                 "evidence": {"type": "string"},
             },
-            "required": ["month", "kind", "label", "relevance", "evidence"],
+            "required": ["month", "kind", "label", "relevance", "relevance_score", "evidence"],
         }}},
         "required": ["events"],
     }
@@ -89,6 +106,27 @@ def grounded(evidence: str, source_text: str, min_chars: int = 25) -> bool:
         return False
     src = _norm(source_text)
     return ev in src or ev[:60] in src
+
+
+def month_in_source(evidence: str, source_text: str) -> int | None:
+    """Calendar month of the quoted sentence, read from the date that precedes it in the source.
+
+    The model sometimes quotes the right sentence under the wrong month; the
+    source's own date settles it.
+    """
+    ev, src = _norm(evidence), _norm(source_text)
+    pos = src.find(ev)
+    if pos < 0:
+        pos = src.find(ev[:60])
+    if pos < 0:
+        return None
+    last = None
+    for m in DATE_RE.finditer(src, 0, pos + len(ev[:40])):
+        last = m
+    if not last:
+        return None
+    name = last.group(2) or last.group(3)
+    return MONTHS[name]
 
 
 def fetch_wikipedia(lang: str, title: str) -> tuple[str, str] | None:
@@ -131,7 +169,7 @@ def anomaly_months_by_year(detections: pd.DataFrame) -> dict[int, list[str]]:
 
 
 def suggest(profile: Profile, detections: pd.DataFrame, client, online: bool = True,
-            years: list[int] | None = None, max_years: int = 8, max_events: int = 5) -> dict:
+            years: list[int] | None = None, max_years: int = 8, max_events: int = 3) -> dict:
     """Append suggested events to the profile's events file; returns a summary."""
     events_path = config.ROOT / profile["events_file"]
     calendar = json.loads(events_path.read_text(encoding="utf-8"))
@@ -144,7 +182,8 @@ def suggest(profile: Profile, detections: pd.DataFrame, client, online: bool = T
     added, dropped = [], []
     for year in todo:
         months = ", ".join(by_year.get(year, [])) or "none"
-        base = dict(records=profile["record_label"], months=months, year=year,
+        known_year = "; ".join(f"{e['month']} {e['label']}" for e in known if e["month"].startswith(str(year)))
+        base = dict(records=profile["record_label"], months=months, year=year, known=known_year or "none",
                     max_events=max_events, kinds=", ".join(KINDS))
         source = None
         if online and source_cfg:
@@ -167,13 +206,25 @@ def suggest(profile: Profile, detections: pd.DataFrame, client, online: bool = T
             continue
         for it in items[:max_events]:
             month = str(it.get("month", ""))[:7]
+            evidence = it.get("evidence", "")
+            corrected_from = None
+            if source and grounded(evidence, text):
+                src_month = month_in_source(evidence, text)
+                if src_month and month != f"{year}-{src_month:02d}":
+                    corrected_from, month = month, f"{year}-{src_month:02d}"
+            try:
+                score = float(it.get("relevance_score", 0))
+            except (TypeError, ValueError):
+                score = 0.0
             reason = None
             if not re.fullmatch(rf"{year}-(0[1-9]|1[0-2])", month):
                 reason = "month outside the year"
             elif it.get("kind") not in KINDS:
                 reason = "unknown kind"
-            elif source and not grounded(it.get("evidence", ""), text):
+            elif source and not grounded(evidence, text):
                 reason = "evidence not found in the source"
+            elif score < MIN_RELEVANCE:
+                reason = f"relevance {score:.2f} below {MIN_RELEVANCE}"
             elif is_known({"month": month, "label": it.get("label", "")}, known):
                 reason = "already in the calendar"
             if reason:
@@ -186,12 +237,15 @@ def suggest(profile: Profile, detections: pd.DataFrame, client, online: bool = T
                 "source": f"{url} (Wikipedia)" if url else "model knowledge, not checked",
                 "evidence": it.get("evidence", "").strip(),
                 "relevance": it.get("relevance", "").strip(),
+                "relevance_score": round(score, 2),
                 "status": "suggested",
                 "origin": "llm+wikipedia" if url else "llm-memory",
                 "suggested_by": model.get("model"),
                 "model_digest": model.get("model_digest"),
                 "suggested_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             }
+            if corrected_from:
+                entry["month_corrected_from"] = corrected_from  # model's month; the source's date prevails
             calendar["events"].append(entry)
             known.append(entry)
             added.append(entry)

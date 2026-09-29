@@ -414,24 +414,39 @@ def test_suggest_events_appends_grounded_suggestions_only(tmp_path, monkeypatch)
             "25 de janeiro – O rompimento de uma barragem de rejeitos em Brumadinho deixa centenas de mortos.")
     monkeypatch.setattr(es, "fetch_wikipedia", lambda lang, title: (text, "https://pt.wikipedia.org/wiki/2019_no_Brasil"))
     items = {"events": [
-        {"month": "2019-01", "kind": "external", "label": "Brumadinho tailings dam collapse", "relevance": "r",
+        # right quote, wrong month: the source's own date ("25 de janeiro") prevails
+        {"month": "2019-03", "kind": "external", "label": "Brumadinho tailings dam collapse", "relevance": "r",
+         "relevance_score": 0.9,
          "evidence": "O rompimento de uma barragem de rejeitos em Brumadinho deixa centenas de mortos"},
-        {"month": "2019-03", "kind": "policy", "label": "Invented decree", "relevance": "r",
+        {"month": "2019-03", "kind": "policy", "label": "Invented decree", "relevance": "r", "relevance_score": 0.9,
          "evidence": "Decreto inventado que nao aparece no texto da fonte"},
         {"month": "2019-01", "kind": "political", "label": "Change of the federal administration", "relevance": "r",
-         "evidence": "Novo presidente toma posse como presidente do Brasil"},
-        {"month": "2020-05", "kind": "policy", "label": "Wrong year", "relevance": "r", "evidence": "x" * 30},
+         "relevance_score": 0.9, "evidence": "Novo presidente toma posse como presidente do Brasil"},
+        {"month": "2019-02", "kind": "external", "label": "Football final", "relevance": "r", "relevance_score": 0.2,
+         "evidence": "Flamengo vence a final do campeonato estadual no Maracana lotado"},
     ]}
+    text += "\n14 de fevereiro – Flamengo vence a final do campeonato estadual no Maracana lotado."
     client = FakeClient([json.dumps(items)])
     idx = pd.PeriodIndex(["2019-01", "2019-02"], freq="M")
     det = pd.DataFrame({"series": "notices", "anomaly": [True, False]}, index=idx)
-    res = es.suggest(p, det, client)
-    assert [e["label"] for e in res["added"]] == ["Brumadinho tailings dam collapse"]
+    res = es.suggest(p, det, client, max_events=4)
+    assert [(e["month"], e["label"]) for e in res["added"]] == [("2019-01", "Brumadinho tailings dam collapse")]
+    assert res["added"][0]["month_corrected_from"] == "2019-03"
     assert {d["reason"] for d in res["dropped"]} == {
-        "evidence not found in the source", "already in the calendar", "month outside the year"}
+        "evidence not found in the source", "already in the calendar", "relevance 0.20 below 0.6"}
     saved = json.loads((tmp_path / "ev.json").read_text(encoding="utf-8"))["events"]
     new = [e for e in saved if e.get("status") == "suggested"]
     assert len(new) == 1 and new[0]["origin"] == "llm+wikipedia" and "wikipedia" in new[0]["source"]
+    assert "Change of federal administration" in client.prompts[0][1]  # known events are shown to the model
+
+
+def test_month_in_source_reads_the_preceding_date():
+    from src import events_suggest as es
+
+    text = "=== Janeiro ===\n25 de janeiro – Barragem rompe em Brumadinho.\n=== Abril ===\n29 de abril – Chuvas fortes no Rio Grande do Sul causam enchentes."
+    assert es.month_in_source("Chuvas fortes no Rio Grande do Sul causam enchentes", text) == 4
+    assert es.month_in_source("Barragem rompe em Brumadinho", text) == 1
+    assert es.month_in_source("frase que nao existe no texto", text) is None
 
 
 def test_events_near_window():

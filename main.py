@@ -131,7 +131,13 @@ def cmd_issues(args) -> None:
     res = review.open_review_issues(p, judgments, current, gh, url, args.max_new)
     if res["notified_rejudged"]:
         judge.save_judgments(judgments, p.paths.judgments)
-    review.sync_reviews(p, gh)
+    # The issue listing can lag a few seconds behind creation; add what was just created.
+    issues = gh.issues()
+    listed = {i["number"] for i in issues}
+    issues += [c["raw"] for c in res["created"] if c["issue"] not in listed]
+    review.sync_reviews(p, gh, issues)
+    for c in res["created"]:
+        c.pop("raw", None)
     mandatory = sum(1 for c in res["created"] if c["review_level"] == "mandatory")
     logger.info("Opened %d issues (%d mandatory), %d still to open",
                 len(res["created"]), mandatory, res["remaining"])

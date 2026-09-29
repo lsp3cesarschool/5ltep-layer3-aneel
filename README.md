@@ -30,7 +30,7 @@ repository is only:
 
 The IBAMA profiles and results are not included. Everything else (detectors, LLM-as-a-Judge,
 human-in-the-loop review, dashboard, workflows, tests) is identical to
-[`5ltep-layer3@4cf9a28`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/4cf9a28e59f87db0f826307063a475405cbe3654).
+[`5ltep-layer3@37cd793`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/37cd7933256aa1ef664ecc300d22b16183cc3993).
 
 Setting it up took the steps of the main README's section *Running your own instance*: write the
 profile, check it against the live portal with `python main.py check-profile`, mark it

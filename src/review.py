@@ -170,7 +170,8 @@ def open_review_issues(profile: Profile, judgments: dict, current_ids: set[str],
         if j["category"] in profile.categories:
             labels.append(f"llm:{j['category']}")
         issue = gh.create_issue(issue_title(profile, j), issue_body(profile, aid, j, dashboard_url), labels)
-        created.append({"anomaly_id": aid, "issue": issue["number"], "review_level": j["review_level"]})
+        created.append({"anomaly_id": aid, "issue": issue["number"], "review_level": j["review_level"],
+                        "raw": issue})
         time.sleep(1.5)  # stay clear of GitHub's secondary rate limit on content creation
     return {"created": created, "remaining": max(0, len(todo) - max_new), "notified_rejudged": notified}
 
