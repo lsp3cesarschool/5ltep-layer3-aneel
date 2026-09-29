@@ -243,10 +243,54 @@ def test_majority_consistency_and_review_levels():
     assert judge.review_level("DQE", 1.0) == "mandatory"
     assert judge.review_level("PDC", 0.333) == "advisory"
     assert judge.review_level("GES", 0.667) == "none"
-    assert judge.review_level("GES", 1.0, near_drift=True) == "advisory"  # drift -> structure review
-    js = {"a": {"category": "GES", "consistency": 1.0, "near_drift": True, "review_level": "none"},
-          "b": {"category": "SP", "consistency": 1.0, "near_drift": False, "review_level": "none"}}
-    assert judge.apply_review_policy(js) == 1 and js["a"]["review_level"] == "advisory"
+    # drift is reviewed once per level shift (review.drift_groups), not per anomaly
+    assert judge.review_level("GES", 1.0, near_drift=True) == "none"
+    js = {"a": {"category": "GES", "consistency": 1.0, "near_drift": True, "review_level": "advisory"},
+          "b": {"category": "SP", "consistency": 0.33, "near_drift": False, "review_level": "none"}}
+    assert judge.apply_review_policy(js) == 2
+    assert js["a"]["review_level"] == "none" and js["b"]["review_level"] == "advisory"
+
+
+def test_level_shift_groups_issue_and_decision_for_all_months(tmp_path, monkeypatch):
+    monkeypatch.setattr(review.time, "sleep", lambda s: None)
+    p = make_profile(tmp_path)
+    idx = pd.period_range("1995-06", periods=14, freq="M")
+    det = pd.DataFrame({"series": "notices", "anomaly": False}, index=idx)
+    for m in ("1996-01", "1996-02", "1996-03", "1996-07"):
+        det.loc[pd.Period(m, freq="M"), "anomaly"] = True
+    drift = {"notices": [{"month": "1996-01", "alarm_month": "1996-03", "direction": "up"}]}
+    groups = review.drift_groups(det, drift)
+    assert list(groups) == ["notices:1996-01"]
+    assert groups["notices:1996-01"]["members"] == ["notices:1996-01", "notices:1996-02", "notices:1996-03"]
+
+    base = {"series": "notices", "consistency": 1.0, "votes": 2, "ensemble_score": 0.6, "near_drift": True,
+            "model": "m", "temperature": 0.7, "prompt": "e", "runs": [{"category": "GES", "confidence": .9,
+                                                                        "reasoning": "r"}]}
+    judgments = {f"notices:{m}": {**base, "month": m, "category": "GES", "review_level": "none"}
+                 for m in ("1996-01", "1996-02", "1996-03")}
+    judgments["notices:1996-02"].update(category="DQE", review_level="mandatory")
+    # an old advisory issue for 1996-01, opened by the previous per-month drift policy
+    gh = FakeGitHub()
+    gh.created.append({"title": "old", "body": review.MARKER.format("test-profile/notices:1996-01"), "labels": []})
+    closed = []
+    gh.close_superseded = lambda number, comment: closed.append((number, comment))
+    res = review.open_review_issues(p, judgments, set(judgments), gh, "https://x", groups=groups)
+    assert [c["anomaly_id"] for c in res["created"]] == ["notices:1996-02"]  # the mandatory one stays individual
+    assert [s["group"] for s in res["shifts_created"]] == ["notices:1996-01"]
+    assert closed and closed[0][0] == 1 and "#3" in closed[0][1]  # old issue points to the level-shift issue
+    again = review.open_review_issues(p, judgments, set(judgments), gh, "https://x", groups=groups)
+    assert again["created"] == [] and again["shifts_created"] == []
+
+    shift_issue = {**gh.created[2], "number": 3, "html_url": "u3", "state": "closed",
+                   "labels": [{"name": "layer3"}, {"name": "steward:DQE"}]}
+    own_issue = {**gh.created[1], "number": 2, "html_url": "u2", "state": "closed",
+                 "labels": [{"name": "layer3"}, {"name": "steward:SP"}]}
+    old = {**gh.created[0], "number": 1, "html_url": "u1", "state": "closed",
+           "labels": [{"name": "layer3"}, {"name": "superseded"}]}
+    reviews = review.sync_reviews(p, gh, [old, own_issue, shift_issue])
+    assert reviews["notices:1996-01"]["steward_category"] == "DQE"   # via the level-shift issue
+    assert reviews["notices:1996-02"]["steward_category"] == "SP"    # its own issue prevails
+    assert reviews["notices:1996-03"]["via_level_shift"] == "notices:1996-01"
 
 
 def pipeline_inputs(tmp_path):

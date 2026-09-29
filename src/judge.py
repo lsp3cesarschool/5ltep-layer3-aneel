@@ -236,17 +236,18 @@ def aggregate_runs(runs: list[dict]) -> dict:
 
 
 def review_level(category: str, consistency: float, near_drift: bool = False) -> str:
-    """Human-in-the-loop protocol.
+    """Human-in-the-loop protocol for one anomaly.
 
     - mandatory: data-quality events (and invalid answers): no action before a steward decides;
-    - advisory: inconsistent labels, and anomalies next to a sustained level shift
-      (Page-Hinkley), because the 5L-TEP paper routes confirmed drift to a review of the
-      data's structure whatever its cause;
+    - advisory: the three runs disagree;
     - none: everything else.
+    Months next to a sustained level shift are also reviewed, but once per shift, in a
+    level-shift issue that groups them (see src/review.py); `near_drift` is kept in the
+    signature for callers and does not change the individual level.
     """
     if category in ("DQE", "INVALID"):
         return "mandatory"
-    if consistency < config.ADVISORY_CONSISTENCY or near_drift:
+    if consistency < config.ADVISORY_CONSISTENCY:
         return "advisory"
     return "none"
 

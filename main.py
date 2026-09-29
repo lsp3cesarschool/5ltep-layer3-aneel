@@ -129,19 +129,22 @@ def cmd_issues(args) -> None:
     policy_changes = judge.apply_review_policy(judgments)
     owner, name = gh.repo.split("/")
     url = f"https://{owner}.github.io/{name}/?profile={p.id}"
-    res = review.open_review_issues(p, judgments, current, gh, url, args.max_new)
+    drift = json.loads(p.paths.drift.read_text(encoding="utf-8")) if p.paths.drift.exists() else {}
+    groups = review.drift_groups(det, drift)
+    res = review.open_review_issues(p, judgments, current, gh, url, args.max_new, groups)
     if res["notified_rejudged"] or policy_changes:
         judge.save_judgments(judgments, p.paths.judgments)
     # The issue listing can lag a few seconds behind creation; add what was just created.
     issues = gh.issues()
     listed = {i["number"] for i in issues}
-    issues += [c["raw"] for c in res["created"] if c["issue"] not in listed]
+    issues += [c["raw"] for c in res["created"] + res["shifts_created"] if c["issue"] not in listed]
     review.sync_reviews(p, gh, issues)
-    for c in res["created"]:
+    for c in res["created"] + res["shifts_created"]:
         c.pop("raw", None)
     mandatory = sum(1 for c in res["created"] if c["review_level"] == "mandatory")
-    logger.info("Opened %d issues (%d mandatory), %d still to open",
-                len(res["created"]), mandatory, res["remaining"])
+    logger.info("Opened %d anomaly issues (%d mandatory) and %d level-shift issues; closed %d superseded; "
+                "%d still to open", len(res["created"]), mandatory, len(res["shifts_created"]),
+                len(res["superseded"]), res["remaining"])
     _log_run(p, "issues", res)
     _set_output("new_mandatory", mandatory)
     _set_output("new_issues", len(res["created"]))
