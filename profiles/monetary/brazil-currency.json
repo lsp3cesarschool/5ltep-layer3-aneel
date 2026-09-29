@@ -1,0 +1,12 @@
+{
+  "_comment": "Currency reforms of Brazil. Used (1) to convert nominal values of 'sum' series into the current currency, when a series sets \"currency\" to this file, and (2) as events given to the LLM-as-a-Judge. Edit by hand when a new reform happens: add an entry with the date it took effect, the old and new currency, and the divisor (1 new unit = divide_by old units). Conversion is not an inflation adjustment.",
+  "country": "Brazil",
+  "current_currency": "Real (R$)",
+  "changes": [
+    {"date": "1986-02-28", "from": "Cruzeiro (Cr$)", "to": "Cruzado (Cz$)", "divide_by": 1000, "plan": "Plano Cruzado", "source": "Decreto-Lei 2.283, de 27/02/1986"},
+    {"date": "1989-01-16", "from": "Cruzado (Cz$)", "to": "Cruzado Novo (NCz$)", "divide_by": 1000, "plan": "Plano Verao", "source": "Medida Provisoria 32, de 15/01/1989 (Lei 7.730/1989)"},
+    {"date": "1990-03-16", "from": "Cruzado Novo (NCz$)", "to": "Cruzeiro (Cr$)", "divide_by": 1, "plan": "Plano Collor", "source": "Medida Provisoria 168, de 15/03/1990 (Lei 8.024/1990)"},
+    {"date": "1993-08-01", "from": "Cruzeiro (Cr$)", "to": "Cruzeiro Real (CR$)", "divide_by": 1000, "plan": null, "source": "Medida Provisoria 336, de 28/07/1993 (Lei 8.697/1993)"},
+    {"date": "1994-07-01", "from": "Cruzeiro Real (CR$)", "to": "Real (R$)", "divide_by": 2750, "plan": "Plano Real", "source": "Medida Provisoria 542, de 30/06/1994 (Lei 9.069/1995)"}
+  ]
+}

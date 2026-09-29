@@ -1,0 +1,8 @@
+{
+  "_comment": "Known contextual events for the ANEEL profiles, given to the LLM-as-a-Judge (events within +-6 months of an anomaly). Deliberately minimal: it is meant to be extended with `main.py suggest-events` and checked by a steward. 'status' is verified, suggested or rejected; currency reforms come from the profile's monetary_file.",
+  "events": [
+    {"month": "2019-01", "kind": "political", "label": "Change of federal administration", "source": "Posse presidencial, 01/01/2019", "status": "verified"},
+    {"month": "2020-03", "kind": "external", "label": "COVID-19 pandemic declared; public-health emergency measures in Brazil", "source": "OMS, 11/03/2020; Decreto Legislativo 6/2020", "status": "verified"},
+    {"month": "2023-01", "kind": "political", "label": "Change of federal administration", "source": "Posse presidencial, 01/01/2023", "status": "verified"}
+  ]
+}

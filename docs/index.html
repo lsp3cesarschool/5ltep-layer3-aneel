@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5L-TEP Layer 3 · Anomaly Detection</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<header>
+  <div>
+    <p class="eyebrow">5L-TEP · Layer 3 · Anomaly Detection</p>
+    <h1 id="title">Loading…</h1>
+    <p class="muted" id="subtitle"></p>
+  </div>
+  <div class="actions">
+    <label>Profile <select id="profile"></select></label>
+    <a class="button" id="run-link" target="_blank" rel="noopener">Run Layer 3 now ↗</a>
+    <a class="button secondary" id="issues-link" target="_blank" rel="noopener">Review queue ↗</a>
+    <a class="button secondary" id="events-link" target="_blank" rel="noopener">Suggest events ↗</a>
+  </div>
+</header>
+
+<main>
+  <section class="cards" id="cards"></section>
+
+  <section>
+    <div class="section-head">
+      <h2>Monthly series</h2>
+      <label class="muted"><input type="checkbox" id="logscale" checked> log scale</label>
+    </div>
+    <p class="muted">Points mark months flagged by the ensemble (≥2 of 4 detectors), coloured by the LLM-as-a-Judge label
+      (or the steward's decision, when there is one). Dashed lines mark Page-Hinkley alarms (sustained level shifts).</p>
+    <div id="charts"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Anomalies</h2>
+      <select id="filter">
+        <option value="all">All</option>
+        <option value="review">Needs review</option>
+        <option value="pending">Not judged yet</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Month</th><th>Series</th><th>Ensemble</th><th>LLM</th><th>C</th><th>Steward</th><th>Reasoning (majority run)</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Event calendar</h2>
+      <span class="muted">verified by a steward · suggested by the LLM (unverified) · currency reforms</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Month</th><th>Kind</th><th>Event</th><th>Status</th><th>Source</th></tr></thead>
+        <tbody id="events"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Provenance of this result</h2>
+    <dl id="provenance"></dl>
+  </section>
+</main>
+
+<footer class="muted">
+  5L-TEP Layer 3 toolkit ·
+  <a href="https://github.com/lsp3cesarschool/5ltep-layer3">source code</a> ·
+  <a href="https://github.com/lsp3cesarschool/5ltep-layer4">Layer 4 (provenance)</a>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>

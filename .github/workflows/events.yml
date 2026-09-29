@@ -1,0 +1,86 @@
+name: 5L-TEP Layer 3 Suggest Events
+
+# Asks the LLM to propose events for the calendar of a profile (grounded on the
+# "year in <country>" Wikipedia pages of the years with anomalies) and opens a
+# pull request with them, marked "suggested". The steward reviews the diff,
+# edits it (status verified / rejected, labels) and merges.
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: 'Profile id (a file in profiles/); empty = the first profile marked "scheduled"'
+        required: false
+        default: ''
+      online:
+        description: 'Ground suggestions on Wikipedia (off: the model answers from memory)'
+        type: boolean
+        default: true
+      years:
+        description: 'Comma-separated years (empty: years with anomalies, most recent first)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  LLM_MODEL: ${{ vars.LLM_MODEL || 'gemma3:4b' }}
+
+jobs:
+  suggest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies (no PyTorch needed here)
+        run: pip install pandas numpy scikit-learn requests
+
+      - uses: ./.github/actions/setup-ollama
+        with:
+          model: ${{ env.LLM_MODEL }}
+
+      - name: Suggest events
+        id: suggest
+        run: |
+          set -o pipefail
+          python main.py suggest-events --profile "${{ inputs.profile }}" \
+            ${{ inputs.online && '' || '--offline' }} \
+            ${{ inputs.years != '' && format('--years {0}', inputs.years) || '' }} 2>&1 | tee /tmp/suggest.log
+
+      - name: Open pull request for review
+        if: ${{ steps.suggest.outputs.added > 0 }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          branch="events/${{ steps.suggest.outputs.profile }}-${{ github.run_id }}"
+          git config user.name "5L-TEP L3 Bot"
+          git config user.email "5ltep-l3-bot@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add profiles/events/
+          git commit -m "events: ${{ steps.suggest.outputs.added }} suggestions for ${{ steps.suggest.outputs.profile }}"
+          git push origin "$branch"
+          {
+            echo "The LLM suggested **${{ steps.suggest.outputs.added }}** events for \`${{ steps.suggest.outputs.profile }}\`,"
+            echo "all marked \`\"status\": \"suggested\"\`. Online grounding: ${{ inputs.online }}."
+            echo
+            echo "**How to review:** open *Files changed*. For each new entry, check the \`evidence\` and \`source\`,"
+            echo "then set \`status\` to \`verified\` or \`rejected\` (rejected entries stay so they are not suggested again),"
+            echo "fix the label if needed, and merge. Unverified suggestions reach the judge flagged as such."
+            echo
+            echo '<details><summary>Log</summary>'
+            echo
+            echo '```'
+            grep -E "suggested|dropped" /tmp/suggest.log | sed -E 's/^.*INFO layer3: //'
+            echo '```'
+            echo '</details>'
+          } > /tmp/body.md
+          gh pr create --base main --head "$branch" \
+            --title "Event calendar: ${{ steps.suggest.outputs.added }} LLM suggestions for ${{ steps.suggest.outputs.profile }}" \
+            --body-file /tmp/body.md

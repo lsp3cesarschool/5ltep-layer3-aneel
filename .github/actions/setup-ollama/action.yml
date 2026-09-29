@@ -1,0 +1,30 @@
+name: Set up Ollama
+description: Install Ollama, restore the model cache, start the server and pull the model.
+inputs:
+  model:
+    description: Ollama model to pull
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Cache Ollama models
+      uses: actions/cache@v4
+      with:
+        path: ~/.ollama/models
+        key: ollama-${{ inputs.model }}
+
+    - name: Install, start and pull
+      shell: bash
+      run: |
+        curl -fsSL https://ollama.com/install.sh | sh
+        # The installer may start a system service with its own model store;
+        # run our own server so the cached ~/.ollama/models is used.
+        sudo systemctl stop ollama 2>/dev/null || true
+        export OLLAMA_MODELS="$HOME/.ollama/models"
+        nohup ollama serve > /tmp/ollama.log 2>&1 &
+        for i in $(seq 1 60); do
+          curl -sf http://127.0.0.1:11434/api/version && break
+          sleep 2
+        done
+        ollama --version
+        ollama pull "${{ inputs.model }}"

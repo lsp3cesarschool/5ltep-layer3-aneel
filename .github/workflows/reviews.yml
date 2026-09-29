@@ -1,0 +1,51 @@
+name: 5L-TEP Layer 3 Review Sync
+
+# Records steward decisions (steward:<CATEGORY> label + closed issue) in
+# results/<profile>/reviews.json and refreshes the dashboard, so the L3 score
+# reflects human decisions without waiting for the next monthly run.
+on:
+  issues:
+    types: [closed, reopened, labeled, unlabeled]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: read
+
+concurrency:
+  group: layer3-writes
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: ${{ github.event_name == 'workflow_dispatch' || contains(github.event.issue.labels.*.name, 'layer3') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies (no PyTorch needed here)
+        run: pip install pandas numpy scikit-learn requests
+
+      - name: Sync reviews and rebuild reports
+        run: |
+          python main.py sync-reviews --all
+          for f in profiles/*.json; do
+            id=$(basename "$f" .json)
+            if [ -f "results/$id/detections.csv" ]; then python main.py report --profile "$id"; fi
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit
+        run: |
+          git config user.name "5L-TEP L3 Bot"
+          git config user.email "5ltep-l3-bot@users.noreply.github.com"
+          git add results/ docs/data/
+          git diff --cached --quiet || git commit -m "chore(l3): sync steward reviews [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
+          git pull --rebase
+          git push

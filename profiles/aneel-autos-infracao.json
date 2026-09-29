@@ -1,0 +1,51 @@
+{
+  "id": "aneel-autos-infracao",
+  "title": "ANEEL infraction notices (Autos de Infração), Brazil",
+  "country": "Brazil",
+  "scheduled": true,
+  "source": {
+    "portal_url": "https://dadosabertos.aneel.gov.br",
+    "dataset_id": "auto-de-infracao",
+    "resource_name": "auto-infracao.csv",
+    "resource_format": "CSV",
+    "license_note": "ODbL (ANEEL open data portal)"
+  },
+  "file": {
+    "compression": "none",
+    "sep": ";",
+    "encoding": "utf-8"
+  },
+  "columns": {
+    "date": "DatLavraturaAutoInfracao",
+    "key": "NumAutoInfracao"
+  },
+  "filters": [],
+  "period": {"start": null, "end": null},
+  "sparse_min_records": 3,
+  "series": [
+    {
+      "name": "notices",
+      "kind": "count",
+      "description": "Number of infraction notices issued in the month by ANEEL and the state agencies acting on its behalf"
+    },
+    {
+      "name": "penalty_total_brl",
+      "kind": "sum",
+      "column": "VlrPenalidade",
+      "number_format": "br",
+      "description": "Total value of the penalties imposed in the notices of the month, in Reais (value at issuance, before appeals)"
+    }
+  ],
+  "domain": "ANEEL, Brazil's federal electricity regulator, publishes every infraction notice (auto de infracao) issued by its inspection areas and by the state regulatory agencies that inspect on its behalf, under ANEEL Normative Resolution 846/2019. Each record is one notice to an electricity company (generation, transmission or distribution), dated when it was issued, with the penalty value.",
+  "record_label": "infraction notices",
+  "events_file": "profiles/events/brazil-electricity-regulation.json",
+  "events_include_suggested": true,
+  "monetary_file": "profiles/monetary/brazil-currency.json",
+  "event_sources": {"wikipedia": {"lang": "pt", "title": "{year} no Brasil"}},
+  "categories": {
+    "PDC": "Policy-Driven Change: legislation, regulation, agency restructuring or political transition",
+    "SP": "Seasonal Pattern: a recurring annual inspection cycle",
+    "DQE": "Data-Quality Event: reporting failure, system migration, backlog, duplication or retroactive correction",
+    "GES": "Genuine Enforcement Shift: a real change in inspection or enforcement intensity not explained by the above"
+  }
+}
