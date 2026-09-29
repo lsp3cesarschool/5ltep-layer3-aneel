@@ -126,10 +126,11 @@ def cmd_issues(args) -> None:
     flagged = det[det["anomaly"]]
     current = {judge.anomaly_id(s, m) for m, s in zip(flagged.index, flagged["series"])}
     judgments = judge.load_judgments(p.paths.judgments)
+    policy_changes = judge.apply_review_policy(judgments)
     owner, name = gh.repo.split("/")
     url = f"https://{owner}.github.io/{name}/?profile={p.id}"
     res = review.open_review_issues(p, judgments, current, gh, url, args.max_new)
-    if res["notified_rejudged"]:
+    if res["notified_rejudged"] or policy_changes:
         judge.save_judgments(judgments, p.paths.judgments)
     # The issue listing can lag a few seconds behind creation; add what was just created.
     issues = gh.issues()

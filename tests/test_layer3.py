@@ -243,6 +243,10 @@ def test_majority_consistency_and_review_levels():
     assert judge.review_level("DQE", 1.0) == "mandatory"
     assert judge.review_level("PDC", 0.333) == "advisory"
     assert judge.review_level("GES", 0.667) == "none"
+    assert judge.review_level("GES", 1.0, near_drift=True) == "advisory"  # drift -> structure review
+    js = {"a": {"category": "GES", "consistency": 1.0, "near_drift": True, "review_level": "none"},
+          "b": {"category": "SP", "consistency": 1.0, "near_drift": False, "review_level": "none"}}
+    assert judge.apply_review_policy(js) == 1 and js["a"]["review_level"] == "advisory"
 
 
 def pipeline_inputs(tmp_path):

@@ -230,13 +230,31 @@ def aggregate_runs(runs: list[dict]) -> dict:
     return {"category": winner, "consistency": round(top / len(runs), 3)}
 
 
-def review_level(category: str, consistency: float) -> str:
-    """Human-in-the-loop protocol: DQE is always reviewed, inconsistent labels are advised."""
+def review_level(category: str, consistency: float, near_drift: bool = False) -> str:
+    """Human-in-the-loop protocol.
+
+    - mandatory: data-quality events (and invalid answers): no action before a steward decides;
+    - advisory: inconsistent labels, and anomalies next to a sustained level shift
+      (Page-Hinkley), because the 5L-TEP paper routes confirmed drift to a review of the
+      data's structure whatever its cause;
+    - none: everything else.
+    """
     if category in ("DQE", "INVALID"):
         return "mandatory"
-    if consistency < config.ADVISORY_CONSISTENCY:
+    if consistency < config.ADVISORY_CONSISTENCY or near_drift:
         return "advisory"
     return "none"
+
+
+def apply_review_policy(judgments: dict) -> int:
+    """Recompute review levels from stored judgments (policy only, no LLM call)."""
+    changed = 0
+    for j in judgments.values():
+        level = review_level(j["category"], j["consistency"], j.get("near_drift", False))
+        if j.get("review_level") != level:
+            j["review_level"] = level
+            changed += 1
+    return changed
 
 
 def anomaly_id(series_name: str, month) -> str:
@@ -338,7 +356,7 @@ def judge_pending(profile: Profile, monthly: pd.DataFrame, detections: pd.DataFr
             "month": str(month),
             "category": vote["category"],
             "consistency": vote["consistency"],
-            "review_level": review_level(vote["category"], vote["consistency"]),
+            "review_level": review_level(vote["category"], vote["consistency"], bool(row["near_drift"])),
             "ensemble_score": float(row["ensemble_score"]),
             "votes": int(row["votes"]),
             "near_drift": bool(row["near_drift"]),

@@ -108,8 +108,13 @@ def issue_body(profile: Profile, aid: str, j: dict, dashboard_url: str) -> str:
         why = ("**Mandatory review**: the LLM labelled this a data-quality event (or could not answer). "
                "No corrective action may be taken before a steward decides.")
     else:
-        why = (f"**Advisory review**: the LLM runs disagree (consistency {j['consistency']:.2f} "
-               f"< {config.ADVISORY_CONSISTENCY}).")
+        reasons = []
+        if j["consistency"] < config.ADVISORY_CONSISTENCY:
+            reasons.append(f"the LLM runs disagree (consistency {j['consistency']:.2f} < {config.ADVISORY_CONSISTENCY})")
+        if j.get("near_drift"):
+            reasons.append("the month is next to a sustained level shift (Page-Hinkley), which calls for a "
+                           "review of the data's structure whatever its cause (e.g. a change of information system)")
+        why = "**Advisory review**: " + "; ".join(reasons) + "."
     categories = "\n".join(f"- `{config.STEWARD_LABEL_PREFIX}{c}`: {d}" for c, d in profile.categories.items())
     return f"""{MARKER.format(f"{profile.id}/{aid}")}
 ## Anomaly `{aid}` in profile `{profile.id}`
