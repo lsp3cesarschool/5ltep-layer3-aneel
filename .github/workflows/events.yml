@@ -26,6 +26,7 @@ permissions:
 
 env:
   LLM_MODEL: ${{ vars.LLM_MODEL || 'gemma3:4b' }}
+  LLM_THINK: ${{ vars.LLM_THINK || '' }}
 
 jobs:
   suggest:

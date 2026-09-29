@@ -1,0 +1,178 @@
+{
+ "profile": "aneel-autos-infracao",
+ "series": "penalty_total_brl",
+ "months": 99,
+ "analysis_period": [
+  "2018-06",
+  "2026-08"
+ ],
+ "series_file_sha256": "a51a75912eed3fbe1ae0770fbacd7549b76ef031ec8ba77ef3ac212637d59465",
+ "trials_per_type": 20,
+ "magnitude": 3.0,
+ "seed": 7,
+ "baseline_flags": 6,
+ "seconds": 242.2,
+ "by_type": {
+  "spike": {
+   "zscore": {
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "induced_false_alarms": 0
+   },
+   "mad": {
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "induced_false_alarms": 0
+   },
+   "iforest": {
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "induced_false_alarms": 0
+   },
+   "lstm_ed": {
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "induced_false_alarms": 0
+   },
+   "ensemble": {
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "induced_false_alarms": 0
+   }
+  },
+  "dip": {
+   "zscore": {
+    "recall": 0.05,
+    "precision": 1.0,
+    "f1": 0.095,
+    "induced_false_alarms": 0
+   },
+   "mad": {
+    "recall": 0.1,
+    "precision": 1.0,
+    "f1": 0.182,
+    "induced_false_alarms": 0
+   },
+   "iforest": {
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "induced_false_alarms": 0
+   },
+   "lstm_ed": {
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "induced_false_alarms": 0
+   },
+   "ensemble": {
+    "recall": 0.05,
+    "precision": 1.0,
+    "f1": 0.095,
+    "induced_false_alarms": 0
+   }
+  },
+  "gap": {
+   "zscore": {
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "induced_false_alarms": 0
+   },
+   "mad": {
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "induced_false_alarms": 0
+   },
+   "iforest": {
+    "recall": 0.8,
+    "precision": 1.0,
+    "f1": 0.889,
+    "induced_false_alarms": 0
+   },
+   "lstm_ed": {
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "induced_false_alarms": 0
+   },
+   "ensemble": {
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "induced_false_alarms": 0
+   }
+  },
+  "level_shift": {
+   "zscore": {
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "induced_false_alarms": 0
+   },
+   "mad": {
+    "recall": 0.05,
+    "precision": 1.0,
+    "f1": 0.095,
+    "induced_false_alarms": 0
+   },
+   "iforest": {
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "induced_false_alarms": 0
+   },
+   "lstm_ed": {
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "induced_false_alarms": 0
+   },
+   "ensemble": {
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "induced_false_alarms": 0
+   },
+   "page_hinkley_recall": 0.0
+  }
+ },
+ "overall": {
+  "zscore": {
+   "recall": 0.263,
+   "precision": 1.0,
+   "f1": 0.416,
+   "induced_false_alarms": 0
+  },
+  "mad": {
+   "recall": 0.287,
+   "precision": 1.0,
+   "f1": 0.447,
+   "induced_false_alarms": 0
+  },
+  "iforest": {
+   "recall": 0.2,
+   "precision": 1.0,
+   "f1": 0.333,
+   "induced_false_alarms": 0
+  },
+  "lstm_ed": {
+   "recall": 0.0,
+   "precision": 0.0,
+   "f1": 0.0,
+   "induced_false_alarms": 0
+  },
+  "ensemble": {
+   "recall": 0.263,
+   "precision": 1.0,
+   "f1": 0.416,
+   "induced_false_alarms": 0
+  }
+ }
+}

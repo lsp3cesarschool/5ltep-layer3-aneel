@@ -453,6 +453,20 @@ def test_month_in_source_reads_the_preceding_date():
     assert es.month_in_source("frase que nao existe no texto", text) is None
 
 
+def test_model_check_proposes_only_clear_switches():
+    from src import model_check
+
+    rec = {"switch_recommended": True, "reason": "x beats y", "benchmark": "https://b", "gold_cases": 31,
+           "recommended": {"model": "qwen3.5:4b", "backend": "ollama", "options": {"think": False},
+                           "macro_f1": 0.8, "consistency": 0.9, "latency_p90_s": 40},
+           "production": {"model": "gemma3:4b", "macro_f1": 0.6}}
+    assert model_check.decide(rec, "gemma3:4b")["action"] == "propose"
+    assert model_check.decide(rec, "qwen3.5:4b")["action"] == "none"
+    assert model_check.decide({**rec, "switch_recommended": False}, "gemma3:4b")["action"] == "none"
+    body = model_check.issue_body(rec, "gemma3:4b")
+    assert model_check.MARKER in body and "`LLM_THINK` to `false`" in body and "`qwen3.5:4b`" in body
+
+
 def test_events_near_window():
     evs = [{"month": "2020-03", "kind": "external", "label": "x", "source": "s"}]
     assert judge.events_near(evs, pd.Period("2020-08", freq="M"), 6)[0]["offset_months"] == -5

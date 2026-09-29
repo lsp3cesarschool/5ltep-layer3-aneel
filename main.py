@@ -223,6 +223,17 @@ def cmd_suggest_events(args) -> None:
     _set_output("profile", p.id)
 
 
+def cmd_check_model(args) -> None:
+    from src import model_check
+
+    if args.dry_run:
+        rec = model_check.fetch()
+        print(json.dumps(model_check.decide(rec, config.LLM_MODEL), indent=1))
+        return
+    res = model_check.run(review.GitHub.from_env())
+    logger.info("check-model: %s", res)
+
+
 def cmd_list_profiles(args) -> None:
     for p in profiles.available():
         flag = "scheduled" if p.get("scheduled") else "on demand"
@@ -263,6 +274,9 @@ def main(argv=None) -> None:
     sp.add_argument("--max-years", type=int, default=8)
     sp.add_argument("--model", default=None)
     sub.add_parser("list-profiles", help="list available profiles").set_defaults(fn=cmd_list_profiles)
+    cm = sub.add_parser("check-model", help="compare LLM_MODEL with the model benchmark's recommendation")
+    cm.add_argument("--dry-run", action="store_true", help="only print the decision")
+    cm.set_defaults(fn=cmd_check_model)
 
     args = parser.parse_args(argv)
     args.fn(args)

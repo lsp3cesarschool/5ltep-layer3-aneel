@@ -1,0 +1,27 @@
+name: 5L-TEP Layer 3 Model Check
+
+# Reads the public recommendation of the model benchmark
+# (lsp3cesarschool/5ltep-layer3-modeltest, run on day 20) and, if another model
+# is clearly better, opens an issue here. Switching stays a human decision.
+on:
+  schedule:
+    - cron: '0 6 22 * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - run: pip install pandas numpy requests
+      - run: python main.py check-model
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LLM_MODEL: ${{ vars.LLM_MODEL || 'gemma3:4b' }}

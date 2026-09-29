@@ -198,8 +198,13 @@ class OllamaClient:
                 "num_ctx": num_ctx or config.LLM_NUM_CTX,
             },
         }
+        if config.LLM_THINK.lower() in ("true", "false"):
+            payload["think"] = config.LLM_THINK.lower() == "true"
         t0 = time.monotonic()
         resp = requests.post(f"{self.url}/api/generate", json=payload, timeout=config.LLM_TIMEOUT_S)
+        if resp.status_code == 400 and "think" in payload and "think" in resp.text.lower():
+            payload.pop("think")  # model without a thinking mode
+            resp = requests.post(f"{self.url}/api/generate", json=payload, timeout=config.LLM_TIMEOUT_S)
         resp.raise_for_status()
         return resp.json()["response"], time.monotonic() - t0
 
