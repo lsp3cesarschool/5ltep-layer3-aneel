@@ -240,7 +240,7 @@ def test_majority_consistency_and_review_levels():
     split = [{"category": "PDC", "confidence": 0.9}, {"category": "SP", "confidence": 0.4},
              {"category": "GES", "confidence": 0.5}]
     assert judge.aggregate_runs(split) == {"category": "PDC", "consistency": 0.333}
-    assert judge.review_level("DQE", 1.0) == "mandatory"
+    assert judge.review_level("DQE", 1.0) == "pending"
     assert judge.review_level("PDC", 0.333) == "advisory"
     assert judge.review_level("GES", 0.667) == "none"
     # drift is reviewed once per level shift (review.drift_groups), not per anomaly
@@ -268,14 +268,14 @@ def test_level_shift_groups_issue_and_decision_for_all_months(tmp_path, monkeypa
                                                                         "reasoning": "r"}]}
     judgments = {f"notices:{m}": {**base, "month": m, "category": "GES", "review_level": "none"}
                  for m in ("1996-01", "1996-02", "1996-03")}
-    judgments["notices:1996-02"].update(category="DQE", review_level="mandatory")
+    judgments["notices:1996-02"].update(category="DQE", review_level="pending")
     # an old advisory issue for 1996-01, opened by the previous per-month drift policy
     gh = FakeGitHub()
     gh.created.append({"title": "old", "body": review.MARKER.format("test-profile/notices:1996-01"), "labels": []})
     closed = []
     gh.close_superseded = lambda number, comment: closed.append((number, comment))
     res = review.open_review_issues(p, judgments, set(judgments), gh, "https://x", groups=groups)
-    assert [c["anomaly_id"] for c in res["created"]] == ["notices:1996-02"]  # the mandatory one stays individual
+    assert [c["anomaly_id"] for c in res["created"]] == ["notices:1996-02"]  # the pending one stays individual
     assert [s["group"] for s in res["shifts_created"]] == ["notices:1996-01"]
     assert closed and closed[0][0] == 1 and "#3" in closed[0][1]  # old issue points to the level-shift issue
     again = review.open_review_issues(p, judgments, set(judgments), gh, "https://x", groups=groups)
@@ -311,7 +311,7 @@ def test_judge_caches_and_respects_budget(tmp_path):
     assert res["judged_now"] == 1
     saved = judge.load_judgments(p.paths.judgments)
     (entry,) = saved.values()
-    assert entry["category"] == "DQE" and entry["review_level"] == "mandatory"
+    assert entry["category"] == "DQE" and entry["review_level"] == "pending"
     assert entry["month"] == str(det[det["anomaly"]].index.max())  # most recent first
     assert entry["model_digest"] == "sha256:fake"
     system, prompt, seed, schema = client.prompts[0]
@@ -420,7 +420,7 @@ def test_legacy_judgments_are_backfilled_not_rejudged(tmp_path):
 def test_data_change_comments_existing_issue_once(tmp_path, monkeypatch):
     monkeypatch.setattr(review.time, "sleep", lambda s: None)
     p = make_profile(tmp_path)
-    j = {"series": "notices", "month": "2020-01", "category": "GES", "consistency": 1.0, "review_level": "mandatory",
+    j = {"series": "notices", "month": "2020-01", "category": "GES", "consistency": 1.0, "review_level": "pending",
          "votes": 2, "ensemble_score": 0.6, "near_drift": False, "model": "m", "temperature": 0.7, "prompt": "e",
          "runs": [], "data_fingerprint": "new", "judged_at": "2026-10-05T06:00:00+00:00",
          "rejudge_reason": "data changed", "prompt_version": "v2",
@@ -564,12 +564,12 @@ def test_events_near_window():
 def test_issue_marker_roundtrip_and_steward_decision(tmp_path):
     p = make_profile(tmp_path)
     j = {"series": "notices", "month": "2020-01", "category": "DQE", "consistency": 1.0,
-         "review_level": "mandatory", "votes": 3, "ensemble_score": 0.7, "near_drift": False,
+         "review_level": "pending", "votes": 3, "ensemble_score": 0.7, "near_drift": False,
          "model": "m", "temperature": 0.7, "prompt": "evidence",
          "runs": [{"category": "DQE", "confidence": 0.9, "reasoning": "a | b"}] * 3}
     body = review.issue_body(p, "notices:2020-01", j, "https://x")
     issue = {"number": 7, "html_url": "u", "state": "closed", "body": body, "closed_at": "t", "updated_at": "t",
-             "labels": [{"name": "layer3"}, {"name": "review:mandatory"}, {"name": "steward:SP"}]}
+             "labels": [{"name": "layer3"}, {"name": "review:pending"}, {"name": "steward:SP"}]}
     r = review.parse_review(issue, p.categories)
     assert r["profile"] == "test-profile" and r["anomaly_id"] == "notices:2020-01"
     assert r["status"] == "decided" and r["steward_category"] == "SP"
@@ -603,7 +603,7 @@ def test_open_review_issues_is_idempotent(tmp_path, monkeypatch):
     base = {"series": "notices", "consistency": 1.0, "votes": 2, "ensemble_score": 0.6, "near_drift": False,
             "model": "m", "temperature": 0.7, "prompt": "e", "runs": []}
     judgments = {
-        "notices:2020-01": {**base, "month": "2020-01", "category": "DQE", "review_level": "mandatory"},
+        "notices:2020-01": {**base, "month": "2020-01", "category": "DQE", "review_level": "pending"},
         "notices:2020-02": {**base, "month": "2020-02", "category": "SP", "review_level": "none"},
         "notices:2020-03": {**base, "month": "2020-03", "category": "GES", "review_level": "advisory"},
     }
@@ -624,7 +624,7 @@ def test_layer3_score_rules(tmp_path):
     det.loc[pd.Period("2024-09", freq="M"), "anomaly"] = True
     j = {"model": config.LLM_MODEL, "prompt_version": config.PROMPT_VERSION}
     judgments = {"notices:2024-05": {**j, "category": "SP", "review_level": "none"},
-                 "notices:2024-09": {**j, "category": "DQE", "review_level": "mandatory"}}
+                 "notices:2024-09": {**j, "category": "DQE", "review_level": "pending"}}
     s = report.layer3_score(det, judgments, {})
     assert s["pairs_evaluated"] == 12 and s["l3_rate"] == pytest.approx(11 / 12, abs=1e-3) and not s["l3_pass"]
     reviews = {"notices:2024-09": {"status": "decided", "steward_category": "SP"}}
@@ -676,3 +676,11 @@ def test_readme_and_leiame_stay_parallel():
     leiame = (config.ROOT / "LEIAME.md").read_text(encoding="utf-8")
     assert _doc_structure(readme) == _doc_structure(leiame)
     assert "(LEIAME.md)" in readme and "(README.md)" in leiame
+
+
+def test_legacy_mandatory_level_reads_as_pending():
+    """Judgments and issues stored before the rename (review:mandatory) keep their meaning."""
+    j = {"category": "DQE", "consistency": 1.0, "review_level": "mandatory", "runs": []}
+    assert report.effective("notices:2020-01", {"notices:2020-01": j}, {})["pending_review"] is True
+    assert judge.normalize_level("mandatory") == "pending"
+    assert judge.normalize_level("advisory") == "advisory"

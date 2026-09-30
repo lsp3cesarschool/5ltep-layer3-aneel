@@ -16,7 +16,7 @@ montada pelo autor como caso de controle do estudo do IBAMA.**
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 📊 **Painel:** <https://lsp3cesarschool.github.io/5ltep-layer3-aneel/>
-🧑‍⚖️ **Fila de revisão:** [issues `layer3` abertas](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Alayer3)
+🧑‍⚖️ **Fila de revisão** (contagens ao vivo; cada selo abre sua lista de issues): [![revisões abertas](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/layer3?label=revis%C3%B5es%20abertas&color=0366d6)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Alayer3) [![pendentes](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Apending?label=pendentes&color=d73a4a)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Apending) [![recomendadas](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Aadvisory?label=recomendadas&color=fbca04)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Aadvisory) [![mudança de nível](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Alevel-shift?label=mudan%C3%A7a%20de%20n%C3%ADvel&color=f9d0c4)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Alevel-shift)
 🏛️ **Instância principal (IBAMA) e documentação completa:** [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3/blob/main/LEIAME.md)
 🧪 **Qual LLM julga, e por quê:** [5ltep-layer3-modeltest](https://github.com/lsp3cesarschool/5ltep-layer3-modeltest/blob/main/LEIAME.md), o benchmark mensal de modelos
 
@@ -54,7 +54,7 @@ O que difere do repositório principal é apenas:
 
 Os perfis e resultados do IBAMA não estão incluídos. Todo o resto (detectores, LLM-as-a-Judge, revisão
 humana, painel, workflows, testes) é idêntico a
-[`5ltep-layer3@708a93f`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/708a93feef13d16344caa050cb5fe45323170aca),
+[`5ltep-layer3@7009abe`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/7009abe010ae1ce22adabf08ecb821030b0d9bcf),
 e a instância montada passa na mesma suíte de testes antes de cada atualização.
 
 ## Termos-chave
@@ -103,7 +103,7 @@ em resumo:
  ② Agregar    só as colunas de data, identificador e penalidade (nenhum nome de empresa ou CNPJ guardado)
  ③ Detectar   Z-score · MAD · Isolation Forest · LSTM-ED (voto ≥ 2) + Page-Hinkley
  ④ Julgar     Ollama + o modelo aprovado pelo benchmark, 3 execuções com semente, resposta JSON
- ⑤ Revisar    issues do GitHub: rótulo steward:<CATEGORIA> + fechar (obrigatório para DQE)
+ ⑤ Revisar    issues do GitHub: rótulo steward:<CATEGORIA> + fechar (review:pending para DQE)
  ⑥ Relatório  layer3_summary.json (l3_rate, l3_pass, anomaly_flags) + painel
                               ▼
        Histórico Git de cada série, detecção, julgamento e revisão

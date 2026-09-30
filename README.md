@@ -16,7 +16,7 @@ set up by the author as a control case for the IBAMA study.**
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 📊 **Dashboard:** <https://lsp3cesarschool.github.io/5ltep-layer3-aneel/>
-🧑‍⚖️ **Review queue:** [open `layer3` issues](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Alayer3)
+🧑‍⚖️ **Review queue** (live counts; each badge opens its list of issues): [![open reviews](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/layer3?label=open%20reviews&color=0366d6)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Alayer3) [![pending](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Apending?label=pending&color=d73a4a)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Apending) [![advisory](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Aadvisory?label=advisory&color=fbca04)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Aadvisory) [![level shift](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Alevel-shift?label=level%20shift&color=f9d0c4)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Alevel-shift)
 🏛️ **Main instance (IBAMA) and full documentation:** [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3)
 🧪 **Which LLM judges, and why:** [5ltep-layer3-modeltest](https://github.com/lsp3cesarschool/5ltep-layer3-modeltest), the monthly model benchmark
 
@@ -53,7 +53,7 @@ What differs from the main repository is only:
 
 The IBAMA profiles and results are not included. Everything else (detectors, LLM-as-a-Judge,
 human-in-the-loop review, dashboard, workflows, tests) is identical to
-[`5ltep-layer3@708a93f`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/708a93feef13d16344caa050cb5fe45323170aca),
+[`5ltep-layer3@7009abe`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/7009abe010ae1ce22adabf08ecb821030b0d9bcf),
 and the built instance passes the same test suite before every update.
 
 ## Key terms
@@ -102,7 +102,7 @@ in short:
  ② Aggregate  only date, identifier and penalty columns (no company names or CNPJ kept)
  ③ Detect     Z-score · MAD · Isolation Forest · LSTM-ED (vote ≥ 2) + Page-Hinkley
  ④ Judge      Ollama + the model approved by the benchmark, 3 seeded runs, JSON answer
- ⑤ Review     GitHub Issues: steward:<CATEGORY> label + close (mandatory for DQE)
+ ⑤ Review     GitHub Issues: steward:<CATEGORY> label + close (review:pending for DQE)
  ⑥ Report     layer3_summary.json (l3_rate, l3_pass, anomaly_flags) + dashboard
                               ▼
        Git history of every series, detection, judgment and review

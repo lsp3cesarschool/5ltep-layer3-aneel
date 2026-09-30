@@ -166,12 +166,12 @@ def cmd_issues(args) -> None:
     review.sync_reviews(p, gh, issues)
     for c in res["created"] + res["shifts_created"]:
         c.pop("raw", None)
-    mandatory = sum(1 for c in res["created"] if c["review_level"] == "mandatory")
-    logger.info("Opened %d anomaly issues (%d mandatory) and %d level-shift issues; closed %d superseded; "
-                "%d still to open", len(res["created"]), mandatory, len(res["shifts_created"]),
+    pending = sum(1 for c in res["created"] if c["review_level"] == "pending")
+    logger.info("Opened %d anomaly issues (%d pending) and %d level-shift issues; closed %d superseded; "
+                "%d still to open", len(res["created"]), pending, len(res["shifts_created"]),
                 len(res["superseded"]), res["remaining"])
     _log_run(p, "issues", res)
-    _set_output("new_mandatory", mandatory)
+    _set_output("new_pending", pending)
     _set_output("new_issues", len(res["created"]))
     _set_output("issues_remaining", res["remaining"])
 

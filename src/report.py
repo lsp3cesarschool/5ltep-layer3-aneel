@@ -5,7 +5,7 @@ over the last L3_WINDOW_MONTHS complete months, each (series, month) pair
 passes unless it is flagged by the ensemble AND is either
   - not judged yet,
   - classified as DQE/INVALID (by the steward when decided, else by the LLM), or
-  - waiting for a mandatory steward review.
+  - waiting for a steward review of a DQE/INVALID label (review level "pending").
 l3_rate = passing pairs / all pairs; l3_pass = no failing pair.
 The field names l3_pass and anomaly_flags follow the minimal provenance record
 of the 5L-TEP paper, so Layer 4 can ingest them as they are.
@@ -20,7 +20,7 @@ from importlib import metadata
 import pandas as pd
 
 from src import __version__, config
-from src.judge import DETECTOR_NAMES, anomaly_id, has_judgment, is_current
+from src.judge import DETECTOR_NAMES, anomaly_id, has_judgment, is_current, normalize_level
 from src.profile import Profile
 
 
@@ -42,7 +42,7 @@ def effective(aid: str, judgments: dict, reviews: dict) -> dict:
     j = judgments.get(aid)
     if not has_judgment(j):
         return {"category": None, "decided_by": None, "pending_review": False}
-    return {"category": j["category"], "decided_by": "llm", "pending_review": j["review_level"] == "mandatory"}
+    return {"category": j["category"], "decided_by": "llm", "pending_review": normalize_level(j.get("review_level")) == "pending"}
 
 
 def layer3_score(detections: pd.DataFrame, judgments: dict, reviews: dict) -> dict:

@@ -2,8 +2,9 @@
 
 Two kinds of issues:
 
-- Anomaly issues, one per judged anomaly that needs a steward (mandatory: DQE
-  or invalid answers; advisory: label consistency below the threshold).
+- Anomaly issues, one per judged anomaly that needs a steward (pending: DQE
+  or invalid answers; advisory: label consistency below the threshold). Issues
+  are suggestions ready for a steward; nobody is obliged to act on them.
 - Level-shift issues, one per sustained level shift (Page-Hinkley alarm) with
   flagged months around it. The 5L-TEP paper routes confirmed drift to a review
   of the data's structure whatever its cause; the steward answers that question
@@ -29,6 +30,7 @@ import pandas as pd
 import requests
 
 from src import config
+from src.judge import normalize_level
 from src.profile import Profile
 
 logger = logging.getLogger(__name__)
@@ -47,7 +49,7 @@ def labels_for(profile: Profile) -> dict[str, tuple[str, str]]:
     labels = {
         config.ISSUE_LABEL: ("5319e7", "5L-TEP Layer 3 anomaly review"),
         f"profile:{profile.id}": ("bfd4f2", profile["title"][:100]),
-        "review:mandatory": ("d73a4a", "Steward review required before any action"),
+        "review:pending": ("d73a4a", "Data-quality label: not counted as passing until a steward decides"),
         "review:advisory": ("fbca04", "Low LLM label consistency; review recommended"),
         "review:level-shift": ("f9d0c4", "Sustained level shift: review the cause once for all its months"),
         SUPERSEDED: ("cfd3d7", "Replaced by another issue after a change of review policy"),
@@ -193,9 +195,10 @@ def issue_body(profile: Profile, aid: str, j: dict, dashboard_url: str) -> str:
         f"{r['reasoning'].replace('|', '/').replace(chr(10), ' ')} |"
         for i, r in enumerate(j["runs"])
     )
-    if j["review_level"] == "mandatory":
-        why = ("**Mandatory review**: the LLM labelled this a data-quality event (or could not answer). "
-               "No corrective action may be taken before a steward decides.")
+    if normalize_level(j["review_level"]) == "pending":
+        why = ("**Pending review**: the LLM labelled this a data-quality event (or could not answer). "
+               "Until a steward decides, the month does not count as passing in the Layer 3 score, "
+               "and no corrective action is suggested.")
     else:
         why = (f"**Advisory review**: the LLM runs disagree (consistency {j['consistency']:.2f} "
                f"< {config.ADVISORY_CONSISTENCY}).")
@@ -262,13 +265,13 @@ def open_review_issues(profile: Profile, judgments: dict, current_ids: set[str],
         key=lambda aid: judgments[aid]["month"],
         reverse=True,
     )
-    todo.sort(key=lambda aid: judgments[aid]["review_level"] != "mandatory")  # mandatory first
+    todo.sort(key=lambda aid: normalize_level(judgments[aid]["review_level"]) != "pending")  # pending first
     shifts_todo = [gid for gid, g in sorted(groups.items(), key=lambda kv: kv[1]["onset"], reverse=True)
                    if f"{profile.id}/{gid}" not in shift_issues and any(a in judgments for a in g["members"])]
     created, shifts_created = [], []
     for aid in todo[:max_new]:
         j = judgments[aid]
-        labels = [config.ISSUE_LABEL, f"profile:{profile.id}", f"review:{j['review_level']}"]
+        labels = [config.ISSUE_LABEL, f"profile:{profile.id}", f"review:{normalize_level(j['review_level'])}"]
         if j["category"] in profile.categories:
             labels.append(f"llm:{j['category']}")
         issue = gh.create_issue(issue_title(profile, j), issue_body(profile, aid, j, dashboard_url), labels)
@@ -374,7 +377,7 @@ def parse_review(issue: dict, categories: dict) -> dict | None:
         "state": issue["state"],
         "status": status,
         "steward_category": category,
-        "review_level": next((n.split(":", 1)[1] for n in names if n.startswith("review:")), None),
+        "review_level": normalize_level(next((n.split(":", 1)[1] for n in names if n.startswith("review:")), None)),
         "closed_at": issue.get("closed_at"),
         "updated_at": issue.get("updated_at"),
     }

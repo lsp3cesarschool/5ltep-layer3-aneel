@@ -238,7 +238,8 @@ def aggregate_runs(runs: list[dict]) -> dict:
 def review_level(category: str, consistency: float, near_drift: bool = False) -> str:
     """Human-in-the-loop protocol for one anomaly.
 
-    - mandatory: data-quality events (and invalid answers): no action before a steward decides;
+    - pending: data-quality events (and invalid answers): the anomaly does not count as passing
+      in the Layer 3 score until a steward decides (a suggestion for review, not an obligation);
     - advisory: the three runs disagree;
     - none: everything else.
     Months next to a sustained level shift are also reviewed, but once per shift, in a
@@ -246,10 +247,18 @@ def review_level(category: str, consistency: float, near_drift: bool = False) ->
     signature for callers and does not change the individual level.
     """
     if category in ("DQE", "INVALID"):
-        return "mandatory"
+        return "pending"
     if consistency < config.ADVISORY_CONSISTENCY:
         return "advisory"
     return "none"
+
+
+# "pending" was called "mandatory" (label review:mandatory) before 30/09/2026.
+LEGACY_LEVELS = {"mandatory": "pending"}
+
+
+def normalize_level(level: str | None) -> str | None:
+    return LEGACY_LEVELS.get(level, level)
 
 
 def apply_review_policy(judgments: dict) -> int:
