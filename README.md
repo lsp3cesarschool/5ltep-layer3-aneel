@@ -1,8 +1,13 @@
 # 5LTEP-L3 · ANEEL instance (control experiment)
 
 **5L-TEP Layer 3 anomaly detection applied to the infraction notices of ANEEL, Brazil's electricity
-regulator: a second, independent instance of [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3),
-run as a control case for the IBAMA study.**
+regulator: a second instance of [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3),
+set up by the author as a control case for the IBAMA study.**
+
+> **Status: research demonstration.** This repository is not operated by, affiliated with or endorsed
+> by ANEEL; it only reads ANEEL's open data. It shows that the toolkit can be reused on another portal.
+> It does not assume that ANEEL will review its results or adopt it. The open review issues demonstrate
+> the flow: no steward is assigned.
 
 [![Tests](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml/badge.svg)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml)
 [![Layer 3](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/layer3.yml/badge.svg)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/layer3.yml)
@@ -44,8 +49,8 @@ dados confirma ou corrige toda decisão que leve a uma ação.
 
 The Layer 3 toolkit of the Five-Layer Trust Engineering Pyramid (5L-TEP) was built on IBAMA's open
 data. A method that works on one dataset may only have learned that dataset's quirks. This repository
-runs **the same code** on a different agency, portal and scale, the way another institution would
-adopt it, and asks two questions:
+runs **the same code** on a different agency, portal and scale, following the steps another
+institution would take to adopt it, and asks two questions:
 
 1. **Reuse (the *R* of FAIR):** can the toolkit be adopted by writing a profile, with no code changes?
 2. **Transfer:** do detection, the LLM-as-a-Judge and the review protocol behave the same way on a
@@ -61,7 +66,7 @@ What differs from the main repository is only:
 
 The IBAMA profiles and results are not included. Everything else (detectors, LLM-as-a-Judge,
 human-in-the-loop review, dashboard, workflows, tests) is identical to
-[`5ltep-layer3@c9ccc85`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/c9ccc8521c4a3243a47dd89eca0c34b9fe43f832),
+[`5ltep-layer3@542be54`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/542be54a3fae91eb68355aaee3e3b13b6f64d52d),
 and the built instance passes the same test suite before every update.
 
 ## Key terms
@@ -159,7 +164,7 @@ sparse series, and this has to be reported per series.
 qwen3:4b, which scored best on the benchmark's gold set, reads months with zero penalties as "near
 zero in an active series" (a data-quality sign) and flags them as DQE; gemma3:4b called most of them
 seasonal. On a series where empty months are normal, neither reading is obviously right: this is
-exactly the kind of decision the steward has to make, and it shows that the benchmark's gold set, built
+exactly the kind of decision the design leaves to a steward, and it shows that the benchmark's gold set, built
 on IBAMA's large series, does not yet represent low-volume data.
 
 ## What the control experiment showed
@@ -202,7 +207,9 @@ portal's file changes over time.
 - The event calendar is nearly empty: most anomalies are judged without the context a regulation
   expert would bring.
 - Detection sensitivity is low on this series (see *First results*).
-- No steward decision recorded yet, so human-LLM agreement cannot be measured.
+- No steward decisions, by design: the review flow is working and ready to be adopted, and the
+  review metrics (human-LLM agreement, review time) fill in automatically if and when a steward uses
+  it. The author does not act as a steward, which would be self-evaluation.
 
 ## Documentation and references
 
