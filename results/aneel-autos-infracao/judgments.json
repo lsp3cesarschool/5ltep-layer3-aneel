@@ -2,43 +2,54 @@
  "notices:2022-09": {
   "series": "notices",
   "month": "2022-09",
-  "category": "SP",
-  "consistency": 1.0,
+  "category": "GES",
+  "consistency": 0.667,
   "review_level": "none",
   "ensemble_score": 0.58,
   "votes": 2,
   "near_drift": false,
   "runs": [
    {
-    "category": "SP",
-    "confidence": 0.9,
-    "reasoning": "The anomaly in 2022-09 is primarily driven by a seasonal pattern. The ratio of notices in September to the median of the previous 12 months (10.46) was significantly elevated compared to historical values. While there was a recent political change, it occurred four months prior and doesn't directly explain the spike in notices. The data quality appears sound with no records missing or with unusual identifiers. The fact that the month was flagged by multiple anomaly detectors (zscore, MAD, ensemble) supports the seasonal interpretation. The previous years' values also show a similar pattern, particularly 2021-09.",
+    "category": "GES",
+    "confidence": 0.85,
+    "reasoning": "Seasonality check shows 2021-09: 1.17 (above median), 2020-09: 0.35 (below), 2019-09: 2.33 (above). The same calendar month deviated above median in 2 of 3 years (2019, 2021), but not in 2020. However, no other year had this month flagged as anomalous. The spike in 2022-09 (68 notices vs. median 6) is unusually high but not explained by prior seasonal patterns. No data quality issues (excluded/no_id records = 0) and no policy events within 6 months except a political change in 2023-01 (4 months later), too late to impact 2022-09. The Page-Hinkley test shows no sustained shift. Thus, the anomaly is likely a genuine enforcement shift (GES).",
     "seed": 11,
-    "latency_s": 77.5
+    "latency_s": 82.6
    },
    {
-    "category": "SP",
+    "category": "DQE",
     "confidence": 0.9,
-    "reasoning": "The anomaly in 2022-09 is primarily driven by a seasonal pattern. The ratio of notices in September to the median of previous months is significantly elevated (10.46), and this has occurred in 2 out of the last 3 years. While a change of federal administration occurred in January 2023 (+4 months), it’s unlikely to directly explain the September spike. No other data points suggest a data quality issue (no excluded records, no missing IDs, no sustained level shift). The outlier is not linked to other flagged series, indicating a genuine seasonal fluctuation.",
+    "reasoning": "Seasonality check shows 2022-09 (ratio 10.46) is significantly higher than previous years: 2021-09 (1.17), 2020-09 (0.35), 2019-09 (2.33). Only 2 of 3 years had same direction (above 1) as 2022-09. The month was not flagged in other years. No data quality signs: excluded/no_id records are 0. Page-Hinkley test shows no sustained shift. Known event (political change in 2023-01) is 4 months later, so too distant to explain timing. No policy-driven event within 6 months. Thus, anomaly likely data-quality (DQE): possible backlog or retroactive correction causing sudden spike with no prior trend.",
     "seed": 22,
-    "latency_s": 15.3
+    "latency_s": 33.9
    },
    {
-    "category": "SP",
-    "confidence": 0.9,
-    "reasoning": "The anomaly in 2022-09 is primarily driven by a seasonal pattern. The ratio to the median of the previous 12 months (10.46) is significantly elevated, and this trend has occurred in 2 out of the past 3 years. While a political change occurred in January 2023, it is too distant to explain the immediate spike. The records show no data quality issues (no excluded or missing records). Therefore, the anomaly is most likely a seasonal shift.",
+    "category": "GES",
+    "confidence": 0.85,
+    "reasoning": "Seasonality check: 2021-09 ratio 1.17 (above median), 2020-09 0.35 (below), 2019-09 2.33 (above). Same direction (above median) in 2 of 3 years. But only 2022-09 was flagged, not other years. No other series anomalous. Data quality: excluded and no_id records all zero. No data issues. Events: political change in 2023-01 (4 months later) too late to explain 2022-09. No policy-driven event within timeframe. No sustained shift (Page-Hinkley test negative). Thus, anomalous month likely genuine enforcement shift.",
     "seed": 33,
-    "latency_s": 13.4
+    "latency_s": 29.9
    }
   ],
   "prompt": "Series: notices - Number of infraction notices issued in the month by ANEEL and the state agencies acting on its behalf.\nAnomalous month: 2022-09 (calendar month 9).\nValue: 68; median of the previous 12 months: 6 (+946%; ratio 10.46).\nSeasonality check - ratio of calendar month 9 to the median of its previous 12 months, in the previous years: 2021-09: 1.17 | 2020-09: 0.35 | 2019-09: 2.33.\nThe same calendar month deviated in the same direction (above 1) in 2 of these 3 years.\nThe same calendar month was also flagged as anomalous in: no other year.\nDetectors that flagged it: zscore, mad (2 of 4); ensemble score 0.58 (0.5 = at threshold).\nA Page-Hinkley test found a sustained level shift within 2 months: no.\nOther series flagged in the same month: none.\n\nMonthly context (+-12 months). excluded = excluded records; no_id = records without an identifier.\nmonth   | notices | penalty_total_brl | excluded | no_id\n2021-09 | 7 | 33.2M | 0 | 0\n2021-10 | 3 | 2.1M | 0 | 0\n2021-11 | 16 | 736,358 | 0 | 0\n2021-12 | 5 | 11.3M | 0 | 0\n2022-01 | 9 | 69.7M | 0 | 0\n2022-02 | 6 | 34.0M | 0 | 0\n2022-03 | 4 | 372,097 | 0 | 0\n2022-04 | 8 | 5.4M | 0 | 0\n2022-05 | 6 | 43.4M | 0 | 0\n2022-06 | 14 | 46.0M | 0 | 0\n2022-07 | 5 | 125.9M | 0 | 0\n2022-08 | 9 | 11.0M | 0 | 0\n2022-09 | 68 | 98.2M | 0 | 0  <== anomaly\n2022-10 | 9 | 64.3M | 0 | 0\n2022-11 | 8 | 77.6M | 0 | 0\n2022-12 | 8 | 2.0M | 0 | 0\n2023-01 | 9 | 21.5M | 0 | 0\n2023-02 | 5 | 22.0M | 0 | 0\n2023-03 | 7 | 50.0M | 0 | 0\n2023-04 | 6 | 20.7M | 0 | 0\n2023-05 | 5 | 399,143 | 0 | 0\n2023-06 | 17 | 116.1M | 0 | 0\n2023-07 | 3 | 6.9M | 0 | 0\n2023-08 | 13 | 911,925 | 0 | 0\n2023-09 | 2 | 35.6M | 0 | 0\n\nKnown events within +-6 months:\n- 2023-01 (+4 months, political): Change of federal administration",
-  "model": "gemma3:4b",
-  "model_digest": "a2af6cc3eb7fa8be8504abaf9b04e88f17a119ec3f04a3addf55f92841195f5a",
-  "ollama_version": "0.34.4",
+  "model": "qwen3:4b",
+  "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+  "ollama_version": "0.35.0",
   "temperature": 0.7,
   "prompt_version": "v2",
   "data_fingerprint": "87fdc63a9a066f8e3143b5fd8d4367b013ca71ab9be02bfb864195fcda6cdeb2",
-  "judged_at": "2026-09-29T19:25:21+00:00"
+  "judged_at": "2026-09-30T11:03:51+00:00",
+  "rejudge_reason": "model or prompt version changed",
+  "history": [
+   {
+    "category": "SP",
+    "consistency": 1.0,
+    "model": "gemma3:4b",
+    "prompt_version": "v2",
+    "data_fingerprint": "87fdc63a9a066f8e3143b5fd8d4367b013ca71ab9be02bfb864195fcda6cdeb2",
+    "judged_at": "2026-09-29T19:25:21+00:00"
+   }
+  ]
  },
  "notices:2024-11": {
   "series": "notices",
@@ -53,326 +64,415 @@
    {
     "category": "GES",
     "confidence": 0.85,
-    "reasoning": "The anomaly in November 2024 is driven by an exceptionally high number of infraction notices (195) compared to the median of the previous 12 months (5). While there's a seasonal component as the same calendar month deviated above 1 in 2 of the previous 5 years, the magnitude of the shift (3900% increase) is unusual. There are no records of data quality issues (excluded records, missing IDs) or system events. The Page-Hinkley test ruled out a sustained level shift. Therefore, the most plausible explanation is a genuine enforcement shift (GES).",
+    "reasoning": "Seasonality check shows 2023-11 ratio 0.15 (low), 2022-11 0.94 (near median), 2021-11 2.29 (high), 2020-11 0.10 (low), 2019-11 1.50 (high). Only 2022 and 2021 had ratios above 1 (high) for Nov, while 2024-11 is 39x median. But the same calendar month deviated in the same direction (above 1) in 2 of 5 years, so seasonal pattern exists. However, the 2024-11 value is unusually high (195 vs median 5) and the same month wasn't flagged in other years. The anomaly is flagged by multiple detectors (zscore, mad, iforest) but Page-Hinkley test shows no sustained level shift. No data quality indicators (excluded/no_id records) are present. The high value could be a genuine enforcement shift (GES) as no policy events, seasonal pattern, or data issues are evident.",
     "seed": 11,
-    "latency_s": 77.6
+    "latency_s": 89.2
    },
    {
     "category": "GES",
     "confidence": 0.85,
-    "reasoning": "The anomaly in November 2024 is driven by a massive spike in infraction notices (195) compared to the median of the previous 12 months (5). While the ratio (39.00) is exceptionally high, seasonality analysis reveals that November consistently exhibits elevated notice counts, but only in a few years. This deviation is not consistently replicated across the previous 12 months, and no significant sustained level shift was detected. The lack of a policy event and the absence of other flagged months support a genuine enforcement shift. The data quality checks (no excluded or missing records) further reduce the likelihood of a data-quality event.",
+    "reasoning": "Seasonality check shows 2024-11 (ratio 39.00) is a large deviation from the 5-year trend (median ratio 0.94). However, the same calendar month deviated in the same direction (above 1) in only 2 of 5 years, indicating irregular seasonality. No policy events within +-6 months. Records show no excluded/no_id records, implying no data quality issues. The anomaly is likely a genuine enforcement shift (GES) as it's a sustained increase without data problems or policy changes.",
     "seed": 22,
-    "latency_s": 16.4
+    "latency_s": 21.8
    },
    {
     "category": "GES",
     "confidence": 0.85,
-    "reasoning": "The anomaly in November 2024 is driven by a massive increase in infraction notices (195) compared to the median of the previous 12 months (5). While the seasonality check reveals that the ratio has been above 1 in 2 of the past 5 years, the magnitude of this year's deviation is exceptional. Furthermore, there are no data quality issues (no excluded records, no missing identifiers) or sustained level shifts detected. The fact that the same calendar month has been flagged anomalous in other years, but not this one, suggests a genuine enforcement shift, rather than a simple seasonal pattern. The large penalty value further supports this.",
+    "reasoning": "Seasonality check: 2024-11 has a ratio of 39x median (2023-11: 0.15, 2022-11: 0.94, 2021-11: 2.29, 2020-11: 0.10, 2019-11: 1.50). Only 2 out of 5 years showed same direction deviation (above 1). The same calendar month did not deviate in other years. No other series flagged in same month. Data quality checks: no excluded records or no_id records. The sharp increase (195 notices) follows a low of 1 in 2023-11 and 2024-10, but no data quality indicators (e.g., zero values, duplicates). No events in +-6 months. The anomaly is not seasonal, no policy change, no data issue, so genuine enforcement shift (GES).",
     "seed": 33,
-    "latency_s": 16.6
+    "latency_s": 38.7
    }
   ],
   "prompt": "Series: notices - Number of infraction notices issued in the month by ANEEL and the state agencies acting on its behalf.\nAnomalous month: 2024-11 (calendar month 11).\nValue: 195; median of the previous 12 months: 5 (+3800%; ratio 39.00).\nSeasonality check - ratio of calendar month 11 to the median of its previous 12 months, in the previous years: 2023-11: 0.15 | 2022-11: 0.94 | 2021-11: 2.29 | 2020-11: 0.10 | 2019-11: 1.50.\nThe same calendar month deviated in the same direction (above 1) in 2 of these 5 years.\nThe same calendar month was also flagged as anomalous in: no other year.\nDetectors that flagged it: zscore, mad, iforest (3 of 4); ensemble score 0.56 (0.5 = at threshold).\nA Page-Hinkley test found a sustained level shift within 2 months: no.\nOther series flagged in the same month: none.\n\nMonthly context (+-12 months). excluded = excluded records; no_id = records without an identifier.\nmonth   | notices | penalty_total_brl | excluded | no_id\n2023-11 | 1 | 20.8M | 0 | 0\n2023-12 | 0 | 0 | 0 | 0\n2024-01 | 7 | 20.8M | 0 | 0\n2024-02 | 1 | 165.8M | 0 | 0\n2024-03 | 7 | 89.7M | 0 | 0\n2024-04 | 10 | 67.8M | 0 | 0\n2024-05 | 5 | 13.5M | 0 | 0\n2024-06 | 5 | 30.6M | 0 | 0\n2024-07 | 1 | 40,000 | 0 | 0\n2024-08 | 11 | 39.8M | 0 | 0\n2024-09 | 6 | 63.2M | 0 | 0\n2024-10 | 4 | 16.3M | 0 | 0\n2024-11 | 195 | 230.6M | 0 | 0  <== anomaly\n2024-12 | 455 | 242.4M | 0 | 0\n2025-01 | 0 | 0 | 0 | 0\n2025-02 | 48 | 71.8M | 0 | 0\n2025-03 | 17 | 60.9M | 0 | 0\n2025-04 | 5 | 35.7M | 0 | 0\n2025-05 | 9 | 23.6M | 0 | 0\n2025-06 | 7 | 35.1M | 0 | 0\n2025-07 | 1 | 0 | 0 | 0\n2025-08 | 7 | 17.6M | 0 | 0\n2025-09 | 5 | 71.0M | 0 | 0\n2025-10 | 6 | 102.0M | 0 | 0\n2025-11 | 4 | 18.5M | 0 | 0\n\nNo known events within +-6 months.",
-  "model": "gemma3:4b",
-  "model_digest": "a2af6cc3eb7fa8be8504abaf9b04e88f17a119ec3f04a3addf55f92841195f5a",
-  "ollama_version": "0.34.4",
+  "model": "qwen3:4b",
+  "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+  "ollama_version": "0.35.0",
   "temperature": 0.7,
   "prompt_version": "v2",
   "data_fingerprint": "1394bd7eebfe731cc3c435041f8dcc278089e0a3ea3adc747a52d34452b69c0c",
-  "judged_at": "2026-09-29T19:18:11+00:00"
+  "judged_at": "2026-09-30T10:53:37+00:00",
+  "rejudge_reason": "model or prompt version changed",
+  "history": [
+   {
+    "category": "GES",
+    "consistency": 1.0,
+    "model": "gemma3:4b",
+    "prompt_version": "v2",
+    "data_fingerprint": "1394bd7eebfe731cc3c435041f8dcc278089e0a3ea3adc747a52d34452b69c0c",
+    "judged_at": "2026-09-29T19:18:11+00:00"
+   }
+  ]
  },
  "notices:2024-12": {
   "series": "notices",
   "month": "2024-12",
-  "category": "SP",
-  "consistency": 1.0,
-  "review_level": "none",
+  "category": "DQE",
+  "consistency": 0.667,
+  "review_level": "mandatory",
   "ensemble_score": 0.6509,
   "votes": 2,
   "near_drift": false,
   "runs": [
    {
-    "category": "SP",
+    "category": "DQE",
     "confidence": 0.85,
-    "reasoning": "The anomaly is likely due to a seasonal pattern (SP). The value of 455 notices in December 2024 is significantly above the median of the previous 12 months (6), with a ratio of 82.73. Although the ratio was above 1 in only one previous year (2023-12), the magnitude of the increase is noteworthy. There is no evidence of a policy change (PDC), data quality issue (DQE), or genuine enforcement shift (GES) given the lack of events, records anomalies or sustained level shifts. The absence of other flagged months strengthens the seasonality hypothesis.",
+    "reasoning": "Seasonality check shows 2023-12 has 0 notices (ratio 0.00), 2022-12 has 100% of the median (ratio 1.00), 2021-12 has 67% of the median, etc. Only 1 of 5 years had a deviation above 1 in December. The same calendar month was not flagged in other years. No known events. Data quality checks: no excluded or no_id records, values are plausible (non-zero). The anomaly is a large spike (455 vs median 6) but no persistent step or implausible values. Since seasonality is weak (only 1 year with similar deviation) and no policy events, the anomaly likely stems from a data-quality issue (e.g., retroactive correction or system migration) despite the large deviation.",
     "seed": 11,
-    "latency_s": 77.6
+    "latency_s": 77.7
    },
    {
-    "category": "SP",
-    "confidence": 0.9,
-    "reasoning": "The anomaly is most likely a seasonal pattern (SP). The value of 455 is an 82.73% increase compared to the median of the previous 12 months (6). However, this increase only occurred once in the past five years (2023-12). Furthermore, there's no indication of a policy change (PDC) or a data quality issue (DQE) given the lack of excluded records, missing identifiers, or system changes. The absence of a sustained level shift also rules out a genuine enforcement shift (GES). Therefore, the high value is most likely due to a recurring seasonal inspection cycle.",
+    "category": "GES",
+    "confidence": 0.85,
+    "reasoning": "Seasonality check shows 2024-12's ratio (82.73) is above median but previous years had ratios below 1 (2023-12: 0.00, 2022-12: 1.00, 2021-12: 0.67, 2020-12: 0.35, 2019-12: 0.83). Only 1 of 5 years had a deviation above 1, so not strongly seasonal. No policy events in +-6 months. Records show 0 excluded/no_id records, no implausible values (notices increase from 195 to 455, penalty total rises but no extreme outliers). Sustained shift test negative. Data quality issues like system migration unlikely as records are clean. Genuine enforcement shift possible but no events explained it. Most likely DQE (data issue) but evidence points to GES as the anomaly is a real spike without clear data problem signs.",
     "seed": 22,
-    "latency_s": 16.5
+    "latency_s": 39.7
    },
    {
-    "category": "SP",
-    "confidence": 0.9,
-    "reasoning": "The anomaly is most likely seasonal (SP). The value in December 2024 (455 notices) is dramatically higher than the median of the previous 12 months (6). This extreme deviation is only seen once across the 5 years in the past, and the other months are relatively stable. There are no indicators of a data quality problem (no excluded records, no missing identifiers). Additionally, no policy-driven event is identified, and a genuine enforcement shift is unlikely given the context. The seasonality check further supports this, highlighting a significant increase compared to the median of prior months.",
+    "category": "DQE",
+    "confidence": 0.85,
+    "reasoning": "Seasonality check: 2023-12 has 0 notices, 2022-12 has 1.00 ratio (median of previous 12 months), but the 2024-12 value (455) is extremely high compared to the median (6). Previous years show near-zero notices in December (2023-12: 0, 2021-12: 0.67, etc.), so December is not a typical high-month. The anomaly is a 8173% increase from the median. No other year had December flagged as anomalous. The data shows no excluded or no_id records, so no data issues. The Page-Hinkley test shows no sustained level shift. No policy events in the timeframe. The spike in December is likely a one-time event (e.g., a single large infraction notice) rather than a seasonal pattern. Since it's a single month anomaly with no known events, it's likely a data-quality issue: a burst of notices or a retroactive correction.",
     "seed": 33,
-    "latency_s": 15.2
+    "latency_s": 40.0
    }
   ],
   "prompt": "Series: notices - Number of infraction notices issued in the month by ANEEL and the state agencies acting on its behalf.\nAnomalous month: 2024-12 (calendar month 12).\nValue: 455; median of the previous 12 months: 6 (+8173%; ratio 82.73).\nSeasonality check - ratio of calendar month 12 to the median of its previous 12 months, in the previous years: 2023-12: 0.00 | 2022-12: 1.00 | 2021-12: 0.67 | 2020-12: 0.35 | 2019-12: 0.83.\nThe same calendar month deviated in the same direction (above 1) in 1 of these 5 years.\nThe same calendar month was also flagged as anomalous in: no other year.\nDetectors that flagged it: mad, iforest (2 of 4); ensemble score 0.65 (0.5 = at threshold).\nA Page-Hinkley test found a sustained level shift within 2 months: no.\nOther series flagged in the same month: none.\n\nMonthly context (+-12 months). excluded = excluded records; no_id = records without an identifier.\nmonth   | notices | penalty_total_brl | excluded | no_id\n2023-12 | 0 | 0 | 0 | 0\n2024-01 | 7 | 20.8M | 0 | 0\n2024-02 | 1 | 165.8M | 0 | 0\n2024-03 | 7 | 89.7M | 0 | 0\n2024-04 | 10 | 67.8M | 0 | 0\n2024-05 | 5 | 13.5M | 0 | 0\n2024-06 | 5 | 30.6M | 0 | 0\n2024-07 | 1 | 40,000 | 0 | 0\n2024-08 | 11 | 39.8M | 0 | 0\n2024-09 | 6 | 63.2M | 0 | 0\n2024-10 | 4 | 16.3M | 0 | 0\n2024-11 | 195 | 230.6M | 0 | 0\n2024-12 | 455 | 242.4M | 0 | 0  <== anomaly\n2025-01 | 0 | 0 | 0 | 0\n2025-02 | 48 | 71.8M | 0 | 0\n2025-03 | 17 | 60.9M | 0 | 0\n2025-04 | 5 | 35.7M | 0 | 0\n2025-05 | 9 | 23.6M | 0 | 0\n2025-06 | 7 | 35.1M | 0 | 0\n2025-07 | 1 | 0 | 0 | 0\n2025-08 | 7 | 17.6M | 0 | 0\n2025-09 | 5 | 71.0M | 0 | 0\n2025-10 | 6 | 102.0M | 0 | 0\n2025-11 | 4 | 18.5M | 0 | 0\n2025-12 | 4 | 25.9M | 0 | 0\n\nNo known events within +-6 months.",
-  "model": "gemma3:4b",
-  "model_digest": "a2af6cc3eb7fa8be8504abaf9b04e88f17a119ec3f04a3addf55f92841195f5a",
-  "ollama_version": "0.34.4",
+  "model": "qwen3:4b",
+  "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+  "ollama_version": "0.35.0",
   "temperature": 0.7,
   "prompt_version": "v2",
   "data_fingerprint": "b65f3186db398075ea5b0b3b480a00c88471ade93e477236590473201481d664",
-  "judged_at": "2026-09-29T19:16:21+00:00"
+  "judged_at": "2026-09-30T10:51:07+00:00",
+  "rejudge_reason": "model or prompt version changed",
+  "history": [
+   {
+    "category": "SP",
+    "consistency": 1.0,
+    "model": "gemma3:4b",
+    "prompt_version": "v2",
+    "data_fingerprint": "b65f3186db398075ea5b0b3b480a00c88471ade93e477236590473201481d664",
+    "judged_at": "2026-09-29T19:16:21+00:00"
+   }
+  ]
  },
  "notices:2025-01": {
   "series": "notices",
   "month": "2025-01",
-  "category": "DQE",
+  "category": "GES",
   "consistency": 0.667,
-  "review_level": "mandatory",
+  "review_level": "none",
   "ensemble_score": 0.6269,
   "votes": 3,
   "near_drift": false,
   "runs": [
    {
     "category": "DQE",
-    "confidence": 0.8,
-    "reasoning": "The anomaly in 2025-01 is characterized by a sudden drop to zero notices, significantly below the median of 6. While seasonality is a factor (the ratio was negative in 2 of the previous 5 years), the magnitude of the drop is unusual. There's no evidence of a policy change or data event. The absence of other anomalies in the same month further weakens the policy explanation. The only other series flagged was penalty_total_brl, which also had a value of 0. Given the lack of strong evidence for seasonality or events, a data quality issue (DQE) is the most plausible explanation, particularly considering the simultaneous zero value in the penalty series.",
+    "confidence": 0.92,
+    "reasoning": "The anomaly is January 2025 (0 notices, 0% of median 6). Seasonality check: previous years' Jan ratios (2024:1.4, 2023:1.12, 2022:1.20, 2021:0.47, 2020:0.36) show a downward trend but only 2 of 5 years had below-1 deviation. The same calendar month was not flagged in other years. No data issues: excluded/no_id records = 0, values plausible (0 is possible for a month with no notices). No known policy events. The sustained level shift test (Page-Hinkley) was negative. Data quality is unlikely as the anomaly is a clean zero with no duplicates or missing IDs. Genuine enforcement shift (GES) is improbable without context. Policy-driven change (PDC) is ruled out by no events. Thus, the anomaly is likely a data-quality event (DQE) with a system reset or retroactive correction causing the zero value.",
     "seed": 11,
-    "latency_s": 79.3
-   },
-   {
-    "category": "DQE",
-    "confidence": 0.85,
-    "reasoning": "The anomaly in January 2025 is characterized by a sudden drop in notices to zero, significantly below the median of -100% (6 notices). Seasonality analysis reveals that January has historically exhibited deviations, but only in two of the past five years. The absence of a sustained level shift (Page-Hinkley test) and the lack of any known policy changes or events further support this interpretation. While there is a correlation with a penalty total drop, the sudden cessation of notices suggests a data issue or a change in reporting practices rather than a shift in enforcement. The lack of other anomalies in the same month strengthens this view.",
-    "seed": 22,
-    "latency_s": 16.3
+    "latency_s": 85.8
    },
    {
     "category": "GES",
-    "confidence": 0.7,
-    "reasoning": "The anomaly in January 2025 (0 notices) is significantly below the median of 6 notices observed in the previous 12 months. While it deviates in the same direction as in 2024-01, it’s unusual given the seasonality and the fact that the same calendar month was not flagged anomalous in other years. There are no signs of data quality issues (no excluded records, no missing IDs). The related penalty_total_brl series is also active, suggesting a genuine drop in infractions, not a reporting problem. Given the lack of a sustained level shift and no policy-driven events, a seasonal pattern or a genuine enforcement shift is more plausible. The low value is unusual but doesn’t immediately point to a specific event.",
+    "confidence": 0.8,
+    "reasoning": "The anomaly is January 2025 with 0 infraction notices (0% of previous median 6). Seasonality check shows 2024-01:1.40, 2023-01:1.12, 2022-01:1.20, 2021-01:0.47, 2020-01:0.36. The same calendar month deviated below 1 in 2 of 5 years (2021, 2020), but not flagged in other years. No known events within +-6 months. The data shows no excluded records or records without identifier (no_id=0) and plausible values (no zeros in other months except Jan 2025). The anomaly is a single month with 0 notices, while previous months had active enforcement (e.g., 195 in Nov 2024). A data-quality event would require a burst of excluded records or no_id records, but these are 0. The sustained level shift test is negative. Thus, the anomaly is likely a genuine enforcement shift (GES), as it's a real drop with no seasonal pattern or data issue evidence.",
+    "seed": 22,
+    "latency_s": 45.7
+   },
+   {
+    "category": "GES",
+    "confidence": 0.95,
+    "reasoning": "The anomaly is 2025-01 with 0 notices (vs median 6). Seasonality check shows 2024-01:1.40, 2023-01:1.12, 2022-01:1.20, 2021-01:0.47, 2020-01:0.36 — all above 1 except 2021-2020. Only 2 of 5 years had below-1 deviation (2021,2020), but the trend is not strong enough for SP. No policy events in +-6 months (step 2). Records show no excluded/no_id records — no data-quality signs (step 3). The sudden drop to 0 after 2024-12 (455 notices) with no prior pattern suggests a genuine enforcement shift (GES).",
     "seed": 33,
-    "latency_s": 18.9
+    "latency_s": 36.6
    }
   ],
   "prompt": "Series: notices - Number of infraction notices issued in the month by ANEEL and the state agencies acting on its behalf.\nAnomalous month: 2025-01 (calendar month 1).\nValue: 0; median of the previous 12 months: 6 (-100%; ratio 0.00).\nSeasonality check - ratio of calendar month 1 to the median of its previous 12 months, in the previous years: 2024-01: 1.40 | 2023-01: 1.12 | 2022-01: 1.20 | 2021-01: 0.47 | 2020-01: 0.36.\nThe same calendar month deviated in the same direction (below 1) in 2 of these 5 years.\nThe same calendar month was also flagged as anomalous in: no other year.\nDetectors that flagged it: mad, iforest, lstm_ed (3 of 4); ensemble score 0.63 (0.5 = at threshold).\nA Page-Hinkley test found a sustained level shift within 2 months: no.\nOther series flagged in the same month: penalty_total_brl.\n\nMonthly context (+-12 months). excluded = excluded records; no_id = records without an identifier.\nmonth   | notices | penalty_total_brl | excluded | no_id\n2024-01 | 7 | 20.8M | 0 | 0\n2024-02 | 1 | 165.8M | 0 | 0\n2024-03 | 7 | 89.7M | 0 | 0\n2024-04 | 10 | 67.8M | 0 | 0\n2024-05 | 5 | 13.5M | 0 | 0\n2024-06 | 5 | 30.6M | 0 | 0\n2024-07 | 1 | 40,000 | 0 | 0\n2024-08 | 11 | 39.8M | 0 | 0\n2024-09 | 6 | 63.2M | 0 | 0\n2024-10 | 4 | 16.3M | 0 | 0\n2024-11 | 195 | 230.6M | 0 | 0\n2024-12 | 455 | 242.4M | 0 | 0\n2025-01 | 0 | 0 | 0 | 0  <== anomaly\n2025-02 | 48 | 71.8M | 0 | 0\n2025-03 | 17 | 60.9M | 0 | 0\n2025-04 | 5 | 35.7M | 0 | 0\n2025-05 | 9 | 23.6M | 0 | 0\n2025-06 | 7 | 35.1M | 0 | 0\n2025-07 | 1 | 0 | 0 | 0\n2025-08 | 7 | 17.6M | 0 | 0\n2025-09 | 5 | 71.0M | 0 | 0\n2025-10 | 6 | 102.0M | 0 | 0\n2025-11 | 4 | 18.5M | 0 | 0\n2025-12 | 4 | 25.9M | 0 | 0\n2026-01 | 0 | 0 | 0 | 0\n\nNo known events within +-6 months.",
-  "model": "gemma3:4b",
-  "model_digest": "a2af6cc3eb7fa8be8504abaf9b04e88f17a119ec3f04a3addf55f92841195f5a",
-  "ollama_version": "0.34.4",
+  "model": "qwen3:4b",
+  "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+  "ollama_version": "0.35.0",
   "temperature": 0.7,
   "prompt_version": "v2",
   "data_fingerprint": "6de0832850c4ccf1fb3ca3b7f900d63b459b2dbe3b574e2e8ea024cd17a80996",
-  "judged_at": "2026-09-29T19:12:42+00:00"
+  "judged_at": "2026-09-30T10:46:20+00:00",
+  "rejudge_reason": "model or prompt version changed",
+  "history": [
+   {
+    "category": "DQE",
+    "consistency": 0.667,
+    "model": "gemma3:4b",
+    "prompt_version": "v2",
+    "data_fingerprint": "6de0832850c4ccf1fb3ca3b7f900d63b459b2dbe3b574e2e8ea024cd17a80996",
+    "judged_at": "2026-09-29T19:12:42+00:00"
+   }
+  ],
+  "issue_notified_judged_at": "2026-09-30T10:46:20+00:00"
  },
  "penalty_total_brl:2023-05": {
   "series": "penalty_total_brl",
   "month": "2023-05",
-  "category": "SP",
-  "consistency": 1.0,
-  "review_level": "none",
+  "category": "DQE",
+  "consistency": 0.333,
+  "review_level": "mandatory",
   "ensemble_score": 0.4963,
   "votes": 2,
   "near_drift": false,
   "runs": [
    {
-    "category": "SP",
-    "confidence": 0.9,
-    "reasoning": "The anomaly in 2023-05 is primarily driven by a seasonal pattern. The ratio of the penalty total to the median of the previous 12 months is significantly below 1 (0.01), and this deviation was observed in 2022-05. While a political change occurred in January 2023, it's too distant to explain the immediate anomaly. There are no data quality issues (no excluded records, no missing IDs). The seasonal pattern is the most plausible explanation, supported by the historical data.",
+    "category": "DQE",
+    "confidence": 0.8,
+    "reasoning": "Seasonality check shows 2023-05 had a ratio of 0.01 (vs median 44.7M), while previous years had ratios 3.29 (2022-05), 1.97 (2021-05), 0.59 (2020-05). Only 1 of 3 years had a below-1 deviation, so not strong seasonal pattern. No other years had this month flagged as anomalous. Known event: 2023-01 political change (policy-driven). But data shows no excluded/no_id records (0), no implausible values (399k is plausible for 5 notices), and no sustained shift. Since no data quality issues, and event is policy-driven, but the anomaly is a single month with very low penalties (399k vs 44.7M median), likely a data error (e.g., misreported value) rather than genuine shift. No other data issues, so DQE most plausible.",
     "seed": 11,
-    "latency_s": 76.4
+    "latency_s": 83.6
    },
    {
-    "category": "SP",
-    "confidence": 0.85,
-    "reasoning": "The anomaly in 2023-05 is primarily driven by a seasonal pattern. The penalty total is unusually low compared to the median of the previous 12 months (-99% ratio). Furthermore, the calendar month 5 has historically deviated below the median in 2021 and 2022. While there was a political change in January 2023, it's unlikely to explain the specific timing and magnitude of this deviation. There's no evidence of a data quality issue (no excluded records, no missing IDs). The detection algorithms (zscore, MAD) flagged the anomaly, supporting the seasonal interpretation.",
+    "category": "GES",
+    "confidence": 0.8,
+    "reasoning": "Seasonality check shows 2022-05 ratio 3.29 (above median), 2021-05 1.97 (above), 2020-05 0.59 (below). The anomalous month (2023-05) is 0.01 (below median), but only 1 of 3 previous years had same direction (below). Since the same calendar month was not flagged in other years, seasonality is unlikely. Known event: 2023-01 political change, but it's 4 months prior and not directly tied to May penalties. No data issues: excluded/no_id counts are 0, penalties are plausible (not zero). The anomaly is a single low-value month with no explanation from events or data quality, suggesting a genuine enforcement shift (GES).",
     "seed": 22,
-    "latency_s": 16.8
+    "latency_s": 32.8
    },
    {
-    "category": "SP",
-    "confidence": 0.9,
-    "reasoning": "The anomaly in 2023-05 is primarily driven by a seasonal pattern. The ratio of the penalty total in May to the median of the previous 12 months is significantly below 1 (0.01). This is observed in only one of the past three years (2022-05). While a political change occurred in January 2023, it is too distant to explain the immediate anomaly. There are no indications of data quality issues (excluded or missing records) or a sudden shift in enforcement. Therefore, the most plausible explanation is seasonal variation.",
+    "category": "PDC",
+    "confidence": 0.8,
+    "reasoning": "Seasonality check: 2022-05 (3.29), 2021-05 (1.97), 2020-05 (0.59) all above 1.0 except 2020-05 (0.59). 2023-05 is 0.01 (below 1), but only 1 of 3 previous years deviated below 1. Not strong seasonal pattern. Known event: political change in 2023-01 (4 months prior) - plausible policy-driven change. No data quality signs: excluded/no_id=0, no implausible values (399k is plausible for 5 notices). No sustained shift (Page-Hinkley negative). Thus, policy-driven change explains timing and direction.",
     "seed": 33,
-    "latency_s": 15.4
+    "latency_s": 31.8
    }
   ],
   "prompt": "Series: penalty_total_brl - Total value of the penalties imposed in the notices of the month, in Reais (value at issuance, before appeals).\nAnomalous month: 2023-05 (calendar month 5).\nValue: 399,143; median of the previous 12 months: 44.7M (-99%; ratio 0.01).\nSeasonality check - ratio of calendar month 5 to the median of its previous 12 months, in the previous years: 2022-05: 3.29 | 2021-05: 1.97 | 2020-05: 0.59.\nThe same calendar month deviated in the same direction (below 1) in 1 of these 3 years.\nThe same calendar month was also flagged as anomalous in: no other year.\nDetectors that flagged it: zscore, mad (2 of 4); ensemble score 0.50 (0.5 = at threshold).\nA Page-Hinkley test found a sustained level shift within 2 months: no.\nOther series flagged in the same month: none.\n\nMonthly context (+-12 months). excluded = excluded records; no_id = records without an identifier.\nmonth   | notices | penalty_total_brl | excluded | no_id\n2022-05 | 6 | 43.4M | 0 | 0\n2022-06 | 14 | 46.0M | 0 | 0\n2022-07 | 5 | 125.9M | 0 | 0\n2022-08 | 9 | 11.0M | 0 | 0\n2022-09 | 68 | 98.2M | 0 | 0\n2022-10 | 9 | 64.3M | 0 | 0\n2022-11 | 8 | 77.6M | 0 | 0\n2022-12 | 8 | 2.0M | 0 | 0\n2023-01 | 9 | 21.5M | 0 | 0\n2023-02 | 5 | 22.0M | 0 | 0\n2023-03 | 7 | 50.0M | 0 | 0\n2023-04 | 6 | 20.7M | 0 | 0\n2023-05 | 5 | 399,143 | 0 | 0  <== anomaly\n2023-06 | 17 | 116.1M | 0 | 0\n2023-07 | 3 | 6.9M | 0 | 0\n2023-08 | 13 | 911,925 | 0 | 0\n2023-09 | 2 | 35.6M | 0 | 0\n2023-10 | 3 | 24.3M | 0 | 0\n2023-11 | 1 | 20.8M | 0 | 0\n2023-12 | 0 | 0 | 0 | 0\n2024-01 | 7 | 20.8M | 0 | 0\n2024-02 | 1 | 165.8M | 0 | 0\n2024-03 | 7 | 89.7M | 0 | 0\n2024-04 | 10 | 67.8M | 0 | 0\n2024-05 | 5 | 13.5M | 0 | 0\n\nKnown events within +-6 months:\n- 2023-01 (-4 months, political): Change of federal administration",
-  "model": "gemma3:4b",
-  "model_digest": "a2af6cc3eb7fa8be8504abaf9b04e88f17a119ec3f04a3addf55f92841195f5a",
-  "ollama_version": "0.34.4",
+  "model": "qwen3:4b",
+  "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+  "ollama_version": "0.35.0",
   "temperature": 0.7,
   "prompt_version": "v2",
   "data_fingerprint": "f76863911c16ba4ebd4bae6b3251d462f48180ed75228bd712d6485d7dd62128",
-  "judged_at": "2026-09-29T19:23:35+00:00"
+  "judged_at": "2026-09-30T11:01:25+00:00",
+  "rejudge_reason": "model or prompt version changed",
+  "history": [
+   {
+    "category": "SP",
+    "consistency": 1.0,
+    "model": "gemma3:4b",
+    "prompt_version": "v2",
+    "data_fingerprint": "f76863911c16ba4ebd4bae6b3251d462f48180ed75228bd712d6485d7dd62128",
+    "judged_at": "2026-09-29T19:23:35+00:00"
+   }
+  ]
  },
  "penalty_total_brl:2023-12": {
   "series": "penalty_total_brl",
   "month": "2023-12",
-  "category": "SP",
+  "category": "DQE",
   "consistency": 1.0,
-  "review_level": "none",
+  "review_level": "mandatory",
   "ensemble_score": 0.6479,
   "votes": 2,
   "near_drift": false,
   "runs": [
    {
-    "category": "SP",
+    "category": "DQE",
     "confidence": 0.9,
-    "reasoning": "The anomaly in 2023-12 is primarily driven by seasonality. The penalty total is unusually low compared to the median of the previous 12 months, and this deviation has occurred in two of the previous four years. While other years show significant variations, the ratio is consistently below 1. There's no evidence of a policy change, data quality issue, or genuine enforcement shift. The number of notices is also unusually low for this month.",
+    "reasoning": "The anomaly is in 2023-12 with penalty_total_brl = 0, while the median of previous 12 months was 21.2M. Seasonality check shows 2022-12: 0.04, 2021-12: 1.62, 2020-12: 0.02, 2019-12: 3.48. The same calendar month deviated below 1 in 2 of 4 years (2020-12, 2022-12), but no other year was flagged. No known policy events. Records show no excluded or no_id entries, no data quality issues. The zero value is implausible for an active series (all prior months had positive penalties). This suggests a data problem: likely a system error or retroactive correction that caused the month to have no penalties. The Page-Hinkley test shows no sustained level shift, ruling out genuine enforcement shifts.",
     "seed": 11,
-    "latency_s": 74.2
+    "latency_s": 83.5
    },
    {
-    "category": "SP",
-    "confidence": 0.9,
-    "reasoning": "The anomaly in 2023-12 is primarily driven by a seasonal pattern. The calendar month exhibits a historically low penalty total, observed in 2021-12 and 2022-12. The ratio to the median of the previous 12 months is negative (-100%). While other years show deviations, the current month's value is significantly below the median. The data quality checks (no excluded records, no missing identifiers) don't suggest a data issue. The absence of a sustained level shift further supports the seasonal explanation.",
+    "category": "DQE",
+    "confidence": 0.95,
+    "reasoning": "The anomaly is 2023-12 with penalty_total_brl=0, while the median of previous 12 months was 21.2M. Seasonality check shows previous years' ratios: 2022-12: 0.04, 2021-12: 1.62, 2020-12: 0.02, 2019-12: 3.48. The same month deviated below 1 in 2 of 4 years (2020, 2022), but not flagged in other years. No events in +-6 months. Records show 0 exclusions and no IDs, but penalty=0 is implausible (no notices issued) and the next month (2024-01) has a normal penalty value. The Page-Hinkley test shows no sustained level shift. The anomaly is a single month with zero penalty despite previous high activity. Data-quality event (DQE) is likely: a reporting failure or backlog leading to zero notices, as no other explanation fits.",
     "seed": 22,
-    "latency_s": 15.2
+    "latency_s": 42.1
    },
    {
-    "category": "SP",
-    "confidence": 0.9,
-    "reasoning": "The anomaly in 2023-12 is primarily driven by seasonality. The value is significantly below the median of previous 12 months, and this deviation has occurred in 2 out of the last 4 years (2022-12 and 2021-12). While the median ratio is low, there isn't a clear event or data quality issue (no sustained level shift, no excluded records, no missing IDs). The other years show similar seasonality. Therefore, the most plausible explanation is a seasonal pattern.",
+    "category": "DQE",
+    "confidence": 0.95,
+    "reasoning": "The anomaly is December 2023 with penalty_total_brl = 0. Seasonality check shows December has historically been low (2022-12: 0.04, 2021-12: 1.62, 2020-12: 0.02, 2019-12: 3.48), but the same month deviated below 1 in 2 of 4 years. However, no other year had December flagged as anomalous. The 2023-12 record shows 0 notices and 0 penalty, while all prior months had active penalties. The Page-Hinkley test rules out a sustained level shift. No excluded or no_id records indicate data quality issues. No known policy events. The zero value is implausible for an active series, suggesting a data problem like a system reset or retroactive correction.",
     "seed": 33,
-    "latency_s": 14.5
+    "latency_s": 35.1
    }
   ],
   "prompt": "Series: penalty_total_brl - Total value of the penalties imposed in the notices of the month, in Reais (value at issuance, before appeals).\nAnomalous month: 2023-12 (calendar month 12).\nValue: 0; median of the previous 12 months: 21.2M (-100%; ratio 0.00).\nSeasonality check - ratio of calendar month 12 to the median of its previous 12 months, in the previous years: 2022-12: 0.04 | 2021-12: 1.62 | 2020-12: 0.02 | 2019-12: 3.48.\nThe same calendar month deviated in the same direction (below 1) in 2 of these 4 years.\nThe same calendar month was also flagged as anomalous in: no other year.\nDetectors that flagged it: zscore, mad (2 of 4); ensemble score 0.65 (0.5 = at threshold).\nA Page-Hinkley test found a sustained level shift within 2 months: no.\nOther series flagged in the same month: none.\n\nMonthly context (+-12 months). excluded = excluded records; no_id = records without an identifier.\nmonth   | notices | penalty_total_brl | excluded | no_id\n2022-12 | 8 | 2.0M | 0 | 0\n2023-01 | 9 | 21.5M | 0 | 0\n2023-02 | 5 | 22.0M | 0 | 0\n2023-03 | 7 | 50.0M | 0 | 0\n2023-04 | 6 | 20.7M | 0 | 0\n2023-05 | 5 | 399,143 | 0 | 0\n2023-06 | 17 | 116.1M | 0 | 0\n2023-07 | 3 | 6.9M | 0 | 0\n2023-08 | 13 | 911,925 | 0 | 0\n2023-09 | 2 | 35.6M | 0 | 0\n2023-10 | 3 | 24.3M | 0 | 0\n2023-11 | 1 | 20.8M | 0 | 0\n2023-12 | 0 | 0 | 0 | 0  <== anomaly\n2024-01 | 7 | 20.8M | 0 | 0\n2024-02 | 1 | 165.8M | 0 | 0\n2024-03 | 7 | 89.7M | 0 | 0\n2024-04 | 10 | 67.8M | 0 | 0\n2024-05 | 5 | 13.5M | 0 | 0\n2024-06 | 5 | 30.6M | 0 | 0\n2024-07 | 1 | 40,000 | 0 | 0\n2024-08 | 11 | 39.8M | 0 | 0\n2024-09 | 6 | 63.2M | 0 | 0\n2024-10 | 4 | 16.3M | 0 | 0\n2024-11 | 195 | 230.6M | 0 | 0\n2024-12 | 455 | 242.4M | 0 | 0\n\nNo known events within +-6 months.",
-  "model": "gemma3:4b",
-  "model_digest": "a2af6cc3eb7fa8be8504abaf9b04e88f17a119ec3f04a3addf55f92841195f5a",
-  "ollama_version": "0.34.4",
+  "model": "qwen3:4b",
+  "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+  "ollama_version": "0.35.0",
   "temperature": 0.7,
   "prompt_version": "v2",
   "data_fingerprint": "41d9cb2c4d6cbbb9fada87640040d90ded18ea797a05c4e1e80b24b19742fb4c",
-  "judged_at": "2026-09-29T19:21:46+00:00"
+  "judged_at": "2026-09-30T10:58:56+00:00",
+  "rejudge_reason": "model or prompt version changed",
+  "history": [
+   {
+    "category": "SP",
+    "consistency": 1.0,
+    "model": "gemma3:4b",
+    "prompt_version": "v2",
+    "data_fingerprint": "41d9cb2c4d6cbbb9fada87640040d90ded18ea797a05c4e1e80b24b19742fb4c",
+    "judged_at": "2026-09-29T19:21:46+00:00"
+   }
+  ]
  },
  "penalty_total_brl:2024-07": {
   "series": "penalty_total_brl",
   "month": "2024-07",
-  "category": "GES",
+  "category": "DQE",
   "consistency": 1.0,
-  "review_level": "none",
+  "review_level": "mandatory",
   "ensemble_score": 0.5608,
   "votes": 2,
   "near_drift": false,
   "runs": [
    {
-    "category": "GES",
-    "confidence": 0.85,
-    "reasoning": "The anomaly in 2024-07 is significantly below the median of the previous 12 months (100% below). Seasonality checks reveal that July consistently deviates negatively, but only in 2 out of the past 5 years. Furthermore, the same month was flagged as anomalous in 2025-07. The records show no data quality issues like missing identifiers or abrupt changes. The Page-Hinkley test indicates no sustained level shift. Given the combination of these factors, a genuine shift is the most plausible explanation.",
+    "category": "DQE",
+    "confidence": 0.95,
+    "reasoning": "Seasonality check shows 2023-07, 2022-07, 2021-07, 2020-07 had ratios >1, but 2024-07 is 0.00 (40k vs 22.6M median). Only 2 of 5 years had same downward deviation. 2025-07 also flagged (0 penalty). No known events. Records show no excluded/no_id records; penalty value is implausibly low (40k vs typical millions). No sustained shift. Data quality event fits: zero penalty with no identifier, unlikely to be genuine enforcement. Confidence: 0.95",
     "seed": 11,
-    "latency_s": 77.2
+    "latency_s": 73.9
    },
    {
-    "category": "GES",
-    "confidence": 0.85,
-    "reasoning": "The anomaly in 2024-07 is highly unusual given the significantly lower penalty total (40,000 Br) compared to the median of previous months (22.6M Br). Seasonality checks reveal a pattern of deviation, but only in 2 of the 5 years examined. The fact that the same month was flagged as anomalous in 2025-07, and that the anomaly was detected by multiple detectors (mad, iforest), suggests a genuine shift. There are no indications of data quality issues (excluded records, missing IDs). Therefore, a genuine enforcement shift is the most plausible explanation.",
+    "category": "DQE",
+    "confidence": 0.95,
+    "reasoning": "The anomaly in 2024-07 (penalty_total_brl: 40,000) is extremely low compared to the median of previous 12 months (22.6M). Seasonality check shows the same month (July) deviated below 1 in 2 of 5 years (2023-07: 0.19; 2022-07: 4.22; 2021-07: 5.34; 2020-07: 5.17; 2019-07: 0.64). However, the value itself is implausibly low (40,000 vs typical 20M+), with no excluded/no_id records, and the Page-Hinkley test rules out a sustained level shift. No policy events are known. The low value is likely a data-quality issue (e.g., system error, duplicate, or retroactive correction) given the absence of plausible explanations and the statistical flags (mad, iforest).",
     "seed": 22,
-    "latency_s": 16.6
+    "latency_s": 41.3
    },
    {
-    "category": "GES",
-    "confidence": 0.85,
-    "reasoning": "The anomaly in 2024-07 is highly unusual given the significantly lower penalty total compared to the median of previous months and years. Seasonality appears unlikely, as the ratio to the previous 12 months is close to 1 (0.19 in 2023-07), and the same calendar month deviated in similar directions in other years. The fact that it was flagged as anomalous in 2025-07 further supports this. There are no clear indicators of a data quality event (e.g., records with missing identifiers or large bursts of excluded records). Therefore, a genuine shift is the most plausible explanation.",
+    "category": "DQE",
+    "confidence": 0.95,
+    "reasoning": "The anomaly is in 2024-07 with penalty_total_brl = 40,000 (vs median 22.6M). Seasonality check shows 2023-07 (0.19), 2022-07 (4.22), 2021-07 (5.34), 2020-07 (5.17), 2019-07 (0.64). The same month deviated below 1 in 2 of 5 years. 2025-07 also flagged with 0 penalties. No events in +-6 months. Records show no excluded/no_id records. The data quality check (no excluded/no_id) and the sustained low penalty value (40k) with no context suggest a data-quality event: likely a retroactive correction or reporting failure due to the low value. The Page-Hinkley test found no sustained shift, ruling out genuine enforcement. Policy events aren't listed, and the anomaly persists in 2025-07 (0 penalties) with no explanation. This fits DQE (data-quality event).",
     "seed": 33,
-    "latency_s": 17.1
+    "latency_s": 43.9
    }
   ],
   "prompt": "Series: penalty_total_brl - Total value of the penalties imposed in the notices of the month, in Reais (value at issuance, before appeals).\nAnomalous month: 2024-07 (calendar month 7).\nValue: 40,000; median of the previous 12 months: 22.6M (-100%; ratio 0.00).\nSeasonality check - ratio of calendar month 7 to the median of its previous 12 months, in the previous years: 2023-07: 0.19 | 2022-07: 4.22 | 2021-07: 5.34 | 2020-07: 5.17 | 2019-07: 0.64.\nThe same calendar month deviated in the same direction (below 1) in 2 of these 5 years.\nThe same calendar month was also flagged as anomalous in: 2025-07.\nDetectors that flagged it: mad, iforest (2 of 4); ensemble score 0.56 (0.5 = at threshold).\nA Page-Hinkley test found a sustained level shift within 2 months: no.\nOther series flagged in the same month: none.\n\nMonthly context (+-12 months). excluded = excluded records; no_id = records without an identifier.\nmonth   | notices | penalty_total_brl | excluded | no_id\n2023-07 | 3 | 6.9M | 0 | 0\n2023-08 | 13 | 911,925 | 0 | 0\n2023-09 | 2 | 35.6M | 0 | 0\n2023-10 | 3 | 24.3M | 0 | 0\n2023-11 | 1 | 20.8M | 0 | 0\n2023-12 | 0 | 0 | 0 | 0\n2024-01 | 7 | 20.8M | 0 | 0\n2024-02 | 1 | 165.8M | 0 | 0\n2024-03 | 7 | 89.7M | 0 | 0\n2024-04 | 10 | 67.8M | 0 | 0\n2024-05 | 5 | 13.5M | 0 | 0\n2024-06 | 5 | 30.6M | 0 | 0\n2024-07 | 1 | 40,000 | 0 | 0  <== anomaly\n2024-08 | 11 | 39.8M | 0 | 0\n2024-09 | 6 | 63.2M | 0 | 0\n2024-10 | 4 | 16.3M | 0 | 0\n2024-11 | 195 | 230.6M | 0 | 0\n2024-12 | 455 | 242.4M | 0 | 0\n2025-01 | 0 | 0 | 0 | 0\n2025-02 | 48 | 71.8M | 0 | 0\n2025-03 | 17 | 60.9M | 0 | 0\n2025-04 | 5 | 35.7M | 0 | 0\n2025-05 | 9 | 23.6M | 0 | 0\n2025-06 | 7 | 35.1M | 0 | 0\n2025-07 | 1 | 0 | 0 | 0\n\nNo known events within +-6 months.",
-  "model": "gemma3:4b",
-  "model_digest": "a2af6cc3eb7fa8be8504abaf9b04e88f17a119ec3f04a3addf55f92841195f5a",
-  "ollama_version": "0.34.4",
+  "model": "qwen3:4b",
+  "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+  "ollama_version": "0.35.0",
   "temperature": 0.7,
   "prompt_version": "v2",
   "data_fingerprint": "6c54ae049a89c911df32b391aaf5989ab80d7e4942411c4f08c11dd852117dfd",
-  "judged_at": "2026-09-29T19:20:02+00:00"
+  "judged_at": "2026-09-30T10:56:16+00:00",
+  "rejudge_reason": "model or prompt version changed",
+  "history": [
+   {
+    "category": "GES",
+    "consistency": 1.0,
+    "model": "gemma3:4b",
+    "prompt_version": "v2",
+    "data_fingerprint": "6c54ae049a89c911df32b391aaf5989ab80d7e4942411c4f08c11dd852117dfd",
+    "judged_at": "2026-09-29T19:20:02+00:00"
+   }
+  ]
  },
  "penalty_total_brl:2025-01": {
   "series": "penalty_total_brl",
   "month": "2025-01",
-  "category": "SP",
+  "category": "DQE",
   "consistency": 0.667,
-  "review_level": "none",
+  "review_level": "mandatory",
   "ensemble_score": 0.6347,
   "votes": 4,
   "near_drift": false,
   "runs": [
    {
     "category": "DQE",
-    "confidence": 0.9,
-    "reasoning": "The anomaly in 2025-01 is highly suggestive of a data quality event (DQE). The penalty total is zero, while the median of the previous 12 months is 51.5M, representing a 100% deviation. Furthermore, there are no records for January 2025, and no other series were flagged in the same month. The seasonality check shows a recurring pattern of below-median values in January, but not as extreme as the current zero. The ensemble score indicates a significant anomaly. The absence of known events and the lack of other flagged months reinforce the suspicion of a data issue.",
+    "confidence": 0.95,
+    "reasoning": "Seasonality check shows consistent low values in January for 4/5 years (ratio <1), indicating a recurring pattern. No known policy events. Records show no exclusions or missing IDs. Value 0 is implausible (penalty_total_brl was active in prior months). The anomaly is a sustained zero, which is likely a data-quality issue (e.g., system error causing no records to be reported).",
     "seed": 11,
-    "latency_s": 78.6
+    "latency_s": 62.4
    },
    {
-    "category": "SP",
-    "confidence": 0.9,
-    "reasoning": "The anomaly in 2025-01 is primarily driven by a seasonal pattern. The value is 0, significantly below the median of the previous 12 months (51.5M), and this deviation has occurred in January for several years (2022, 2023, 2024). The ratio to the median is -100%, and the anomaly was flagged by multiple detectors. While there are no known policy changes, the data quality appears sound (no excluded records, no missing identifiers). The fact that the same calendar month deviated in the same direction in previous years strengthens the seasonality argument.",
+    "category": "DQE",
+    "confidence": 0.95,
+    "reasoning": "Seasonality check shows 2025-01 (0) is below median (51.5M) with ratio 0.00. Previous years' ratios: 2024-01:0.98, 2023-01:0.48, 2022-01:7.55, 2021-01:0.24, 2020-01:0.20. The same calendar month deviated below median in 4 of 5 years. This indicates a consistent downward trend, not a one-off event. No known policy events in +-6 months. Records show zero excluded or no_id entries (0). The penalty_total_brl is zero with no records, which is implausible for a normally active series. This suggests a data-quality event (DQE) like a system reset or reporting failure, as the series abruptly drops to zero without explanation.",
     "seed": 22,
-    "latency_s": 16.4
+    "latency_s": 36.5
    },
    {
     "category": "SP",
-    "confidence": 0.85,
-    "reasoning": "The anomaly in 2025-01 is primarily driven by seasonality. The ratio of the penalty total to the median of the previous 12 months is significantly below 1 (0.00), and this has occurred in 4 out of the last 5 January months. There are no obvious policy changes or data quality issues evident from the records. The sudden drop to zero is unusual given the typical inspection patterns, suggesting a seasonal effect. The lack of other anomalies in the same month further supports this conclusion.",
+    "confidence": 0.95,
+    "reasoning": "Seasonality check: The ratio for Jan (2024-01: 0.98, 2023-01: 0.48, 2022-01: 7.55, 2021-01: 0.24, 2020-01: 0.20) shows consistent downward trend in Jan ratios over 5 years (all below 1 except 2022). The same calendar month deviated below 1 in 4 of 5 years, indicating a recurring seasonal pattern (SP). No policy events or data issues (excluded/no_id records are zero) explained the anomaly. The zero penalty value aligns with seasonality, not a data quality event.",
     "seed": 33,
-    "latency_s": 13.7
+    "latency_s": 30.1
    }
   ],
   "prompt": "Series: penalty_total_brl - Total value of the penalties imposed in the notices of the month, in Reais (value at issuance, before appeals).\nAnomalous month: 2025-01 (calendar month 1).\nValue: 0; median of the previous 12 months: 51.5M (-100%; ratio 0.00).\nSeasonality check - ratio of calendar month 1 to the median of its previous 12 months, in the previous years: 2024-01: 0.98 | 2023-01: 0.48 | 2022-01: 7.55 | 2021-01: 0.24 | 2020-01: 0.20.\nThe same calendar month deviated in the same direction (below 1) in 4 of these 5 years.\nThe same calendar month was also flagged as anomalous in: no other year.\nDetectors that flagged it: zscore, mad, iforest, lstm_ed (4 of 4); ensemble score 0.63 (0.5 = at threshold).\nA Page-Hinkley test found a sustained level shift within 2 months: no.\nOther series flagged in the same month: notices.\n\nMonthly context (+-12 months). excluded = excluded records; no_id = records without an identifier.\nmonth   | notices | penalty_total_brl | excluded | no_id\n2024-01 | 7 | 20.8M | 0 | 0\n2024-02 | 1 | 165.8M | 0 | 0\n2024-03 | 7 | 89.7M | 0 | 0\n2024-04 | 10 | 67.8M | 0 | 0\n2024-05 | 5 | 13.5M | 0 | 0\n2024-06 | 5 | 30.6M | 0 | 0\n2024-07 | 1 | 40,000 | 0 | 0\n2024-08 | 11 | 39.8M | 0 | 0\n2024-09 | 6 | 63.2M | 0 | 0\n2024-10 | 4 | 16.3M | 0 | 0\n2024-11 | 195 | 230.6M | 0 | 0\n2024-12 | 455 | 242.4M | 0 | 0\n2025-01 | 0 | 0 | 0 | 0  <== anomaly\n2025-02 | 48 | 71.8M | 0 | 0\n2025-03 | 17 | 60.9M | 0 | 0\n2025-04 | 5 | 35.7M | 0 | 0\n2025-05 | 9 | 23.6M | 0 | 0\n2025-06 | 7 | 35.1M | 0 | 0\n2025-07 | 1 | 0 | 0 | 0\n2025-08 | 7 | 17.6M | 0 | 0\n2025-09 | 5 | 71.0M | 0 | 0\n2025-10 | 6 | 102.0M | 0 | 0\n2025-11 | 4 | 18.5M | 0 | 0\n2025-12 | 4 | 25.9M | 0 | 0\n2026-01 | 0 | 0 | 0 | 0\n\nNo known events within +-6 months.",
-  "model": "gemma3:4b",
-  "model_digest": "a2af6cc3eb7fa8be8504abaf9b04e88f17a119ec3f04a3addf55f92841195f5a",
-  "ollama_version": "0.34.4",
+  "model": "qwen3:4b",
+  "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+  "ollama_version": "0.35.0",
   "temperature": 0.7,
   "prompt_version": "v2",
   "data_fingerprint": "6de0832850c4ccf1fb3ca3b7f900d63b459b2dbe3b574e2e8ea024cd17a80996",
-  "judged_at": "2026-09-29T19:14:31+00:00"
+  "judged_at": "2026-09-30T10:48:29+00:00",
+  "rejudge_reason": "model or prompt version changed",
+  "history": [
+   {
+    "category": "SP",
+    "consistency": 0.667,
+    "model": "gemma3:4b",
+    "prompt_version": "v2",
+    "data_fingerprint": "6de0832850c4ccf1fb3ca3b7f900d63b459b2dbe3b574e2e8ea024cd17a80996",
+    "judged_at": "2026-09-29T19:14:31+00:00"
+   }
+  ]
  },
  "penalty_total_brl:2025-07": {
   "series": "penalty_total_brl",
   "month": "2025-07",
-  "category": "SP",
+  "category": "DQE",
   "consistency": 1.0,
-  "review_level": "none",
+  "review_level": "mandatory",
   "ensemble_score": 0.592,
   "votes": 2,
   "near_drift": false,
   "runs": [
    {
-    "category": "SP",
-    "confidence": 0.85,
-    "reasoning": "The anomaly in July 2025 is driven by a significant deviation from the median, particularly considering the historical pattern. The ratio to the previous 12 months is 0.00, with only 3 out of 6 years showing a similar decrease. Furthermore, July 2024 was also flagged as anomalous, and the ensemble score indicates a moderate anomaly detection. There's no evidence of a policy change, data quality issue, or a sudden enforcement shift. The lack of excluded records or missing identifiers also rules out a simple data problem. The most plausible explanation is a seasonal pattern or a continuation of the 2024 anomaly.",
-    "seed": 11,
-    "latency_s": 79.6
-   },
-   {
-    "category": "SP",
-    "confidence": 0.9,
-    "reasoning": "The anomaly in 2025-07 is primarily driven by a seasonal pattern. The month consistently deviates below the median, observed in 3 of the previous 6 years, and was also flagged as anomalous in 2024-07. The records show no data quality issues (no excluded or missing records). The consistent negative deviation suggests a recurring seasonal effect. The fact that the same month was flagged in previous years strengthens the seasonal explanation.",
-    "seed": 22,
-    "latency_s": 12.4
-   },
-   {
-    "category": "SP",
+    "category": "DQE",
     "confidence": 0.95,
-    "reasoning": "The anomaly in 2025-07 is primarily driven by seasonality and confirmed by multiple detectors. The penalty total is unusually low, significantly below the median of the previous 12 months and mirroring the downward trend observed in previous July months. This trend has been observed across multiple years (2024-07 and 2022-07). Furthermore, the same month was flagged as anomalous in 2024-07. There is no evidence of a data quality event (DQE) or policy change (PDC) given the lack of excluded records, missing identifiers, or a sustained level shift detected by the Page-Hinkley test. Therefore, the anomaly is most likely seasonal.",
+    "reasoning": "The anomalous month (2025-07) has penalty_total_brl = 0, which is implausible for an active series. Seasonality check shows the same month (Jul) deviated below 1 in 3 of 6 years (2022-2024), but the 2025-07 value is 0, while previous years had ratios >0.19. No known events in +-6 months. The data shows no excluded or no_id records, but the value is implausibly low (zero) in a series where monthly penalties are typically millions. A Page-Hinkley test found no sustained level shift. This is a data-quality event (DQE) as the value is implausible, likely a reporting failure or system error.",
+    "seed": 11,
+    "latency_s": 76.0
+   },
+   {
+    "category": "DQE",
+    "confidence": 0.9,
+    "reasoning": "Seasonality check shows calendar month 7 (July) historically has a ratio below 1 in 3 of 6 years (2024-07: 0.00, 2023-07: 0.19, 2022-07: 4.22, etc.), indicating a recurring low. The same month was flagged as anomalous in 2024-07, but the current value (0) is implausible for a monthly series with active values (median 37.8M). No events in +-6 months. Records show no excluded/no_id records or system changes (excluded=0, no_id=0). A burst of zero values (1 notice, 0 penalty) with no prior event is a data-quality event: DQE (reporting failure or retroactive correction).",
+    "seed": 22,
+    "latency_s": 32.9
+   },
+   {
+    "category": "DQE",
+    "confidence": 0.95,
+    "reasoning": "The anomalous month (2025-07) has penalty_total_brl = 0, which is implausible for an active series (median of previous 12 months: 37.8M). Seasonality check shows consistent below-1 deviation in 3/6 years, but the ratio dropped from 2024-07 (0.00) to 2025-07 (0.00), indicating a pattern, not a single anomaly. The same calendar month was flagged in 2024-07 (also 0). However, the key evidence is the absence of excluded/no_id records and the implausible zero value. No policy events or genuine enforcement shifts are noted. The data shows a clean reset after 2025-06 (35.1M) to 0 in 2025-07, followed by a sharp rebound in 2025-08 (17.6M). This suggests a data-quality event (DQE) - likely a system reset or retroactive correction causing the zero value, consistent with the absence of excluded records and the pattern of consecutive zeros (2025-01, 2025-07, 2026-02).",
     "seed": 33,
-    "latency_s": 18.5
+    "latency_s": 48.2
    }
   ],
   "prompt": "Series: penalty_total_brl - Total value of the penalties imposed in the notices of the month, in Reais (value at issuance, before appeals).\nAnomalous month: 2025-07 (calendar month 7).\nValue: 0; median of the previous 12 months: 37.8M (-100%; ratio 0.00).\nSeasonality check - ratio of calendar month 7 to the median of its previous 12 months, in the previous years: 2024-07: 0.00 | 2023-07: 0.19 | 2022-07: 4.22 | 2021-07: 5.34 | 2020-07: 5.17 | 2019-07: 0.64.\nThe same calendar month deviated in the same direction (below 1) in 3 of these 6 years.\nThe same calendar month was also flagged as anomalous in: 2024-07.\nDetectors that flagged it: mad, iforest (2 of 4); ensemble score 0.59 (0.5 = at threshold).\nA Page-Hinkley test found a sustained level shift within 2 months: no.\nOther series flagged in the same month: none.\n\nMonthly context (+-12 months). excluded = excluded records; no_id = records without an identifier.\nmonth   | notices | penalty_total_brl | excluded | no_id\n2024-07 | 1 | 40,000 | 0 | 0\n2024-08 | 11 | 39.8M | 0 | 0\n2024-09 | 6 | 63.2M | 0 | 0\n2024-10 | 4 | 16.3M | 0 | 0\n2024-11 | 195 | 230.6M | 0 | 0\n2024-12 | 455 | 242.4M | 0 | 0\n2025-01 | 0 | 0 | 0 | 0\n2025-02 | 48 | 71.8M | 0 | 0\n2025-03 | 17 | 60.9M | 0 | 0\n2025-04 | 5 | 35.7M | 0 | 0\n2025-05 | 9 | 23.6M | 0 | 0\n2025-06 | 7 | 35.1M | 0 | 0\n2025-07 | 1 | 0 | 0 | 0  <== anomaly\n2025-08 | 7 | 17.6M | 0 | 0\n2025-09 | 5 | 71.0M | 0 | 0\n2025-10 | 6 | 102.0M | 0 | 0\n2025-11 | 4 | 18.5M | 0 | 0\n2025-12 | 4 | 25.9M | 0 | 0\n2026-01 | 0 | 0 | 0 | 0\n2026-02 | 1 | 0 | 0 | 0\n2026-03 | 16 | 54.1M | 0 | 0\n2026-04 | 4 | 715,991 | 0 | 0\n2026-05 | 3 | 7.6M | 0 | 0\n2026-06 | 9 | 80.8M | 0 | 0\n2026-07 | 9 | 94.6M | 0 | 0\n\nNo known events within +-6 months.",
-  "model": "gemma3:4b",
-  "model_digest": "a2af6cc3eb7fa8be8504abaf9b04e88f17a119ec3f04a3addf55f92841195f5a",
-  "ollama_version": "0.34.4",
+  "model": "qwen3:4b",
+  "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+  "ollama_version": "0.35.0",
   "temperature": 0.7,
   "prompt_version": "v2",
   "data_fingerprint": "381d564b3809acb4d28f391cc217a8ea3245b576d6e898ff9b08e7e0c8ef9a86",
-  "judged_at": "2026-09-29T19:10:48+00:00"
+  "judged_at": "2026-09-30T10:43:32+00:00",
+  "rejudge_reason": "model or prompt version changed",
+  "history": [
+   {
+    "category": "SP",
+    "consistency": 1.0,
+    "model": "gemma3:4b",
+    "prompt_version": "v2",
+    "data_fingerprint": "381d564b3809acb4d28f391cc217a8ea3245b576d6e898ff9b08e7e0c8ef9a86",
+    "judged_at": "2026-09-29T19:10:48+00:00"
+   }
+  ]
  },
  "penalty_total_brl:2026-02": {
   "series": "penalty_total_brl",
   "month": "2026-02",
   "category": "DQE",
-  "consistency": 0.667,
+  "consistency": 1.0,
   "review_level": "mandatory",
   "ensemble_score": 0.5395,
   "votes": 2,
@@ -380,33 +480,45 @@
   "runs": [
    {
     "category": "DQE",
-    "confidence": 0.85,
-    "reasoning": "The anomaly in February 2026 is characterized by a penalty total of 0, a significant deviation from the median of 30.5M (-100%). Seasonality analysis reveals a recurring downward trend in February across previous years, though not consistently. While there are a few instances of similar deviations, the absence of other flagged months and the lack of a sustained level shift suggests a data issue. The absence of records with an identifier (no_id = 0) further supports this. The low value and the lack of related data points point towards a reporting failure or a data quality event rather than a genuine enforcement shift or policy change.",
+    "confidence": 0.95,
+    "reasoning": "The anomalous month (2026-02) has penalty_total_brl=0, which is a severe drop from the median of previous 12 months (30.5M). Seasonality check shows the calendar month 2 (February) deviated below 1 in 2 of 6 years (2021-02: 0.93, 2023-02: 0.57), but the same month was not flagged in other years. The data quality indicators (excluded, no_id) are 0, so no reporting failure. No known events. The Page-Hinkley test shows no sustained level shift. The penalty value of 0 is implausible for an active series (expected 30.5M). This suggests a data-quality event (e.g., retroactive correction or system migration) causing the zero value.",
     "seed": 11,
-    "latency_s": 75.0
-   },
-   {
-    "category": "GES",
-    "confidence": 0.8,
-    "reasoning": "The anomaly in February 2026 is characterized by a penalty total of 0, a significant deviation from the median of 30.5M (-100%).  Historical data reveals that February consistently exhibits negative ratios (below 1) in previous years, but this is only seen in 2 out of 6 years. No other series is flagged in the same month. The absence of a sustained level shift and the lack of identified events or data quality issues (e.g., excluded records, missing IDs) suggest this is likely a genuine enforcement shift. Given the unusual value, a sudden halt in inspections or a change in enforcement priorities is plausible.",
-    "seed": 22,
-    "latency_s": 16.6
+    "latency_s": 95.1
    },
    {
     "category": "DQE",
     "confidence": 0.9,
-    "reasoning": "The anomaly in February 2026 (2026-02) is characterized by a penalty total of 0, a significant deviation from the median of 30.5M (-100%). Examining previous years reveals that February consistently exhibits low penalty totals, though the magnitude varies. The key observation is that February has been anomalous in 2 out of 6 years. The fact that no other series was flagged in the same month, and the detectors only identified this anomaly (mad, iforest), suggests a data-quality issue. The absence of a sustained level shift (Page-Hinkley test) further strengthens this interpretation. The lack of any external events or policy changes also supports this conclusion.",
+    "reasoning": "The anomaly is February 2026 with penalty_total_brl = 0. Seasonality check shows that February deviated below 1 in 2 of 6 previous years (2023, 2021), but not consistently (2024, 2022, 2020 had higher ratios). The same calendar month was not flagged in other years. The monthly context shows no excluded records or no_id records in February 2026 (1 record, 0 penalty). The penalty value is zero, which is implausible for an active series (median 30.5M). No known events, and the Page-Hinkley test shows no sustained level shift. Thus, this is likely a data-quality event (DQE) due to a reporting failure or retroactive correction.",
+    "seed": 22,
+    "latency_s": 29.9
+   },
+   {
+    "category": "DQE",
+    "confidence": 0.9,
+    "reasoning": "The anomalous month is 2026-02 with penalty_total_brl=0 (vs median 30.5M). Seasonality check shows 2 of 6 prior years (2023, 2021) had below-1 ratios. However, the same calendar month was not flagged as anomalous in other years. The data shows 2026-02 has 1 notice but penalty=0, while previous months had low penalties (2026-01: 0 notices, 0 penalty; 2025-07: 1 notice, 0 penalty). No excluded or no_id records. No known events. A Page-Hinkley test ruled out a sustained level shift. The zero penalty is implausible for an active series, suggesting a data-quality issue like a reporting failure or retroactive correction.",
     "seed": 33,
-    "latency_s": 18.2
+    "latency_s": 31.5
    }
   ],
   "prompt": "Series: penalty_total_brl - Total value of the penalties imposed in the notices of the month, in Reais (value at issuance, before appeals).\nAnomalous month: 2026-02 (calendar month 2).\nValue: 0; median of the previous 12 months: 30.5M (-100%; ratio 0.00).\nSeasonality check - ratio of calendar month 2 to the median of its previous 12 months, in the previous years: 2025-02: 1.40 | 2024-02: 7.97 | 2023-02: 0.57 | 2022-02: 2.87 | 2021-02: 0.93 | 2020-02: 3.46.\nThe same calendar month deviated in the same direction (below 1) in 2 of these 6 years.\nThe same calendar month was also flagged as anomalous in: no other year.\nDetectors that flagged it: mad, iforest (2 of 4); ensemble score 0.54 (0.5 = at threshold).\nA Page-Hinkley test found a sustained level shift within 2 months: no.\nOther series flagged in the same month: none.\n\nMonthly context (+-12 months). excluded = excluded records; no_id = records without an identifier.\nmonth   | notices | penalty_total_brl | excluded | no_id\n2025-02 | 48 | 71.8M | 0 | 0\n2025-03 | 17 | 60.9M | 0 | 0\n2025-04 | 5 | 35.7M | 0 | 0\n2025-05 | 9 | 23.6M | 0 | 0\n2025-06 | 7 | 35.1M | 0 | 0\n2025-07 | 1 | 0 | 0 | 0\n2025-08 | 7 | 17.6M | 0 | 0\n2025-09 | 5 | 71.0M | 0 | 0\n2025-10 | 6 | 102.0M | 0 | 0\n2025-11 | 4 | 18.5M | 0 | 0\n2025-12 | 4 | 25.9M | 0 | 0\n2026-01 | 0 | 0 | 0 | 0\n2026-02 | 1 | 0 | 0 | 0  <== anomaly\n2026-03 | 16 | 54.1M | 0 | 0\n2026-04 | 4 | 715,991 | 0 | 0\n2026-05 | 3 | 7.6M | 0 | 0\n2026-06 | 9 | 80.8M | 0 | 0\n2026-07 | 9 | 94.6M | 0 | 0\n2026-08 | 12 | 125.4M | 0 | 0\n\nNo known events within +-6 months.",
-  "model": "gemma3:4b",
-  "model_digest": "a2af6cc3eb7fa8be8504abaf9b04e88f17a119ec3f04a3addf55f92841195f5a",
-  "ollama_version": "0.34.4",
+  "model": "qwen3:4b",
+  "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+  "ollama_version": "0.35.0",
   "temperature": 0.7,
   "prompt_version": "v2",
   "data_fingerprint": "687858e0bdd026baa09715af6dbf01c810ae91fa1437e306e1bd066b0dcd275c",
-  "judged_at": "2026-09-29T19:08:57+00:00"
+  "judged_at": "2026-09-30T10:40:55+00:00",
+  "rejudge_reason": "model or prompt version changed",
+  "history": [
+   {
+    "category": "DQE",
+    "consistency": 0.667,
+    "model": "gemma3:4b",
+    "prompt_version": "v2",
+    "data_fingerprint": "687858e0bdd026baa09715af6dbf01c810ae91fa1437e306e1bd066b0dcd275c",
+    "judged_at": "2026-09-29T19:08:57+00:00"
+   }
+  ],
+  "issue_notified_judged_at": "2026-09-30T10:40:55+00:00"
  }
 }

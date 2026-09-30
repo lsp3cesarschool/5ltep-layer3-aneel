@@ -1,1 +1,86 @@
-{}
+{
+ "notices:2024-12": {
+  "profile": "aneel-autos-infracao",
+  "anomaly_id": "notices:2024-12",
+  "issue": 6,
+  "url": "https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues/6",
+  "state": "open",
+  "status": "pending",
+  "steward_category": null,
+  "review_level": "mandatory",
+  "closed_at": null,
+  "updated_at": "2026-09-30T11:03:57Z"
+ },
+ "penalty_total_brl:2023-05": {
+  "profile": "aneel-autos-infracao",
+  "anomaly_id": "penalty_total_brl:2023-05",
+  "issue": 9,
+  "url": "https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues/9",
+  "state": "open",
+  "status": "pending",
+  "steward_category": null,
+  "review_level": "mandatory",
+  "closed_at": null,
+  "updated_at": "2026-09-30T11:04:03Z"
+ },
+ "penalty_total_brl:2023-12": {
+  "profile": "aneel-autos-infracao",
+  "anomaly_id": "penalty_total_brl:2023-12",
+  "issue": 8,
+  "url": "https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues/8",
+  "state": "open",
+  "status": "pending",
+  "steward_category": null,
+  "review_level": "mandatory",
+  "closed_at": null,
+  "updated_at": "2026-09-30T11:04:01Z"
+ },
+ "penalty_total_brl:2024-07": {
+  "profile": "aneel-autos-infracao",
+  "anomaly_id": "penalty_total_brl:2024-07",
+  "issue": 7,
+  "url": "https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues/7",
+  "state": "open",
+  "status": "pending",
+  "steward_category": null,
+  "review_level": "mandatory",
+  "closed_at": null,
+  "updated_at": "2026-09-30T11:03:59Z"
+ },
+ "penalty_total_brl:2025-01": {
+  "profile": "aneel-autos-infracao",
+  "anomaly_id": "penalty_total_brl:2025-01",
+  "issue": 5,
+  "url": "https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues/5",
+  "state": "open",
+  "status": "pending",
+  "steward_category": null,
+  "review_level": "mandatory",
+  "closed_at": null,
+  "updated_at": "2026-09-30T11:03:56Z"
+ },
+ "penalty_total_brl:2025-07": {
+  "profile": "aneel-autos-infracao",
+  "anomaly_id": "penalty_total_brl:2025-07",
+  "issue": 4,
+  "url": "https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues/4",
+  "state": "open",
+  "status": "pending",
+  "steward_category": null,
+  "review_level": "mandatory",
+  "closed_at": null,
+  "updated_at": "2026-09-30T11:03:54Z"
+ },
+ "penalty_total_brl:2026-02": {
+  "profile": "aneel-autos-infracao",
+  "anomaly_id": "penalty_total_brl:2026-02",
+  "issue": 1,
+  "url": "https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues/1",
+  "state": "open",
+  "status": "pending",
+  "steward_category": null,
+  "review_level": "mandatory",
+  "closed_at": null,
+  "updated_at": "2026-09-30T11:03:53Z"
+ }
+}
