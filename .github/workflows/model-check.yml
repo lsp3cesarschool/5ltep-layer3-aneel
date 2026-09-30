@@ -24,4 +24,4 @@ jobs:
       - run: python main.py check-model
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LLM_MODEL: ${{ vars.LLM_MODEL || 'gemma3:4b' }}
+          LLM_MODEL: ${{ vars.LLM_MODEL || 'qwen3:4b' }}

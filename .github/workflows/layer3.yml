@@ -48,8 +48,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  LLM_MODEL: ${{ vars.LLM_MODEL || 'gemma3:4b' }}
-  LLM_THINK: ${{ vars.LLM_THINK || '' }}
+  LLM_MODEL: ${{ vars.LLM_MODEL || 'qwen3:4b' }}
+  LLM_THINK: ${{ vars.LLM_THINK || 'false' }}
   PYTHON_VERSION: '3.11'
   MAX_BATCHES: 60           # safety stop for a chain
 

@@ -44,10 +44,10 @@ RANDOM_SEED = _env("RANDOM_SEED", 42)
 
 # --- LLM-as-a-Judge (stage 2) ------------------------------------------------
 OLLAMA_URL = _env("OLLAMA_URL", "http://127.0.0.1:11434")
-LLM_MODEL = _env("LLM_MODEL", "gemma3:4b")
+LLM_MODEL = _env("LLM_MODEL", "qwen3:4b")  # chosen by the model benchmark (was gemma3:4b)
 # "false" turns off the thinking mode of models that have one (Qwen 3.x, Gemma 4...);
 # empty leaves the model's default. Set it as the benchmark's recommendation says.
-LLM_THINK = _env("LLM_THINK", "")
+LLM_THINK = _env("LLM_THINK", "false")
 MODEL_RECOMMENDATION_URL = _env(
     "MODEL_RECOMMENDATION_URL",
     "https://raw.githubusercontent.com/lsp3cesarschool/5ltep-layer3-modeltest/main/results/recommendation.json")
