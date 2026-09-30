@@ -107,13 +107,38 @@ def _build_series(p: profiles.Profile, args) -> pd.DataFrame:
     return monthly
 
 
+def _model() -> str:
+    """The model of this run (resolves LLM_MODEL=auto through the model benchmark)."""
+    if config.LLM_MODEL == "auto":
+        from src import model_select
+        sel = model_select.resolve()
+        logger.info("Model: %s (from %s)", sel["model"], sel["source"])
+    return config.LLM_MODEL
+
+
+def cmd_resolve_model(args) -> None:
+    """Resolve LLM_MODEL=auto once per job and export it to the later steps."""
+    from src import model_select
+    sel = model_select.resolve()
+    print(json.dumps(sel))
+    env = os.environ.get("GITHUB_ENV")
+    if env:
+        with open(env, "a", encoding="utf-8") as fh:
+            for key, value in (("LLM_MODEL", sel["model"]), ("LLM_THINK", sel["think"]),
+                               ("LLM_MODEL_SOURCE", sel["source"])):
+                fh.write(f"{key}={value}\n")
+    _set_output("model", sel["model"])
+
+
 def cmd_judge(args) -> None:
     p = profiles.load(args.profile)
     monthly = aggregate.load_series(p.paths.series)
     det = _load_detections(p.paths.detections)
-    client = judge.OllamaClient(model=args.model or config.LLM_MODEL)
-    res = judge.judge_pending(p, monthly, det, client, args.max_judgments, args.max_minutes)
-    logger.info("Judged %d of %d pending anomalies", res["judged_now"], res["pending_before"])
+    client = judge.OllamaClient(model=args.model or _model())
+    res = judge.judge_pending(p, monthly, det, client, args.max_judgments, args.max_minutes,
+                              rejudge=args.rejudge, rejudge_before=args.rejudge_before or None)
+    logger.info("Judged %d of %d pending anomalies (model %s, rejudge=%s)", res["judged_now"],
+                res["pending_before"], client.model, args.rejudge)
     _log_run(p, "judge", res)
     _set_output("judged_now", res["judged_now"])
     _set_output("pending_after", res["pending_before"] - res["judged_now"])
@@ -162,6 +187,7 @@ def cmd_sync_reviews(args) -> None:
 
 def cmd_report(args) -> None:
     p = profiles.load(args.profile)
+    _model()  # the summary names the model in use
     monthly = aggregate.load_series(p.paths.series)
     det = _load_detections(p.paths.detections)
     drift = json.loads(p.paths.drift.read_text(encoding="utf-8"))
@@ -213,7 +239,7 @@ def cmd_suggest_events(args) -> None:
         raise SystemExit(f"Profile {p.id} has no events_file to write suggestions to")
     det = _load_detections(p.paths.detections)
     years = [int(y) for y in args.years.split(",")] if args.years else None
-    client = judge.OllamaClient(model=args.model or config.LLM_MODEL)
+    client = judge.OllamaClient(model=args.model or _model())
     res = events_suggest.suggest(p, det, client, online=not args.offline, years=years, max_years=args.max_years)
     for e in res["added"]:
         logger.info("suggested %s %-9s %s", e["month"], e["kind"], e["label"])
@@ -228,6 +254,10 @@ def cmd_suggest_events(args) -> None:
 
 def cmd_check_model(args) -> None:
     from src import model_check
+
+    if config.LLM_MODEL == "auto":
+        logger.info("LLM_MODEL=auto: the model benchmark's choice is followed automatically; nothing to propose")
+        return
 
     if args.dry_run:
         rec = model_check.fetch()
@@ -264,6 +294,10 @@ def main(argv=None) -> None:
         sp.add_argument("--model", default=None)
         sp.add_argument("--max-judgments", type=int, default=config.MAX_JUDGMENTS)
         sp.add_argument("--max-minutes", type=float, default=config.MAX_JUDGE_MINUTES)
+        sp.add_argument("--rejudge", choices=judge.REJUDGE_MODES, default="none",
+                        help="none: only new anomalies or changed data; stale: also what another model or "
+                             "prompt version judged; all: everything judged before --rejudge-before")
+        sp.add_argument("--rejudge-before", default="", help="ISO timestamp (start of the chain of batches)")
     sub.choices["run"].add_argument("--skip-llm", action="store_true")
     add("issues", cmd_issues, "open review issues").add_argument(
         "--max-new", type=int, default=config.MAX_NEW_ISSUES)
@@ -277,6 +311,8 @@ def main(argv=None) -> None:
     sp.add_argument("--max-years", type=int, default=8)
     sp.add_argument("--model", default=None)
     sub.add_parser("list-profiles", help="list available profiles").set_defaults(fn=cmd_list_profiles)
+    sub.add_parser("resolve-model", help="resolve LLM_MODEL=auto through the model benchmark").set_defaults(
+        fn=cmd_resolve_model)
     cm = sub.add_parser("check-model", help="compare LLM_MODEL with the model benchmark's recommendation")
     cm.add_argument("--dry-run", action="store_true", help="only print the decision")
     cm.set_defaults(fn=cmd_check_model)

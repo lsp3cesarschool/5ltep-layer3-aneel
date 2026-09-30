@@ -276,8 +276,15 @@ def save_judgments(judgments: dict, path: Path) -> None:
     path.write_text(json.dumps(dict(sorted(judgments.items())), ensure_ascii=False, indent=1), encoding="utf-8")
 
 
-def is_current(entry: dict | None, model: str = config.LLM_MODEL) -> bool:
+def is_current(entry: dict | None, model: str | None = None) -> bool:
+    """True when `entry` was produced by `model` (default: the model in use) with the current prompt version."""
+    model = model or config.LLM_MODEL
     return bool(entry) and entry.get("model") == model and entry.get("prompt_version") == config.PROMPT_VERSION
+
+
+def has_judgment(entry: dict | None) -> bool:
+    """Any valid judgment counts, whatever model or prompt produced it (each records which)."""
+    return bool(entry) and "category" in entry
 
 
 def data_fingerprint(monthly: pd.DataFrame, month: pd.Period) -> str:
@@ -291,17 +298,40 @@ def data_fingerprint(monthly: pd.DataFrame, month: pd.Period) -> str:
     return hashlib.sha256(rows.to_csv(float_format="%.10g").encode()).hexdigest()
 
 
-def needs_judgment(entry: dict | None, model: str, fingerprint: str) -> bool:
-    if not is_current(entry, model):
-        return True
+REJUDGE_MODES = ("none", "stale", "all")
+
+
+def needs_judgment(entry: dict | None, model: str, fingerprint: str, rejudge: str = "none",
+                   rejudge_before: str | None = None) -> str | None:
+    """Why this anomaly must be judged now, or None.
+
+    - never judged -> "new";
+    - its own data changed (retroactive correction) -> "data changed";
+    - a change of model or prompt does NOT invalidate a judgment: each judgment records the
+      model and prompt version that produced it. Re-judging is a steward's choice:
+      rejudge="stale" re-judges what another model or prompt version judged;
+      rejudge="all" re-judges everything judged before `rejudge_before` (the start of the
+      chain of batches, so a chain never re-judges its own output).
+    """
+    if not has_judgment(entry):
+        return "new"
     known = entry.get("data_fingerprint")
-    return known is not None and known != fingerprint
+    if known is not None and known != fingerprint:
+        return "data changed"
+    if rejudge == "stale" and not is_current(entry, model):
+        return "re-judged on request (other model or prompt version)"
+    if rejudge == "all" and (rejudge_before is None or entry.get("judged_at", "") < rejudge_before):
+        return "re-judged on request (all)"
+    return None
 
 
 def judge_pending(profile: Profile, monthly: pd.DataFrame, detections: pd.DataFrame, client,
                   max_judgments: int = config.MAX_JUDGMENTS,
-                  max_minutes: float = config.MAX_JUDGE_MINUTES) -> dict:
-    """Judge flagged anomalies without a current judgment, most recent first."""
+                  max_minutes: float = config.MAX_JUDGE_MINUTES,
+                  rejudge: str = "none", rejudge_before: str | None = None) -> dict:
+    """Judge flagged anomalies that need it (see needs_judgment), most recent first."""
+    if rejudge not in REJUDGE_MODES:
+        raise ValueError(f"rejudge must be one of {REJUDGE_MODES}")
     path = profile.paths.judgments
     judgments = load_judgments(path)
     model_info = client.info()
@@ -317,8 +347,9 @@ def judge_pending(profile: Profile, monthly: pd.DataFrame, detections: pd.DataFr
         aid = anomaly_id(row["series"], m)
         fp = data_fingerprint(monthly, m)
         entry = judgments.get(aid)
-        if needs_judgment(entry, client.model, fp):
-            pending.append((m, row, fp))
+        why = needs_judgment(entry, client.model, fp, rejudge, rejudge_before)
+        if why:
+            pending.append((m, row, fp, why))
         elif "data_fingerprint" not in entry:
             entry["data_fingerprint"] = fp  # judged before fingerprints existed
             backfilled += 1
@@ -330,7 +361,7 @@ def judge_pending(profile: Profile, monthly: pd.DataFrame, detections: pd.DataFr
 
     deadline = time.monotonic() + max_minutes * 60
     done = 0
-    for month, row, fp in pending:
+    for month, row, fp, why in pending:
         if done >= max_judgments or time.monotonic() > deadline:
             break
         others = [s for s in flagged_by_month[month] if s != row["series"]]
@@ -353,10 +384,7 @@ def judge_pending(profile: Profile, monthly: pd.DataFrame, detections: pd.DataFr
             history = previous.get("history", []) + [
                 {k: previous.get(k) for k in ("category", "consistency", "model", "prompt_version",
                                               "data_fingerprint", "judged_at")}]
-        reason = None
-        if previous:
-            reason = ("data changed" if is_current(previous, client.model)
-                      else "model or prompt version changed")
+        reason = why if previous else None
         judgments[aid] = {
             "series": row["series"],
             "month": str(month),
@@ -369,6 +397,7 @@ def judge_pending(profile: Profile, monthly: pd.DataFrame, detections: pd.DataFr
             "runs": runs,
             "prompt": prompt,
             "model": client.model,
+            "model_source": config.LLM_MODEL_SOURCE,
             "model_digest": model_info.get("model_digest"),
             "ollama_version": model_info.get("ollama_version"),
             "temperature": config.LLM_TEMPERATURE,

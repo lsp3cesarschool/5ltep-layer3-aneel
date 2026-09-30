@@ -44,10 +44,18 @@ RANDOM_SEED = _env("RANDOM_SEED", 42)
 
 # --- LLM-as-a-Judge (stage 2) ------------------------------------------------
 OLLAMA_URL = _env("OLLAMA_URL", "http://127.0.0.1:11434")
-LLM_MODEL = _env("LLM_MODEL", "qwen3:4b")  # chosen by the model benchmark (was gemma3:4b)
+# "auto" (default): use the model the benchmark (5ltep-layer3-modeltest) currently
+# approves, read from its public recommendation.json at the start of each run.
+# A tag (e.g. "qwen3:4b") pins the model; the Model check workflow then proposes
+# switches through an issue instead. See src/model_select.py.
+LLM_MODEL = _env("LLM_MODEL", "auto")
 # "false" turns off the thinking mode of models that have one (Qwen 3.x, Gemma 4...);
-# empty leaves the model's default. Set it as the benchmark's recommendation says.
-LLM_THINK = _env("LLM_THINK", "false")
+# empty: in auto mode, as the benchmark tested it; when pinned, the model's default.
+LLM_THINK = _env("LLM_THINK", "")
+# Where the model in use came from: "benchmark", "pinned" or "fallback" (set by resolve-model).
+LLM_MODEL_SOURCE = _env("LLM_MODEL_SOURCE", "pinned" if LLM_MODEL != "auto" else "auto")
+FALLBACK_MODEL = _env("FALLBACK_MODEL", "qwen3:4b")   # if the benchmark cannot be read
+FALLBACK_THINK = _env("FALLBACK_THINK", "false")
 MODEL_RECOMMENDATION_URL = _env(
     "MODEL_RECOMMENDATION_URL",
     "https://raw.githubusercontent.com/lsp3cesarschool/5ltep-layer3-modeltest/main/results/recommendation.json")

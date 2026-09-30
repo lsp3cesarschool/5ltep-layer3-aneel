@@ -26,7 +26,7 @@ def main(argv=None) -> None:
     ap.add_argument("--profile", default=config.DEFAULT_PROFILE)
     args = ap.parse_args(argv)
     p = profiles.load(args.profile)
-    judgments = {k: v for k, v in judge.load_judgments(p.paths.judgments).items() if judge.is_current(v)}
+    judgments = {k: v for k, v in judge.load_judgments(p.paths.judgments).items() if judge.has_judgment(v)}
     reviews = review.load_reviews(p.paths.reviews)
     if not judgments:
         print(f"No judgments for {p.id} with model {config.LLM_MODEL} / prompt {config.PROMPT_VERSION} yet.")
@@ -36,7 +36,7 @@ def main(argv=None) -> None:
     runs = pd.DataFrame([r for j in judgments.values() for r in j["runs"]])
     out = {
         "profile": p.id,
-        "model": config.LLM_MODEL,
+        "models": df["model"].value_counts().to_dict(),
         "model_digests": sorted({d for d in df["model_digest"].dropna()}),
         "anomalies_judged": len(df),
         "calls": len(runs),

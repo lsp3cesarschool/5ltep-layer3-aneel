@@ -25,8 +25,8 @@ permissions:
   pull-requests: write
 
 env:
-  LLM_MODEL: ${{ vars.LLM_MODEL || 'qwen3:4b' }}
-  LLM_THINK: ${{ vars.LLM_THINK || 'false' }}
+  LLM_MODEL: ${{ vars.LLM_MODEL || 'auto' }}
+  LLM_THINK: ${{ vars.LLM_THINK || '' }}
 
 jobs:
   suggest:
@@ -42,6 +42,9 @@ jobs:
 
       - name: Install dependencies (no PyTorch needed here)
         run: pip install pandas numpy scikit-learn requests
+
+      - name: Resolve the model (auto = the model benchmark's choice)
+        run: python main.py resolve-model
 
       - uses: ./.github/actions/setup-ollama
         with:

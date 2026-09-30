@@ -20,7 +20,7 @@ from importlib import metadata
 import pandas as pd
 
 from src import __version__, config
-from src.judge import DETECTOR_NAMES, anomaly_id, is_current
+from src.judge import DETECTOR_NAMES, anomaly_id, has_judgment, is_current
 from src.profile import Profile
 
 
@@ -40,7 +40,7 @@ def effective(aid: str, judgments: dict, reviews: dict) -> dict:
     if r and r["status"] == "decided":
         return {"category": r["steward_category"], "decided_by": "steward", "pending_review": False}
     j = judgments.get(aid)
-    if not is_current(j):
+    if not has_judgment(j):
         return {"category": None, "decided_by": None, "pending_review": False}
     return {"category": j["category"], "decided_by": "llm", "pending_review": j["review_level"] == "mandatory"}
 
@@ -71,7 +71,7 @@ def build_summary(profile: Profile, monthly: pd.DataFrame, detections: pd.DataFr
                   judgments: dict, reviews: dict, manifest: dict) -> dict:
     flagged = detections[detections["anomaly"]]
     current_ids = [anomaly_id(s, m) for m, s in zip(flagged.index, flagged["series"])]
-    judged = [judgments[a] for a in current_ids if is_current(judgments.get(a))]
+    judged = [judgments[a] for a in current_ids if has_judgment(judgments.get(a))]
     cons = [j["consistency"] for j in judged]
     decided = [r for a, r in reviews.items() if r["status"] == "decided" and a in judgments]
     agree = sum(1 for r in decided if judgments[r["anomaly_id"]]["category"] == r["steward_category"])
@@ -96,6 +96,11 @@ def build_summary(profile: Profile, monthly: pd.DataFrame, detections: pd.DataFr
         },
         "llm": {
             "model": config.LLM_MODEL,
+            "model_source": config.LLM_MODEL_SOURCE,
+            "judged_by": {k: int(v) for k, v in pd.Series(
+                [f"{j.get('model')} / prompt {j.get('prompt_version')}" for j in judged], dtype=str
+            ).value_counts().items()},
+            "judged_by_other_model_or_prompt": sum(1 for j in judged if not is_current(j)),
             "model_digest": next((j.get("model_digest") for j in judged if j.get("model_digest")), None),
             "categories": {k: int(v) for k, v in pd.Series([j["category"] for j in judged], dtype=str).value_counts().items()},
             "mean_consistency": round(sum(cons) / len(cons), 3) if cons else None,
@@ -116,7 +121,7 @@ def dashboard_data(profile: Profile, monthly: pd.DataFrame, detections: pd.DataF
     anomalies = []
     for month, row in detections[detections["anomaly"]].iterrows():
         aid = anomaly_id(row["series"], month)
-        j = judgments.get(aid) if is_current(judgments.get(aid)) else None
+        j = judgments.get(aid) if has_judgment(judgments.get(aid)) else None
         r = reviews.get(aid)
         majority_run = next((x for x in j["runs"] if x["category"] == j["category"]), None) if j else None
         anomalies.append({
@@ -126,7 +131,8 @@ def dashboard_data(profile: Profile, monthly: pd.DataFrame, detections: pd.DataF
             "near_drift": bool(row["near_drift"]),
             "llm": None if not j else {
                 "category": j["category"], "consistency": j["consistency"],
-                "review_level": j["review_level"],
+                "review_level": j["review_level"], "model": j.get("model"),
+                "prompt_version": j.get("prompt_version"), "current": is_current(j),
                 "reasoning": majority_run["reasoning"] if majority_run else None,
                 "runs": [x["category"] for x in j["runs"]],
             },

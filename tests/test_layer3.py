@@ -349,17 +349,59 @@ def test_same_data_is_never_judged_again_changed_data_is(tmp_path):
     assert entry["history"][-1]["category"] == "SP"
 
 
-def test_new_prompt_version_rejudges_once_and_keeps_history(tmp_path, monkeypatch):
+def test_model_or_prompt_change_does_not_rejudge_unless_asked(tmp_path, monkeypatch):
     p, monthly, det, _ = pipeline_inputs(tmp_path)
     n = int(det["anomaly"].sum())
     client = FakeClient([answer("SP")] * 3 * n + [answer("GES")] * 3 * n)
     judge.judge_pending(p, monthly, det, client, max_judgments=100)
+    # a new model (or prompt version) keeps the earlier judgments, which record who made them
+    client.model = "another-model:4b"
     monkeypatch.setattr(config, "PROMPT_VERSION", "v-next")
-    assert judge.judge_pending(p, monthly, det, client, max_judgments=100)["judged_now"] == n
     assert judge.judge_pending(p, monthly, det, client, max_judgments=100)["judged_now"] == 0
+    # re-judging is explicit: "stale" re-judges what another model/prompt judged, once
+    assert judge.judge_pending(p, monthly, det, client, max_judgments=100, rejudge="stale")["judged_now"] == n
+    assert judge.judge_pending(p, monthly, det, client, max_judgments=100, rejudge="stale")["judged_now"] == 0
     entry = next(iter(judge.load_judgments(p.paths.judgments).values()))
-    assert entry["rejudge_reason"] == "model or prompt version changed"
+    assert entry["rejudge_reason"].startswith("re-judged on request") and entry["model"] == "another-model:4b"
     assert entry["history"][-1]["category"] == "SP" and entry["category"] == "GES"
+
+
+def test_rejudge_all_in_a_chain_never_rejudges_its_own_output(tmp_path):
+    p, monthly, det, _ = pipeline_inputs(tmp_path)
+    n = int(det["anomaly"].sum())
+    client = FakeClient([answer("SP")] * 3 * n * 3)
+    judge.judge_pending(p, monthly, det, client, max_judgments=100)
+    chain_start = "9999-01-01T00:00:00+00:00"  # everything judged so far is older
+    first = judge.judge_pending(p, monthly, det, client, max_judgments=1, rejudge="all", rejudge_before=chain_start)
+    assert first["judged_now"] == 1 and first["pending_before"] == n
+    before_second = judge.load_judgments(p.paths.judgments)
+    newest = max(j["judged_at"] for j in before_second.values())
+    second = judge.judge_pending(p, monthly, det, client, max_judgments=100, rejudge="all", rejudge_before=newest)
+    assert second["pending_before"] <= n - 1  # the batch's own judgment is not taken again
+
+
+def test_model_auto_follows_the_benchmark_and_falls_back(monkeypatch):
+    from src import model_select
+
+    class Resp:
+        def __init__(self, data): self.data = data
+        def json(self): return self.data
+
+    monkeypatch.setattr(config, "LLM_MODEL", "auto")
+    monkeypatch.setattr(config, "LLM_THINK", "")
+    monkeypatch.setattr(model_select.requests, "get", lambda url, timeout: Resp(
+        {"use": {"model": "qwen3:4b", "options": {"think": False}}, "generated_at": "t"}))
+    assert model_select.resolve() == {"model": "qwen3:4b", "think": "false", "source": "benchmark",
+                                      "benchmark_generated_at": "t"}
+    assert config.LLM_MODEL == "qwen3:4b"
+
+    def boom(url, timeout):
+        raise model_select.requests.ConnectionError("offline")
+    monkeypatch.setattr(config, "LLM_MODEL", "auto")
+    monkeypatch.setattr(model_select.requests, "get", boom)
+    assert model_select.resolve()["source"] == "fallback" and config.LLM_MODEL == config.FALLBACK_MODEL
+    monkeypatch.setattr(config, "LLM_MODEL", "gemma3:4b")
+    assert model_select.resolve() == {"model": "gemma3:4b", "think": config.LLM_THINK, "source": "pinned"}
 
 
 def test_legacy_judgments_are_backfilled_not_rejudged(tmp_path):

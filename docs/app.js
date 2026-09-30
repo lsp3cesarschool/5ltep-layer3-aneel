@@ -27,6 +27,7 @@ async function init() {
   el("run-link").href = `https://github.com/${REPO}/actions/workflows/layer3.yml`;
   el("issues-link").href = `https://github.com/${REPO}/issues?q=is%3Aissue+is%3Aopen+label%3Alayer3`;
   el("events-link").href = `https://github.com/${REPO}/actions/workflows/events.yml`;
+  el("rejudge-link").href = `https://github.com/${REPO}/actions/workflows/layer3.yml`;
   const res = await fetch("data/index.json", { cache: "no-store" });
   const index = res.ok ? await res.json() : { profiles: [] };
   if (!index.profiles.length) {
@@ -70,7 +71,9 @@ function drawCards() {
     ["L3 pass rate", l3.l3_rate === null ? "–" : `${(l3.l3_rate * 100).toFixed(1)}%`,
       `${l3.l3_pass ? "✓ pass" : "✗ fail"} · last ${l3.window ? `${l3.window[0]}…${l3.window[1]}` : "–"}`, l3.l3_pass ? "pass" : "fail"],
     ["Anomalies flagged", an.flagged, Object.entries(an.by_series).map(([k, v]) => `${k}: ${v}`).join(" · ")],
-    ["Judged by the LLM", `${an.judged} / ${an.flagged}`, `${an.pending_judgment} pending · ${s.llm.model}`],
+    ["Judged by the LLM", `${an.judged} / ${an.flagged}`,
+      `judge now: ${s.llm.model} (${s.llm.model_source === "benchmark" ? "benchmark's choice" : s.llm.model_source})` +
+      (s.llm.judged_by_other_model_or_prompt ? ` · ${s.llm.judged_by_other_model_or_prompt} judged by an earlier model/prompt` : "")],
     ["Label consistency", s.llm.mean_consistency === null ? "–" : s.llm.mean_consistency.toFixed(2),
       s.llm.unanimous_rate === null ? "" : `${(s.llm.unanimous_rate * 100).toFixed(0)}% unanimous (3 runs)`],
     ["Steward reviews", `${h.decided} / ${h.issues}`, `${open} open${h.human_llm_agreement === null ? "" : ` · agreement ${(h.human_llm_agreement * 100).toFixed(0)}%`}`],
@@ -160,7 +163,9 @@ function drawTable() {
     (f === "review" && a.llm && a.llm.review_level !== "none" && !(a.review && a.review.status === "decided")));
   el("rows").innerHTML = rows.map((a) => {
     const llm = a.llm ? `<span class="tag" style="--c: var(--${a.llm.category})">${a.llm.category}</span>` +
-      (a.llm.review_level !== "none" ? ` <span class="muted">${a.llm.review_level}</span>` : "") : `<span class="muted">pending</span>`;
+      (a.llm.review_level !== "none" ? ` <span class="muted">${a.llm.review_level}</span>` : "") +
+      `<br><span class="muted" title="model / prompt version that produced this judgment">${esc(a.llm.model)} · ${esc(a.llm.prompt_version)}</span>`
+      : `<span class="muted">pending</span>`;
     const steward = a.review
       ? `<a href="${esc(a.review.url)}" target="_blank" rel="noopener">#${a.review.issue}</a> ` +
         (a.review.status === "decided" ? `<span class="tag" style="--c: var(--${a.review.steward_category})">${a.review.steward_category}</span>` : `<span class="muted">${esc(a.review.status)}</span>`)

@@ -2,7 +2,8 @@ name: 5L-TEP Layer 3 Model Check
 
 # Reads the public recommendation of the model benchmark
 # (lsp3cesarschool/5ltep-layer3-modeltest, run on day 20) and, if another model
-# is clearly better, opens an issue here. Switching stays a human decision.
+# is clearly better, opens an issue here. Only when LLM_MODEL is pinned to a tag:
+# with LLM_MODEL=auto (default) the benchmark's choice is followed automatically.
 on:
   schedule:
     - cron: '0 6 22 * *'
@@ -24,4 +25,4 @@ jobs:
       - run: python main.py check-model
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LLM_MODEL: ${{ vars.LLM_MODEL || 'qwen3:4b' }}
+          LLM_MODEL: ${{ vars.LLM_MODEL || 'auto' }}

@@ -33,6 +33,15 @@ on:
         type: boolean
         required: false
         default: false
+      rejudge:
+        description: 'Re-judge: none = only new anomalies or changed data; stale = also what another model or prompt version judged; all = everything'
+        type: choice
+        options: [none, stale, all]
+        default: none
+      rejudge_before:
+        description: 'Set automatically: start of the chain (for rejudge=all)'
+        required: false
+        default: ''
       batch:
         description: 'Batch number in the chain (set automatically; 1 = fresh download)'
         required: false
@@ -48,8 +57,9 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  LLM_MODEL: ${{ vars.LLM_MODEL || 'qwen3:4b' }}
-  LLM_THINK: ${{ vars.LLM_THINK || 'false' }}
+  # 'auto' follows the model benchmark (5ltep-layer3-modeltest); a tag pins the model.
+  LLM_MODEL: ${{ vars.LLM_MODEL || 'auto' }}
+  LLM_THINK: ${{ vars.LLM_THINK || '' }}
   PYTHON_VERSION: '3.11'
   MAX_BATCHES: 60           # safety stop for a chain
 
@@ -105,6 +115,10 @@ jobs:
             python main.py detect --profile "$PROFILE"
           fi
 
+      - name: Resolve the model (auto = the model benchmark's choice)
+        if: ${{ !inputs.skip_llm }}
+        run: python main.py resolve-model
+
       - name: Set up Ollama
         if: ${{ !inputs.skip_llm }}
         uses: ./.github/actions/setup-ollama
@@ -114,7 +128,12 @@ jobs:
       - name: "Stage 2: LLM-as-a-Judge"
         id: judge
         if: ${{ !inputs.skip_llm }}
-        run: python main.py judge --profile "$PROFILE" --max-judgments "${{ inputs.max_judgments || '25' }}"
+        run: |
+          before="${{ inputs.rejudge_before }}"
+          if [ "${{ inputs.rejudge }}" = "all" ] && [ -z "$before" ]; then before=$(date -u +%Y-%m-%dT%H:%M:%S+00:00); fi
+          echo "REJUDGE_BEFORE=$before" >> "$GITHUB_ENV"
+          python main.py judge --profile "$PROFILE" --max-judgments "${{ inputs.max_judgments || '25' }}" \
+            --rejudge "${{ inputs.rejudge || 'none' }}" --rejudge-before "$before"
 
       - name: Open review issues (human-in-the-loop)
         id: issues
@@ -154,7 +173,8 @@ jobs:
           echo "${{ steps.judge.outputs.pending_after }} anomalies and ${{ steps.issues.outputs.issues_remaining }} issues still pending."
           gh workflow run layer3.yml --ref "${{ github.ref_name }}" \
             -f profile="$PROFILE" -f max_judgments="${{ inputs.max_judgments || '25' }}" \
-            -f continue_batches=true -f batch="$((BATCH + 1))"
+            -f continue_batches=true -f batch="$((BATCH + 1))" \
+            -f rejudge="${{ inputs.rejudge || 'none' }}" -f rejudge_before="${REJUDGE_BEFORE:-}"
           echo "started=true" >> "$GITHUB_OUTPUT"
 
       - name: Alert on open mandatory reviews (end of the chain)
