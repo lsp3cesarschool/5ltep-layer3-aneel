@@ -655,3 +655,24 @@ def test_end_to_end_without_llm(tmp_path, monkeypatch):
     assert any(a["month"] == "2024-06" and a["series"] == "notices" for a in dash["anomalies"])
     index = json.loads((tmp_path / "docs" / "data" / "index.json").read_text())
     assert index["profiles"] == [{"id": "test-profile", "title": "Synthetic notices"}]
+
+
+def _doc_structure(text: str) -> dict:
+    """Heading levels in order and the number of code blocks: a translation must keep both."""
+    headings, fences, in_code = [], 0, False
+    for line in text.splitlines():
+        if line.startswith("```"):
+            fences += 1
+            in_code = not in_code
+        elif not in_code and line.startswith("#"):
+            headings.append(len(line) - len(line.lstrip("#")))
+    return {"headings": headings, "code_blocks": fences // 2}
+
+
+def test_readme_and_leiame_stay_parallel():
+    """LEIAME.md is the full Portuguese version of README.md: same sections, same code
+    blocks, and each links to the other. A section added to one file only fails here."""
+    readme = (config.ROOT / "README.md").read_text(encoding="utf-8")
+    leiame = (config.ROOT / "LEIAME.md").read_text(encoding="utf-8")
+    assert _doc_structure(readme) == _doc_structure(leiame)
+    assert "(LEIAME.md)" in readme and "(README.md)" in leiame

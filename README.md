@@ -1,5 +1,7 @@
 # 5LTEP-L3 · ANEEL instance (control experiment)
 
+**English** · [Português](LEIAME.md)
+
 **5L-TEP Layer 3 anomaly detection applied to the infraction notices of ANEEL, Brazil's electricity
 regulator: a second instance of [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3),
 set up by the author as a control case for the IBAMA study.**
@@ -30,21 +32,6 @@ inspection cycle) and which look like a **data problem** (a month with no record
 a batch of notices entered at once). The unexplained ones go to a person first; the AI only proposes,
 and a data steward confirms or corrects every decision that leads to action.
 
-<details>
-<summary>Em português</summary>
-
-A ANEEL publica todos os autos de infração emitidos às empresas do setor elétrico (geração,
-transmissão, distribuição) por suas áreas de fiscalização e pelas agências estaduais conveniadas.
-Suponha que a agência, ou quem reutiliza esses dados, queira saber se o registro publicado é confiável
-e por onde começar se algo estiver errado. Esta camada monta séries mensais (número de autos, valor
-total das penalidades), encontra os meses que fogem do padrão e usa um modelo de IA local para
-verificar quais desvios têm explicação conhecida (nova regulamentação, ciclo recorrente de
-fiscalização) e quais parecem **problema nos dados** (mês sem registros numa série ativa, lote de autos
-lançado de uma vez). Os não explicados vão primeiro para uma pessoa; a IA apenas propõe, e um gestor de
-dados confirma ou corrige toda decisão que leve a uma ação.
-
-</details>
-
 ## Why a control experiment
 
 The Layer 3 toolkit of the Five-Layer Trust Engineering Pyramid (5L-TEP) was built on IBAMA's open
@@ -62,11 +49,11 @@ What differs from the main repository is only:
 |---|---|
 | [`profiles/aneel-autos-infracao.json`](profiles/aneel-autos-infracao.json) | the dataset: portal, resource, columns, series, domain text for the LLM |
 | [`profiles/events/brazil-electricity-regulation.json`](profiles/events/brazil-electricity-regulation.json) | the event calendar, started almost empty and meant to be filled with *Suggest events* and checked by a steward |
-| this README | |
+| this README and its Portuguese version, [`LEIAME.md`](LEIAME.md) | |
 
 The IBAMA profiles and results are not included. Everything else (detectors, LLM-as-a-Judge,
 human-in-the-loop review, dashboard, workflows, tests) is identical to
-[`5ltep-layer3@542be54`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/542be54a3fae91eb68355aaee3e3b13b6f64d52d),
+[`5ltep-layer3@d282286`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/d28228610613cbdd386e6be77e37204e526a2663),
 and the built instance passes the same test suite before every update.
 
 ## Key terms
