@@ -159,7 +159,7 @@ jobs:
           git config user.email "5ltep-l3-bot@users.noreply.github.com"
           git add data/ results/ docs/data/
           git diff --cached --quiet || git commit -m "chore(l3): $PROFILE results, batch $BATCH [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
-          git pull --rebase
+          git pull --rebase --autostash
           git push
 
       - name: Start the next batch
