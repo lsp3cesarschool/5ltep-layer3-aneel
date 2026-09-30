@@ -181,16 +181,23 @@ jobs:
             -f rejudge="${{ inputs.rejudge || 'none' }}" -f rejudge_before="${REJUDGE_BEFORE:-}"
           echo "started=true" >> "$GITHUB_OUTPUT"
 
-      - name: Alert on open mandatory reviews (end of the chain)
+      # Off by default: the review queue is a suggestion ready for a steward, not an obligation.
+      # With the repository variable L3_REVIEW_ALERT=true, the end of a chain fails on purpose
+      # while mandatory reviews are open, so GitHub e-mails the maintainer (no mail server needed).
+      - name: Report open mandatory reviews (end of the chain)
         if: ${{ success() && !inputs.skip_llm && steps.next.outputs.started != 'true' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ALERT: ${{ vars.L3_REVIEW_ALERT == 'true' }}
         run: |
           open=$(gh issue list --state open --label layer3 --label review:mandatory --label "profile:$PROFILE" \
                    --limit 1000 --json number --jq length)
           echo "Open mandatory reviews for $PROFILE: $open"
           if [ "$open" -gt 0 ]; then
-            echo "::error::$open anomaly(ies) of $PROFILE await a mandatory steward review."
-            echo "Open issues: https://github.com/${{ github.repository }}/issues?q=is%3Aopen+label%3Areview%3Amandatory"
-            exit 1
+            url="https://github.com/${{ github.repository }}/issues?q=is%3Aopen+label%3Areview%3Amandatory"
+            if [ "$ALERT" = "true" ]; then
+              echo "::error::$open anomaly(ies) of $PROFILE await a mandatory steward review: $url"
+              exit 1
+            fi
+            echo "::notice::$open anomaly(ies) of $PROFILE await a steward review: $url (e-mail alert off; set L3_REVIEW_ALERT=true to turn it on)"
           fi
