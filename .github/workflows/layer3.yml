@@ -95,6 +95,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
+        with:
+          # the latest commit when the job starts (a queued run would otherwise start from the
+          # commit of its trigger time and conflict with the batches committed in the meantime)
+          ref: ${{ github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v6
