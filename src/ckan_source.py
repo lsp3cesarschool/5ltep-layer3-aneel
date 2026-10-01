@@ -11,13 +11,18 @@ import requests
 logger = logging.getLogger(__name__)
 
 USER_AGENT = "5ltep-layer3/0.1 (+https://github.com/lsp3cesarschool/5ltep-layer3)"
+# (connect, read): a connection the portal refuses fails in 15 s instead of 120 s, and one keep-alive
+# session reuses connections (some portals intermittently refuse new connections).
+TIMEOUT = (15, 120)
+SESSION = requests.Session()
+SESSION.headers.update({"User-Agent": USER_AGENT})
 
 
 def _get_with_retry(url: str, retries: int = 6, backoff: float = 15.0, **kwargs):
     """Portals go down for minutes at a time: 6 attempts spread over about 8 minutes."""
     for attempt in range(1, retries + 1):
         try:
-            resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=120, **kwargs)
+            resp = SESSION.get(url, timeout=TIMEOUT, **kwargs)
             resp.raise_for_status()
             return resp
         except requests.RequestException as exc:
