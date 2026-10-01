@@ -151,8 +151,9 @@ def cmd_translate(args) -> None:
     store = translate.load(p.paths.translations)
     client = judge.OllamaClient(model=args.model or _model())
     systems = {lang: translate.system_prompt(p, lang) for lang in translate.LANGS}
+    manual = {lang: translate.profile_i18n(p, lang).get("texts", {}) for lang in translate.LANGS}
     res = translate.translate_pending(translate.dashboard_texts(p, judgments), store, client,
-                                      p.paths.translations, args.max_minutes, systems)
+                                      p.paths.translations, args.max_minutes, systems, manual)
     logger.info("Translated %d texts (%d failed, %d left for the next run)", res["translated"],
                 res["failed"], res["remaining"])
     _log_run(p, "translate", res)

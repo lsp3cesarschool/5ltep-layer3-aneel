@@ -1,5 +1,10 @@
 {
-  "_comment": "Portuguese terms for the machine translation of this profile's dashboard texts (src/translate.py). Kept apart from the profile so editing it never changes what the LLM-as-a-Judge receives.",
+  "_comment": "Portuguese for this profile's dashboard (src/translate.py): 'texts' are hand-written translations of the profile's own texts (title, series descriptions), used as they are; 'glossary' guides the machine translation of the rest (the LLM's reasoning, event labels). Kept apart from the profile so editing it never changes what the LLM-as-a-Judge receives.",
+  "texts": {
+    "ANEEL infraction notices (Autos de Infração), Brazil": "Autos de infração da ANEEL, Brasil",
+    "Number of infraction notices issued in the month by ANEEL and the state agencies acting on its behalf": "Número de autos de infração lavrados no mês pela ANEEL e pelas agências estaduais conveniadas",
+    "Total value of the penalties imposed in the notices of the month, in Reais (value at issuance, before appeals)": "Valor total das penalidades aplicadas nos autos do mês, em reais (valor na lavratura, antes de recursos)"
+  },
   "glossary": {
     "infraction notice": "auto de infração",
     "infraction notices": "autos de infração",

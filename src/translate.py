@@ -12,6 +12,7 @@ translations and shows the original on hover.
 import hashlib
 import json
 import logging
+import re
 import time
 
 from src import config
@@ -26,8 +27,9 @@ SYSTEM = {
         "You translate short texts about the quality of open government data from English into "
         "Brazilian Portuguese. Translate everything, titles included. Keep unchanged: category codes "
         "(PDC, SP, DQE, GES, INVALID), numbers, dates such as 2019-01, series names such as notices or "
-        "fine_total_brl, and proper names of laws, agencies and places. Do not add, explain or remove "
-        "anything. If the text is already in Portuguese, return it as it is."
+        "fine_total_brl, and proper names of laws, agencies and places. Never put a thousands separator "
+        "in a year or a date (write 2019-01 and 1989, never 2.019-01 or 1.989). Do not add, explain or "
+        "remove anything. If the text is already in Portuguese, return it as it is."
     ),
 }
 # Terms the dashboard uses everywhere; profiles/i18n/<profile>.pt.json adds the domain's own terms.
@@ -43,11 +45,17 @@ GLOSSARY = {
 SCHEMA = {"type": "object", "properties": {"translation": {"type": "string"}}, "required": ["translation"]}
 
 
+def profile_i18n(profile: Profile, lang: str) -> dict:
+    """profiles/i18n/<profile>.<lang>.json: hand-written "texts" (the profile's own: title, series
+    descriptions) and a "glossary" for the rest. Apart from the profile on purpose: editing it never
+    changes what the judge receives."""
+    own = config.PROFILES_DIR / "i18n" / f"{profile.id}.{lang}.json"
+    return json.loads(own.read_text(encoding="utf-8")) if own.exists() else {}
+
+
 def system_prompt(profile: Profile, lang: str) -> str:
-    """Instructions with the glossary: the general terms plus the profile's own (profiles/i18n/)."""
-    own = config.PROFILES_DIR / "i18n" / f"{profile.id}.{lang}.json"  # apart from the profile on purpose
-    extra = json.loads(own.read_text(encoding="utf-8")).get("glossary", {}) if own.exists() else {}
-    terms = {**GLOSSARY[lang], **extra}
+    """Instructions with the glossary: the general terms plus the profile's own."""
+    terms = {**GLOSSARY[lang], **profile_i18n(profile, lang).get("glossary", {})}
     glossary = "; ".join(f'"{en}" -> "{tr}"' for en, tr in terms.items())
     return f"{SYSTEM[lang]} Always use these translations of terms: {glossary}."
 
@@ -55,6 +63,13 @@ def system_prompt(profile: Profile, lang: str) -> str:
 def prompt_version(system: str) -> str:
     """Translations made with other instructions (e.g. an older glossary) are redone."""
     return hashlib.sha256(system.encode("utf-8")).hexdigest()[:12]
+
+
+def keep_years(source: str, out: str) -> str:
+    """Undo a thousands separator the model put in a year or a date (2.024-01 -> 2024-01)."""
+    for y in set(re.findall(r"\b(1[89]\d{2}|20\d{2})\b", source)):
+        out = re.sub(rf"\b{y[0]}[.,]{y[1:]}\b", y, out)
+    return out
 
 
 def text_key(text: str) -> str:
@@ -103,15 +118,22 @@ def lookup(store: dict, texts: list[str], lang: str) -> dict:
 
 
 def translate_pending(texts: list[str], store: dict, client, path, max_minutes: float,
-                      systems: dict | None = None) -> dict:
+                      systems: dict | None = None, manual: dict | None = None) -> dict:
     """Translate the texts without a current translation (missing, or made with other
-    instructions), saving after each one. `systems`: {lang: instructions} (default: no glossary)."""
-    systems = systems or SYSTEM
+    instructions), saving after each one. `systems`: {lang: instructions} (default: no glossary);
+    `manual`: {lang: {source: hand-written translation}}, used as they are, without the model."""
+    systems, manual = systems or SYSTEM, manual or {}
     start, done, failed = time.monotonic(), 0, 0
     for lang in LANGS:
         table = store.setdefault(lang, {})
         version = prompt_version(systems[lang])
-        current = lambda x: text_key(x) in table and table[text_key(x)].get("version") == version  # noqa: E731
+        for t, out in (manual.get(lang) or {}).items():
+            if t.strip() and table.get(text_key(t)) != {"text": out, "model": "manual", "version": "manual"}:
+                table[text_key(t)] = {"text": out, "model": "manual", "version": "manual"}
+                save(store, path)
+        hand = {text_key(t) for t in (manual.get(lang) or {})}
+        current = lambda x: text_key(x) in hand or (  # noqa: E731
+            text_key(x) in table and table[text_key(x)].get("version") == version)
         for t in texts:
             k = text_key(t)
             if current(t):
@@ -121,7 +143,7 @@ def translate_pending(texts: list[str], store: dict, client, path, max_minutes: 
                 return {"translated": done, "failed": failed, "remaining": sum(1 for x in texts if not current(x))}
             try:
                 raw, _ = client.generate(systems[lang], t, seed=0, schema=SCHEMA, temperature=0.0)
-                out = str(json.loads(raw)["translation"]).strip()
+                out = keep_years(t, str(json.loads(raw)["translation"]).strip())
             except Exception as exc:  # one bad answer must not stop the others
                 logger.warning("Translation failed (%s): %.60s", exc, t)
                 failed += 1

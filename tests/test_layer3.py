@@ -778,3 +778,27 @@ def test_translation_redone_when_glossary_changes(tmp_path, monkeypatch):
     res = translate.translate_pending(texts, store, Fake(), p.paths.translations, 5, systems)
     assert res["translated"] == 1 and translate.lookup(store, texts, "pt")["infraction notice"] == "auto de infração"
     assert translate.translate_pending(texts, store, Fake(), p.paths.translations, 5, systems)["translated"] == 0
+
+
+def test_manual_texts_and_years_kept(tmp_path, monkeypatch):
+    """Hand-written translations are used as they are; a year never gets a thousands separator."""
+    from src import translate
+    monkeypatch.setattr(config, "ROOT", tmp_path)
+    assert translate.keep_years("2024-01 and 1989", "2.024-01 e 1.989, 1.000") == "2024-01 e 1989, 1.000"
+    p = Profile(copy.deepcopy(BASE_PROFILE))
+    calls = []
+
+    class Fake:
+        model = "fake"
+
+        def generate(self, system, prompt, seed, schema, temperature=None, num_ctx=None):
+            calls.append(prompt)
+            return json.dumps({"translation": "traduzido"}), 0.0
+
+    store = translate.load(p.paths.translations)
+    texts = ["Synthetic notices", "Other text"]
+    translate.translate_pending(texts, store, Fake(), p.paths.translations, 5,
+                                manual={"pt": {"Synthetic notices": "Autos sintéticos"}})
+    table = translate.lookup(store, texts, "pt")
+    assert table == {"Synthetic notices": "Autos sintéticos", "Other text": "traduzido"}
+    assert calls == ["Other text"]  # the model never sees the hand-written one
