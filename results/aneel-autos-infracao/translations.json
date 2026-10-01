@@ -1,124 +1,124 @@
 {
  "pt": {
   "d527ff0839bca7a66bbd617f3259466625f3195628288bfd59fb39ccfef6b5fc": {
-   "text": "ANEEL infraction notices (Autos de Infração), Brazil",
-   "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "text": "Autos de infração da ANEEL, Brasil",
+   "model": "manual",
+   "version": "manual"
   },
   "ad95dc8d9b21a5f2751db7e18bd63c8fcb22a01f5b5a7ba95204e0deafd684c6": {
-   "text": "Número de autos de infração emitidos no mês pelas agências do Brasil e pelas agências estaduais que atuam em seu nome",
-   "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "text": "Número de autos de infração lavrados no mês pela ANEEL e pelas agências estaduais conveniadas",
+   "model": "manual",
+   "version": "manual"
   },
   "eb9e2ea1c68ba7e2473f7df216cf60d8c33ca009327d2d4c24313f18b7c5a4be": {
-   "text": "Total value of the penalties imposed in the notices of the month, in Reais (value at issuance, before appeals)",
-   "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "text": "Valor total das penalidades aplicadas nos autos do mês, em reais (valor na lavratura, antes de recursos)",
+   "model": "manual",
+   "version": "manual"
   },
   "39df3a69b351c86faf5d8f9cc04dfa0c2b81201ca6099b6492b500a56af01828": {
-   "text": "Mudança por política: legislação, regulação, reorganização de agências ou transição política",
+   "text": "Mudança por política: legislação, regulamentação, reorganização de agências ou transição política",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "728342ebd5988e44774cec5c94815be276b24cc7d6f0ce0408825c0eff8f36d7": {
    "text": "Padrão sazonal: um ciclo de inspeção recorrente anual",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "6653d4619f3da951fbe2e946dc1bb96be8d2ede8fe82e3e4f0be31e5db3e1868": {
    "text": "Evento de qualidade de dados: falha no relatório, migração do sistema, acúmulo, duplicação ou correção retroativa",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "e6b33126bba3a07a703d4503b9b627ce5506e345be461b23e6b3a3fd5136bc50": {
    "text": "Mudança genuína de fiscalização: uma mudança real na intensidade de inspeção ou fiscalização não explicada pelas acima",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "61c764692cb2d556b64f70b6bcc65b82fa84d6d31ab9e2059cf80e8f9d8342b4": {
    "text": "Reforma monetária: Cruzeiro (Cr$) substituído pelo Cruzado (Cz$) (1 nova unidade = 1.000 unidades antigas), Plano Cruzado",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "e60144c45a219793d275e3f5ddc2d4d95129095beb141cf11ac4a5d5b5fd7482": {
    "text": "Reforma monetária: Cruzado (Cz$) substituído pelo Cruzado Novo (NCz$) (1 nova unidade = 1.000 unidades antigas), Plano Verao",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "5ce6acba6460293b79efd4f315959295ac2a96d313194addf31484d4d13ccec3": {
    "text": "Reforma monetária: Cruzado Novo (NCz$) substituído pelo Cruzeiro (Cr$) (a par), Plano Collor",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "5d9061ab74ec4ac25311d40c39d65cf4f90c14db523a66ae5dd6e73bc020d249": {
    "text": "Reforma monetária: Cruzeiro (Cr$) substituído pelo Cruze. Real (CR$) (1 nova unidade = 1.000 unidades antigas)",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "b18c50eed9ca197f1a8f20b23dc9a061deea3cf26856da10858d5c631707fca7": {
    "text": "Reforma monetária: Cruzeiro Real (CR$) substituído pelo Real (R$) (1 nova unidade = 2.750 unidades antigas), Plano Real",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "a3d79e1471872f0146d4a80ba45fa0ab5672af2b11fb8b5983981828c2fa819a": {
    "text": "Mudança de administração federal",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "2c57e9e569f36f668b221dc14c52aebd395c4927faa72ebd79d46f6c4dc50ce1": {
    "text": "COVID-19 pandemic declared; public-health emergency measures in Brazil",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "6d3535355e2a7aa171307dd80db6675a5023f6463bb88c4a61fc8885f559ce12": {
-   "text": "Verificação de sazonalidade mostra 2021-09: 1,17 (acima da mediana), 2020-09: 0,35 (abaixo), 2019-09: 2,33 (acima). O mesmo mês se desviou acima da mediana em 2 de 3 anos (2019, 2021), mas não em 2020. No entanto, nenhum outro ano teve este mês sinalizado como anomalia. O pico em 2022-09 (68 autos de infração vs. mediana de 6) é muito alto, mas não explicado por padrões sazonais anteriores. Não há problemas de qualidade de dados (registros excluídos/não_id = 0) e não há eventos de política dentro de 6 meses, exceto uma mudança política em 2023-01 (4 meses depois), o que foi tarde demais para impactar o 2022-09. O teste Page-Hinkley mostra sem deslocamento sustentado. Assim, a anomalia é provavelmente uma mudança genuína de fiscalização (GES).",
+   "text": "Verificação de sazonalidade mostra 2021-09: 1,17 (acima da mediana), 2020-09: 0,35 (abaixo), 2019-09: 2,33 (acima). O mesmo mês se desviou acima da mediana em 2 de 3 anos (2019, 2021), mas não em 2020. No entanto, nenhum outro ano teve este mês sinalizado como anomalia. O pico em 2022-09 (68 autos de infração vs. mediana de 6) é muito alto, mas não explicado por padrões sazonais anteriores. Não há problemas de qualidade de dados (registros excluídos/não_id = 0) e nenhum evento de qualidade de dados dentro de 6 meses, exceto uma mudança política em 2023-01 (4 meses depois), o que foi tarde demais para impactar 2022-09. O teste Page-Hinkley mostra sem alteração sustentada. Assim, a anomalia é provavelmente uma mudança genuína de fiscalização (GES).",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "0bc5e6d5568627a52bec27963b1ddd1485d5d5ec5818e35aa8b9937c4fbb97e3": {
-   "text": "Verificação de sazonalidade mostra que a razão de 2023-11 é 0,15 (baixa), 2022-11 é 0,94 (próxima da mediana), 2021-11 é 2,29 (alta), 2020-11 é 0,10 (baixa) e 2019-11 é 1,50 (alta). Apenas 2022 e 2021 tiveram razões acima de 1 (alta) para novembro, enquanto 2024-11 é 39x mediana. No entanto, o mesmo mês se desviou na mesma direção (acima de 1) em 2 de 5 anos, portanto, existe padrão sazonal. No entanto, o valor de 2024-11 é muito alto (195 vs mediana 5) e o mesmo mês não foi sinalizado em outros anos. A anomalia é sinalizada por múltiplos detectores (zscore, mad, iforest) mas o teste Page-Hinkley não mostra mudança sustentada de nível. Não há indicadores de qualidade de dados (registros excluídos/no_id) presentes. O valor alto poderia ser uma mudança genuína de fiscalização (GES) já que não há eventos de política, padrão sazonal ou problemas de dados evidentes.",
+   "text": "Verificação de sazonalidade mostra que a razão de 2023-11 é 0,15 (baixa), 2022-11 é 0,94 (próxima da mediana), 2021-11 é 2,29 (alta), 2020-11 é 0,10 (baixa) e 2019-11 é 1,50 (alta). Apenas 2022 e 2021 tiveram razões acima de 1 (alta) para novembro, enquanto 2024-11 é 39x mediana. No entanto, o mesmo mês se desviou na mesma direção (acima de 1) em 2 de 5 anos, portanto, existe padrão sazonal. No entanto, o valor de 2024-11 é muito alto (195 vs mediana 5) e o mesmo mês não foi sinalizado em outros anos. A anomalia é sinalizada por múltiplos detectores (zscore, mad, iforest) mas o teste Page-Hinkley não mostra mudança sustentada de nível. Não há indicadores de qualidade de dados (registros excluídos/não_id) presentes. O valor alto poderia ser uma mudança genuína de fiscalização (GES) já que não há eventos de política, padrão sazonal ou problemas de dados evidentes.",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "abe17ed625d611f710f9fe8fd7b721f3d44fe778759f0f5e4fe015490b68e9d8": {
-   "text": "Verificação de sazonalidade mostra que 2023-12 tem 0 autos (razão 0.00), 2022-1.12 tem 100% da mediana (razão 1.00), 2021-12 tem 67% da mediana, etc. Apenas 1 de 5 anos teve uma desvio acima de 1 em dezembro. O mesmo mês do calendário não foi sinalizado em outros anos. Nenhum evento conhecido. Verificações de qualidade de dados: sem registros excluídos ou no_id, valores são plausíveis (não-zero). A anomalia é um grande pico (455 vs mediana 6) mas não há passo persistente ou valores implausíveis. Como a sazonalidade é fraca (apenas 1 ano com desvio similar) e não há eventos políticos, a anomalia provavelmente provém de um problema de qualidade de dados (ex.: correção retroativa ou migração de sistema) apesar do grande desvio.",
+   "text": "Verificação de sazonalidade mostra que 2023-12 tem 0 autos (razão 0.00), 2022-1.12 tem 100% da mediana (razão 1.00), 2021-12 tem 67% da mediana, etc. Apenas 1 de 5 anos teve uma desvio acima de 1 em dezembro. O mesmo mês calendário não foi sinalizado em outros anos. Nenhum evento conhecido. Verificações de qualidade de dados: sem registros excluídos ou no_id, valores são plausíveis (não-zero). A anomalia é um grande pico (455 vs mediana 6) mas não há passo persistente ou valores implausíveis. Como a sazonalidade é fraca (apenas 1 ano com desvio similar) e não há eventos políticos, a anomalia provavelmente provém de um problema de qualidade de dados (ex.: correção retroativa ou migração de sistema) apesar do grande desvio.",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "5bba3824d008015aea472fbe78bae533a6b5cc1fd2c8da539ca5de407e69fefa": {
-   "text": "The anomaly is January 2025 with 0 infraction notices (0% of previous median 6). Seasonality check shows 2024-01:1.40, 2023-01:1.12, 2022-01:1.20, 2021-01:0.47, 2020-01:0.36. The same calendar month deviated below 1 in 2 of 5 years (2021, 2020), but not flagged in other years. No known events within +-6 months. The data shows no excluded records or records without identifier (no_id=0) and plausible values (no zeros in other months except Jan 2025). The anomaly is a single month with 0 notices, while previous months had active enforcement (e.g., 195 in Nov 2024). A data-quality event would require a burst of excluded records or no_id records, but these are 0. The sustained level shift test is negative. Thus, the anomaly is likely a genuine enforcement shift (GES), as it's a real drop with no seasonal pattern or data issue evidence.",
+   "text": "A anomalia é janeiro de 2025 com 0 autos de infração (0% do anterior mediana 6). A verificação de sazonalidade mostra 2024-01:1.40, 2023-01:1.12, 2022-01:1.20, 2021-01:0.47, 2020-01:0.36. O mesmo mês se desviou abaixo de 1 em 2 de 5 anos (2021, 2020), mas não foi sinalizado em outros anos. Não há eventos conhecidos dentro de +-6 meses. Os dados mostram nenhum registro excluído ou sem identificador (no_id=0) e valores plausíveis (sem zeros em outros meses, exceto janeiro de 2025). A anomalia é um mês único com 0 autos de infração, enquanto os meses anteriores tiveram fiscalização ativa (ex.: 195 em novembro de 2024). Um evento de qualidade de dados exigiria um burst de registros excluídos ou sem identificador, mas esses são 0. O teste de mudança de nível sustentado é negativo. Assim, a anomalia é provavelmente uma mudança genuína de fiscalização (GES), pois é uma queda real sem padrão sazonal ou evidência de problema de dados.",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "68938df62045390741d8270275cd396ba786816f54a317fb5fc4289b73cf50a6": {
-   "text": "Verificação de sazonalidade mostra que o mês de 2023-05 teve uma razão de 0,01 (vs mediana 44,7M), enquanto os anos anteriores tiveram razões 3,29 (2022-05), 1,97 (2021-05), 0,59 (2020-05). Apenas 1 de 3 anos teve uma desvio abaixo de 1, portanto, não há padrão sazonal forte. Nenhum outro mês foi sinalizado como anomálico. Evento conhecido: mudança política em 2023-01 (mudança por política). Porém, os dados mostram que não há registros excluídos/não_id (0), não há valores implausíveis (399k é plausível para 5 autos de infração) e não há mudança sustentada. Como não há problemas de qualidade de dados e o evento é uma mudança por política, mas a anomalia é um mês com penalidades muito baixas (399k vs mediana 44,7M), provavelmente um erro de dados (ex.: valor mal reportado) em vez de mudança genuína de fiscalização. Não há outros problemas de dados, portanto, DQE é mais provável.",
+   "text": "Verificação de sazonalidade mostra que o mês de 2023-05 teve uma razão de 0,01 (vs mediana 44,7M), enquanto os anos anteriores tiveram razões 3,29 (2022-05), 1,97 (2021-05), 0,59 (2020-05). Apenas 1 de 3 anos teve uma desvio abaixo de 1, portanto não há padrão sazonal forte. Nenhum outro mês foi sinalizado como anomálico. Evento conhecido: mudança política em 2023-01 (mudança por política). Porém, os dados mostram que não há registros excluídos/não_id (0), não há valores implausíveis (399k é plausível para 5 autos de infração) e não há mudança sustentada. Como não há problemas de qualidade de dados e o evento é uma mudança por política, mas a anomalia é um mês com penalidades muito baixas (399k vs mediana 44,7M), provavelmente um erro de dados (ex.: valor mal relatado) em vez de mudança genuína de fiscalização. Não há outros problemas de dados, portanto DQE é mais provável.",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "f67c07948b157a7080001b417dcc1c77e5182f33ef8ad13e77f920f627ef5cef": {
-   "text": "A anomalia está em 2023-12 com penalty_total_brl = 0, enquanto a mediana dos 12 meses anteriores foi de 21,2M. A verificação de sazonalidade mostra 2022-12: 0,04; 2021-12: 1,62; 2020-12: 0,02; 2019-12: 3,48. O mesmo mês calendário se desviou abaixo de 1 em 2 de 4 anos (2020-12, 2022-12), mas nenhum outro ano foi sinalizado. Não há eventos políticos conhecidos. Os registros mostram que não há entradas excluídas ou sem id, nenhum problema de qualidade de dados. O valor zero é improvável para uma série ativa (todos os meses anteriores tiveram penalidades positivas). Isso sugere um problema de dados: provavelmente um erro no sistema ou correção retroativa que causou o mês a não ter penalidades. O teste Page-Hinkley mostra que não há mudança de nível sustentada, excluindo mudanças genuínas de fiscalização.",
+   "text": "A anomalia está em 2023-12 com penalty_total_brl = 0, enquanto a mediana dos 12 meses anteriores foi de 21,2M. A verificação de sazonalidade mostra 2022-12: 0,04; 2021-12: 1,62; 2020-12: 0,02; 2019-12: 3,48. O mesmo mês calendário se desviou abaixo de 1 em 2 de 4 anos (2020-12, 2022-12), mas nenhum outro ano foi sinalizado. Não há eventos políticos conhecidos. Os registros mostram sem exclusões ou registros sem id, sem problemas de qualidade de dados. O valor zero é implausível para uma série ativa (todos os meses anteriores tiveram penalidades positivas). Isso sugere um problema de dados: provavelmente um erro no sistema ou correção retroativa que causou o mês a não ter penalidades. O teste Page-Hinkley mostra sem mudança de nível sustentada, excluindo mudanças genuínas de fiscalização.",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "fdcc9b6dfca77f4abcae689cf8526012fa127b8b7752ebe4d387cd99bdc29611": {
-   "text": "Verificação de sazonalidade mostra que 2023-07, 2022-07, 2021-07 e 2020-07 tiveram razões >1, mas 2024-07 é 0,00 (40k vs mediana de 22,6M). Apenas 2 de 5 anos tiveram a mesma desvio descendente. 2025-07 também foi sinalizado (0 penalidade). Não há eventos conhecidos. Os registros mostram que não há registros excluídos/não_id; o valor da penalidade é implausivelmente baixo (40k vs milhões típicas). Não há mudança sustentada. O evento de qualidade de dados se encaixa: zero penalidade com nenhum identificador, improvável de ser mudança genuína de fiscalização. Confiança: 0,95",
+   "text": "Verificação de sazonalidade mostra que 2023-07, 2022-07, 2021-07 e 2020-07 tiveram razões >1, mas 2024-07 é 0,00 (40k vs mediana de 22,6M). Apenas 2 de 5 anos tiveram a mesma desvio descendente. 2025-07 também foi sinalizado (0 penalidade). Não há eventos conhecidos. Os registros mostram que não há registros excluídos/não_id; o valor da penalidade é implausivelmente baixo (40k vs milhões típicos). Não há mudança sustentada. Evento de qualidade de dados se encaixa: zero penalidade com nenhum identificador, improvável de ser mudança genuína de fiscalização. Confiança: 0,95",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "be598bf607b5aa90a7ee340f79d7e8eda7d81ffb1dae8863075e4a25c6d8f2a6": {
-   "text": "Verificação de sazonalidade mostra valores consistentemente baixos em janeiro para 4/5 anos (razão <1), indicando um padrão recorrente. Não há eventos políticos conhecidos. Os registros mostram nenhuma exclusão ou IDs faltantes. O valor 0 é implausível (penalty_total_brl estava ativo nos meses anteriores). A anomalia é um zero sustentado, que provavelmente é um problema de qualidade de dados (ex.: erro no sistema causando nenhum registro sendo relatado).",
+   "text": "Verificação de sazonalidade mostra valores consistentemente baixos em janeiro por 4/5 anos (razão <1), indicando um padrão recorrente. Não há eventos políticos conhecidos. Os registros mostram nenhuma exclusão ou IDs faltantes. O valor 0 é implausível (penalty_total_brl estava ativo em meses anteriores). A anomalia é um zero sustentado, que provavelmente é um problema de qualidade de dados (ex.: erro no sistema causando nenhum registro sendo relatado).",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "757a9d1a2c3da7a6cda138abf7c65216027da92833ebc0e44dcd7229319c8333": {
-   "text": "O mês anômalo (2025-07) tem penalty_total_brl = 0, o que é implausível para uma série ativa. A verificação de sazonalidade mostra que o mesmo mês (Jul) se desviou abaixo de 1 em 3 de 6 anos (2022-2024), mas o valor de 2025-07 é 0, enquanto os anos anteriores tiveram razões >0.19. Não há eventos conhecidos em +-6 meses. Os dados não mostram registros excluídos ou no_id, mas o valor é implausivelmente baixo (zero) em uma série em que as penalidades mensais são típicas de milhões. O teste Page-Hinkley não identificou mudança de nível sustentada. Isso é um evento de qualidade de dados (DQE) já que o valor é implausível, provavelmente um erro de relatórios ou falha no sistema.",
+   "text": "O mês anômalo (2025-07) tem penalty_total_brl = 0, o que é implausível para uma série ativa. A verificação de sazonalidade mostra que o mesmo mês (Jul) se desviou abaixo de  1 em 3 de 6 anos (2022-2024), mas o valor de 2025-07 é 0, enquanto os anos anteriores tiveram razões >0.19. Não há eventos conhecidos em +-6 meses. Os dados não mostram registros excluídos ou no_id, mas o valor é implausivelmente baixo (zero) em uma série em que as penalidades mensais são típicas de milhões. O teste Page-Hinkley não revelou mudança de nível sustentada. Isso é um evento de qualidade de dados (DQE) já que o valor é implausível, provavelmente um erro de relatórios ou falha no sistema.",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   },
   "2e1faed3c33cf38f0839c879ef313116ce118ff4d027efafcd0c8cc3e525f797": {
-   "text": "O mês anômico (2026-02) tem penalty_total_brl=0, o que representa uma queda severa em relação à mediana dos 12 meses anteriores (30,5M). A verificação de sazonalidade mostra que o mês calendário 2 (fevereiro) se desviou abaixo de 1 em 2 de 6 anos (2021-02: 0,93; 2023-02: 0,57), mas o mesmo mês não foi sinalizado em outros anos. Os indicadores de qualidade de dados (excluídos, no_id) são 0, ou seja, não houve falha no relatório. Não há eventos conhecidos. O teste Page-Hinkley não mostra mudança de nível sustentada. O valor de penalidade de 0 é implausível para uma série ativa (esperado 30,5M). Isso sugere um evento de qualidade de dados (por exemplo, correção retroativa ou migração de sistema) causando o valor zero.",
+   "text": "O mês anomálico (2026-02) tem penalty_total_brl=0, o que representa uma queda severa em relação à mediana dos 12 meses anteriores (30,5M). A verificação de sazonalidade mostra que o mês calendário 2 (fevereiro) se desviou abaixo de  1 em 2 de 6 anos (2021-02: 0,93, 2023-02: 0,57), mas o mesmo mês não foi sinalizado em outros anos. Os indicadores de qualidade de dados (excluído, no_id) são 0, ou seja, não houve falha de relatório. Não há eventos conhecidos. O teste Page-Hinkley mostra que não houve mudança de nível sustentada. O valor de penalidade de 0 é implausível para uma série ativa (esperado 30,5M). Isso sugere um evento de qualidade de dados (por exemplo, correção retroativa ou migração de sistema) causando o valor zero.",
    "model": "qwen3:4b",
-   "version": "7e7aa06ebaaf"
+   "version": "a7ff0f64fdb2"
   }
  }
 }

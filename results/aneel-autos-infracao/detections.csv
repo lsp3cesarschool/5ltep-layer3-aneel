@@ -126,7 +126,7 @@ month,series,value,zscore_score,zscore_vote,mad_score,mad_vote,iforest_score,ifo
 2020-06,penalty_total_brl,43093577.19,0.886539,False,0.904762,False,0.402342,False,0.23816,False,0,False,0.1632,False
 2020-07,penalty_total_brl,98625038.03,1.426236,False,0.961841,False,0.407408,False,0.850863,False,0,False,0.2013,False
 2020-08,penalty_total_brl,13718067.370000001,0.240342,False,0.444751,False,0.42248,False,0.12974,False,0,False,0.1191,False
-2020-09,penalty_total_brl,12865858.99,0.380774,False,0.581373,False,0.39141,False,0.220378,False,0,False,0.126,False
+2020-09,penalty_total_brl,12865858.99,0.380774,False,0.581373,False,0.39141,False,0.220379,False,0,False,0.126,False
 2020-10,penalty_total_brl,566434.6,2.885474,False,3.288583,True,0.511882,False,0.435349,False,1,False,0.3725,False
 2020-11,penalty_total_brl,301095.56,2.675184,False,3.812167,True,0.555821,False,0.704945,False,1,False,0.4001,False
 2020-12,penalty_total_brl,512130.70999999996,1.682422,False,2.596507,False,0.527553,False,0.483236,False,0,False,0.2978,False
@@ -140,9 +140,9 @@ month,series,value,zscore_score,zscore_vote,mad_score,mad_vote,iforest_score,ifo
 2021-08,penalty_total_brl,26518805.17,1.138892,False,1.245058,False,0.387551,False,0.206051,False,0,False,0.1842,False
 2021-09,penalty_total_brl,33196054.27,1.207088,False,1.360413,False,0.38981,False,0.346547,False,0,False,0.1951,False
 2021-10,penalty_total_brl,2139106.81,0.536331,False,0.756264,False,0.468099,False,0.342458,False,0,False,0.1582,False
-2021-11,penalty_total_brl,736357.53,1.338553,False,1.549402,False,0.492772,False,0.851455,False,0,False,0.2399,False
+2021-11,penalty_total_brl,736357.53,1.338553,False,1.549402,False,0.492772,False,0.851454,False,0,False,0.2399,False
 2021-12,penalty_total_brl,11327980.66,0.416333,False,0.333373,False,0.426651,False,0.066936,False,0,False,0.1215,False
-2022-01,penalty_total_brl,69726196.27,1.834519,False,1.729489,False,0.415557,False,0.872658,False,0,False,0.2524,False
+2022-01,penalty_total_brl,69726196.27,1.834519,False,1.729489,False,0.415557,False,0.872659,False,0,False,0.2524,False
 2022-02,penalty_total_brl,33958741.49,0.914533,False,0.86233,False,0.389851,False,0.395806,False,0,False,0.1631,False
 2022-03,penalty_total_brl,372097.11000000004,2.591883,False,2.560831,False,0.521136,False,1.815944,False,0,False,0.3593,False
 2022-04,penalty_total_brl,5424466.88,0.304223,False,0.625332,False,0.449464,False,0.156454,False,0,False,0.1355,False
@@ -165,7 +165,7 @@ month,series,value,zscore_score,zscore_vote,mad_score,mad_vote,iforest_score,ifo
 2023-09,penalty_total_brl,35577301.68,0.449739,False,0.274016,False,0.442499,False,0.518418,False,0,False,0.1326,False
 2023-10,penalty_total_brl,24320037.52,0.305931,False,0.067234,False,0.379749,False,0.310149,False,0,False,0.1008,False
 2023-11,penalty_total_brl,20849790.23,0.274224,False,0.029064,False,0.376564,False,0.320485,False,0,False,0.0975,False
-2023-12,penalty_total_brl,0.0,3.725903,True,6.816212,True,0.590309,False,6.258218,False,2,True,0.6526,False
+2023-12,penalty_total_brl,0.0,3.725903,True,6.816212,True,0.590309,False,6.258217,False,2,True,0.6526,False
 2024-01,penalty_total_brl,20776684.28,0.395222,False,0.018841,False,0.519261,False,0.160936,False,0,False,0.1286,False
 2024-02,penalty_total_brl,165807883.49,1.236016,False,1.980602,False,0.46518,False,1.082542,False,0,False,0.2524,False
 2024-03,penalty_total_brl,89688658.51,0.869843,False,0.9945,False,0.411838,False,0.579862,False,0,False,0.175,False
@@ -184,7 +184,7 @@ month,series,value,zscore_score,zscore_vote,mad_score,mad_vote,iforest_score,ifo
 2025-04,penalty_total_brl,35718533.43,0.266789,False,0.273853,False,0.395952,False,0.191524,False,0,False,0.1088,False
 2025-05,penalty_total_brl,23634357.53,0.151175,False,0.42481,False,0.384314,False,0.124743,False,0,False,0.1065,False
 2025-06,penalty_total_brl,35141271.23,0.265387,False,0.081518,False,0.388574,False,0.406751,False,0,False,0.1035,False
-2025-07,penalty_total_brl,0.0,2.177184,False,8.761411,True,0.608072,True,6.283096,False,2,True,0.5922,False
+2025-07,penalty_total_brl,0.0,2.177184,False,8.761411,True,0.608072,True,6.283095,False,2,True,0.5922,False
 2025-08,penalty_total_brl,17554787.73,0.051534,False,0.88783,False,0.530853,False,0.273411,False,0,False,0.1552,False
 2025-09,penalty_total_brl,71042927.7,0.513312,False,0.666034,False,0.412161,False,0.908859,False,0,False,0.1531,False
 2025-10,penalty_total_brl,102032968.15,0.623159,False,1.012577,False,0.403591,False,1.389531,False,0,False,0.1798,False
