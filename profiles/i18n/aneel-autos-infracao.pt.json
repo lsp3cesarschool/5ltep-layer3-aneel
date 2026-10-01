@@ -1,0 +1,11 @@
+{
+  "_comment": "Portuguese terms for the machine translation of this profile's dashboard texts (src/translate.py). Kept apart from the profile so editing it never changes what the LLM-as-a-Judge receives.",
+  "glossary": {
+    "infraction notice": "auto de infração",
+    "infraction notices": "autos de infração",
+    "penalty": "penalidade",
+    "penalties": "penalidades",
+    "ANEEL infraction notices": "Autos de infração da ANEEL",
+    "Brazil": "Brasil"
+  }
+}

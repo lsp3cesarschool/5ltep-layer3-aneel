@@ -54,7 +54,7 @@ O que difere do repositório principal é apenas:
 
 Os perfis e resultados do IBAMA não estão incluídos. Todo o resto (detectores, LLM-as-a-Judge, revisão
 humana, painel, workflows, testes) é idêntico a
-[`5ltep-layer3@09c01b5`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/09c01b5684f542bab0e8674ad594fa105de1f9bd),
+[`5ltep-layer3@3c81681`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/3c81681eb2d2845768e45d73dd5f816184a79f76),
 e a instância montada passa na mesma suíte de testes antes de cada atualização.
 
 ## Termos-chave

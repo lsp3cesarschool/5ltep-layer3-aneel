@@ -750,3 +750,31 @@ def test_dashboard_labels_exist_in_both_languages():
     assert keys_en == keys_pt, keys_en ^ keys_pt
     markers = set(re.findall(r'data-i18n(?:-title)?="([\w-]+)"', html))
     assert markers <= keys_en, markers - keys_en
+
+
+def test_translation_redone_when_glossary_changes(tmp_path, monkeypatch):
+    from src import translate
+    monkeypatch.setattr(config, "ROOT", tmp_path)
+    monkeypatch.setattr(config, "PROFILES_DIR", tmp_path / "profiles")
+    p = Profile(copy.deepcopy(BASE_PROFILE))
+    calls = []
+
+    class Fake:
+        model = "fake"
+
+        def generate(self, system, prompt, seed, schema, temperature=None, num_ctx=None):
+            calls.append(system)
+            return json.dumps({"translation": "auto de infração" if "auto de infração" in system else "notificação"}), 0.0
+
+    texts = ["infraction notice"]
+    store = translate.load(p.paths.translations)
+    translate.translate_pending(texts, store, Fake(), p.paths.translations, 5,
+                                {"pt": translate.system_prompt(p, "pt")})
+    assert translate.lookup(store, texts, "pt")["infraction notice"] == "notificação"
+    glossary = tmp_path / "profiles" / "i18n" / f"{p.id}.pt.json"
+    glossary.parent.mkdir(parents=True)
+    glossary.write_text(json.dumps({"glossary": {"infraction notice": "auto de infração"}}), encoding="utf-8")
+    systems = {"pt": translate.system_prompt(p, "pt")}
+    res = translate.translate_pending(texts, store, Fake(), p.paths.translations, 5, systems)
+    assert res["translated"] == 1 and translate.lookup(store, texts, "pt")["infraction notice"] == "auto de infração"
+    assert translate.translate_pending(texts, store, Fake(), p.paths.translations, 5, systems)["translated"] == 0

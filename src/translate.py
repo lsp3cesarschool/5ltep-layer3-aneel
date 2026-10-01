@@ -24,13 +24,37 @@ LANGS = ("pt",)
 SYSTEM = {
     "pt": (
         "You translate short texts about the quality of open government data from English into "
-        "Brazilian Portuguese. Keep unchanged: category codes (PDC, SP, DQE, GES, INVALID), numbers, "
-        "dates such as 2019-01, series names such as notices or fine_total_brl, and the names of laws, "
-        "agencies and places. Do not add, explain or remove anything. If the text is already in "
-        "Portuguese, return it as it is."
+        "Brazilian Portuguese. Translate everything, titles included. Keep unchanged: category codes "
+        "(PDC, SP, DQE, GES, INVALID), numbers, dates such as 2019-01, series names such as notices or "
+        "fine_total_brl, and proper names of laws, agencies and places. Do not add, explain or remove "
+        "anything. If the text is already in Portuguese, return it as it is."
     ),
 }
+# Terms the dashboard uses everywhere; profiles/i18n/<profile>.pt.json adds the domain's own terms.
+GLOSSARY = {
+    "pt": {
+        "flagged": "sinalizado(a)", "anomaly": "anomalia", "seasonality check": "verificação de sazonalidade",
+        "seasonal pattern": "padrão sazonal", "level shift": "mudança de nível", "data quality": "qualidade de dados",
+        "steward": "gestor", "ratio": "razão", "median": "mediana", "detector": "detector",
+        "policy-driven change": "mudança por política", "genuine enforcement shift": "mudança genuína de fiscalização",
+        "data-quality event": "evento de qualidade de dados", "currency reform": "reforma monetária",
+    },
+}
 SCHEMA = {"type": "object", "properties": {"translation": {"type": "string"}}, "required": ["translation"]}
+
+
+def system_prompt(profile: Profile, lang: str) -> str:
+    """Instructions with the glossary: the general terms plus the profile's own (profiles/i18n/)."""
+    own = config.PROFILES_DIR / "i18n" / f"{profile.id}.{lang}.json"  # apart from the profile on purpose
+    extra = json.loads(own.read_text(encoding="utf-8")).get("glossary", {}) if own.exists() else {}
+    terms = {**GLOSSARY[lang], **extra}
+    glossary = "; ".join(f'"{en}" -> "{tr}"' for en, tr in terms.items())
+    return f"{SYSTEM[lang]} Always use these translations of terms: {glossary}."
+
+
+def prompt_version(system: str) -> str:
+    """Translations made with other instructions (e.g. an older glossary) are redone."""
+    return hashlib.sha256(system.encode("utf-8")).hexdigest()[:12]
 
 
 def text_key(text: str) -> str:
@@ -78,21 +102,25 @@ def lookup(store: dict, texts: list[str], lang: str) -> dict:
     return {t: table[text_key(t)]["text"] for t in texts if text_key(t) in table}
 
 
-def translate_pending(texts: list[str], store: dict, client, path, max_minutes: float) -> dict:
-    """Translate the texts without a translation, saving after each one."""
+def translate_pending(texts: list[str], store: dict, client, path, max_minutes: float,
+                      systems: dict | None = None) -> dict:
+    """Translate the texts without a current translation (missing, or made with other
+    instructions), saving after each one. `systems`: {lang: instructions} (default: no glossary)."""
+    systems = systems or SYSTEM
     start, done, failed = time.monotonic(), 0, 0
     for lang in LANGS:
         table = store.setdefault(lang, {})
+        version = prompt_version(systems[lang])
+        current = lambda x: text_key(x) in table and table[text_key(x)].get("version") == version  # noqa: E731
         for t in texts:
             k = text_key(t)
-            if k in table:
+            if current(t):
                 continue
             if time.monotonic() - start > max_minutes * 60:
                 logger.info("Translation budget of %.0f min reached", max_minutes)
-                return {"translated": done, "failed": failed, "remaining": sum(
-                    1 for x in texts if text_key(x) not in table)}
+                return {"translated": done, "failed": failed, "remaining": sum(1 for x in texts if not current(x))}
             try:
-                raw, _ = client.generate(SYSTEM[lang], t, seed=0, schema=SCHEMA, temperature=0.0)
+                raw, _ = client.generate(systems[lang], t, seed=0, schema=SCHEMA, temperature=0.0)
                 out = str(json.loads(raw)["translation"]).strip()
             except Exception as exc:  # one bad answer must not stop the others
                 logger.warning("Translation failed (%s): %.60s", exc, t)
@@ -101,7 +129,7 @@ def translate_pending(texts: list[str], store: dict, client, path, max_minutes: 
             if not out:
                 failed += 1
                 continue
-            table[k] = {"text": out, "model": client.model}
+            table[k] = {"text": out, "model": client.model, "version": version}
             save(store, path)
             done += 1
     return {"translated": done, "failed": failed, "remaining": 0}
