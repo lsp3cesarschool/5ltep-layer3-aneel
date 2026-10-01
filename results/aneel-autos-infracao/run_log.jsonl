@@ -7,3 +7,7 @@
 {"at": "2026-10-01T10:36:13+00:00", "stage": "detect", "run_id": "36850050359", "months": 100, "flagged": 10, "from_series": false}
 {"at": "2026-10-01T10:37:17+00:00", "stage": "judge", "run_id": "36850050359", "judged_now": 0, "pending_before": 0, "model": {"model": "qwen3:4b", "ollama_version": "0.35.0", "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7", "quantization": "Q4_K_M"}}
 {"at": "2026-10-01T10:37:21+00:00", "stage": "issues", "run_id": "36850050359", "created": [], "shifts_created": [], "superseded": [], "remaining": 0, "notified_rejudged": ["notices:2024-12", "penalty_total_brl:2023-05", "penalty_total_brl:2023-12", "penalty_total_brl:2024-07", "penalty_total_brl:2025-01", "penalty_total_brl:2025-07"]}
+{"at": "2026-10-01T11:48:36+00:00", "stage": "detect", "run_id": "36857577207", "months": 100, "flagged": 10, "from_series": false}
+{"at": "2026-10-01T11:49:42+00:00", "stage": "judge", "run_id": "36857577207", "judged_now": 0, "pending_before": 0, "model": {"model": "qwen3:4b", "ollama_version": "0.35.0", "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7", "quantization": "Q4_K_M"}}
+{"at": "2026-10-01T11:49:43+00:00", "stage": "issues", "run_id": "36857577207", "created": [], "shifts_created": [], "superseded": [], "remaining": 0, "notified_rejudged": []}
+{"at": "2026-10-01T11:57:11+00:00", "stage": "translate", "run_id": "36857577207", "translated": 24, "failed": 0, "remaining": 0}

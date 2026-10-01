@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
  "label": "Layer 3",
- "message": "running · started 2026-10-01",
- "color": "blue"
+ "message": "done 2026-10-01 · 10 anomalies · 7 pending review",
+ "color": "brightgreen"
 }
