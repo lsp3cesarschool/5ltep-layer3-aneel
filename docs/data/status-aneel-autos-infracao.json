@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
  "label": "Layer 3",
- "message": "interrupted 2026-10-01 · see Actions",
- "color": "lightgrey"
+ "message": "running · started 2026-10-01",
+ "color": "blue"
 }
