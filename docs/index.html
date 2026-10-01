@@ -8,6 +8,13 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
+<nav class="topbar">
+  <a id="repo-link" href="https://github.com/lsp3cesarschool/5ltep-layer3">← Back to the repository</a>
+  <span class="muted">·</span>
+  <a id="readme-link" href="https://github.com/lsp3cesarschool/5ltep-layer3#readme">README</a>
+  <span class="muted">·</span>
+  <a id="leiame-link" href="https://github.com/lsp3cesarschool/5ltep-layer3/blob/main/LEIAME.md" lang="pt">LEIAME (português)</a>
+</nav>
 <header>
   <div>
     <p class="eyebrow">5L-TEP · Layer 3 · Anomaly Detection</p>
@@ -15,7 +22,7 @@
     <p class="muted" id="subtitle"></p>
   </div>
   <div class="actions">
-    <label>Profile <select id="profile"></select></label>
+    <label id="profile-picker" hidden title="Each profile is one dataset, or one cut of a dataset, monitored by this repository">Dataset <select id="profile"></select></label>
     <a class="button" id="run-link" target="_blank" rel="noopener">Run Layer 3 now ↗</a>
     <a class="button secondary" id="issues-link" target="_blank" rel="noopener">Review queue ↗</a>
     <a class="button secondary" id="events-link" target="_blank" rel="noopener">Suggest events ↗</a>
@@ -76,7 +83,7 @@
 
 <footer class="muted">
   5L-TEP Layer 3 toolkit ·
-  <a href="https://github.com/lsp3cesarschool/5ltep-layer3">source code</a> ·
+  <a id="footer-repo-link" href="https://github.com/lsp3cesarschool/5ltep-layer3">source code</a> ·
   <a href="https://github.com/lsp3cesarschool/5ltep-layer4">Layer 4 (provenance)</a>
 </footer>
 <script src="app.js"></script>

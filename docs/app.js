@@ -24,6 +24,9 @@ function label(a) {
 }
 
 async function init() {
+  el("repo-link").href = el("footer-repo-link").href = `https://github.com/${REPO}`;
+  el("readme-link").href = `https://github.com/${REPO}#readme`;
+  el("leiame-link").href = `https://github.com/${REPO}/blob/main/LEIAME.md`;
   el("run-link").href = `https://github.com/${REPO}/actions/workflows/layer3.yml`;
   el("issues-link").href = `https://github.com/${REPO}/issues?q=is%3Aissue+is%3Aopen+label%3Alayer3`;
   el("events-link").href = `https://github.com/${REPO}/actions/workflows/events.yml`;
@@ -37,7 +40,8 @@ async function init() {
   }
   const wanted = new URLSearchParams(location.search).get("profile") || index.default;
   const select = el("profile");
-  select.innerHTML = index.profiles.map((p) => `<option value="${esc(p.id)}">${esc(p.id)}</option>`).join("");
+  select.innerHTML = index.profiles.map((p) => `<option value="${esc(p.id)}">${esc(p.title || p.id)}</option>`).join("");
+  el("profile-picker").hidden = index.profiles.length < 2;  // a selector with one option says nothing
   select.value = index.profiles.some((p) => p.id === wanted) ? wanted : index.profiles[0].id;
   select.onchange = () => { history.replaceState(null, "", `?profile=${select.value}`); load(select.value); };
   el("logscale").onchange = drawCharts;
