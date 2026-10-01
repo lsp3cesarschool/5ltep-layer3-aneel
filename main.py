@@ -31,7 +31,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src import aggregate, config, detectors, judge, report, review, translate
+from src import aggregate, config, detectors, judge, report, review, safety, translate
 from src import profile as profiles
 from src.ckan_source import download, resolve_resource
 
@@ -123,9 +123,15 @@ def cmd_resolve_model(args) -> None:
     print(json.dumps(sel))
     env = os.environ.get("GITHUB_ENV")
     if env:
+        values = {"LLM_MODEL": sel["model"], "LLM_THINK": sel["think"], "LLM_MODEL_SOURCE": sel["source"],
+                  "LLM_DIGEST": (sel.get("digest") or "").removeprefix("sha256:")}
+        # These end up in shell commands of later steps: refuse anything unexpected.
+        if not (safety.valid_model(values["LLM_MODEL"]) and values["LLM_THINK"] in safety.THINK_VALUES
+                and values["LLM_MODEL_SOURCE"] in ("pinned", "benchmark", "fallback")
+                and safety.valid_digest(values["LLM_DIGEST"])):
+            sys.exit(f"Refusing an unexpected model selection: {values}")
         with open(env, "a", encoding="utf-8") as fh:
-            for key, value in (("LLM_MODEL", sel["model"]), ("LLM_THINK", sel["think"]),
-                               ("LLM_MODEL_SOURCE", sel["source"])):
+            for key, value in values.items():
                 fh.write(f"{key}={value}\n")
     _set_output("model", sel["model"])
 
@@ -142,6 +148,38 @@ def cmd_judge(args) -> None:
     _log_run(p, "judge", res)
     _set_output("judged_now", res["judged_now"])
     _set_output("pending_after", res["pending_before"] - res["judged_now"])
+
+
+def cmd_accept_artifact(args) -> None:
+    """Validate the files the analysis job handed over and copy them into the repository.
+
+    The analysis job runs the model with a read-only token; this one writes to the repository
+    and never runs the model. Only this profile's data and results are accepted, with the
+    expected structure and bounded sizes (src/safety.py)."""
+    p = profiles.load(args.profile)
+    src = Path(args.dir)
+    accepted = safety.accept_artifact(src, config.ROOT, p.id, set(p.categories))
+    chain = safety.read_chain(src)
+    logger.info("Accepted %d files from the analysis job: %s", len(accepted), ", ".join(accepted))
+    _set_output("pending_after", chain["pending_after"])
+    _set_output("rejudge_before", chain["rejudge_before"])
+
+
+def cmd_accept_events(args) -> None:
+    """Check the calendar written by the suggestion job (which runs the model, read-only) and,
+    if it only appends suggestions, write it into the repository for the pull request."""
+    p = profiles.load(args.profile)
+    target = config.ROOT / p["events_file"]
+    old = json.loads(target.read_text(encoding="utf-8")) if target.exists() else {"events": []}
+    new = json.loads(Path(args.file).read_text(encoding="utf-8"))
+    added = safety.check_events_update(old, new)
+    target.write_text(json.dumps(new, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    if args.summary:
+        lines = [f"- `{e['month']}` ({e['kind']}): {safety.safe_markdown(e['label'], 300)}" for e in added]
+        Path(args.summary).write_text("\n".join(lines) + "\n", encoding="utf-8")
+    logger.info("%d suggestions accepted for %s", len(added), p["events_file"])
+    _set_output("added", len(added))
+    _set_output("events_file", p["events_file"])
 
 
 def cmd_translate(args) -> None:
@@ -335,6 +373,11 @@ def main(argv=None) -> None:
         help="for the status badge: whether another batch follows (auto: while anomalies await judgment)")
     add("status", cmd_status, "set the status badge").add_argument(
         "--state", choices=["running", "interrupted"], required=True)
+    add("accept-artifact", cmd_accept_artifact, "validate and apply the analysis job's results").add_argument(
+        "--dir", required=True, help="folder where the analysis job's artifact was downloaded")
+    sp = add("accept-events", cmd_accept_events, "validate the event suggestions before the pull request")
+    sp.add_argument("--file", required=True, help="calendar written by the suggestion job")
+    sp.add_argument("--summary", help="write a safe Markdown list of the suggestions here")
     add("check-profile", cmd_check_profile, "validate a profile against the live portal")
     sp = add("suggest-events", cmd_suggest_events, "LLM suggestions for the event calendar (for review)")
     sp.add_argument("--offline", action="store_true", help="no online source: the model answers from memory")

@@ -1,8 +1,11 @@
+# Exact versions (those of the last verified run): a new release of a dependency, compromised or
+# just different, never enters a run by itself (SECURITY.md). Update them deliberately.
 # CPU-only PyTorch wheels (the LSTM-ED is small; no GPU needed).
 --extra-index-url https://download.pytorch.org/whl/cpu
-pandas>=2.1
-numpy>=1.26
-scikit-learn>=1.4
-torch>=2.2
-requests>=2.31
-pytest>=7.4
+pandas==3.0.6
+numpy==2.4.6
+scikit-learn==1.9.1
+torch==2.14.1
+requests==2.34.2
+pytest==9.1.1
+PyYAML==6.0.3

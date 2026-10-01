@@ -14,6 +14,7 @@ the IBAMA study.**
 | 🧑‍⚖️ **Review queue** | [![open reviews](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/layer3?label=open%20reviews&color=0366d6)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Alayer3) [![pending](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Apending?label=pending&color=d73a4a)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Apending) [![advisory](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Aadvisory?label=advisory&color=fbca04)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Aadvisory) [![level shift](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Alevel-shift?label=level%20shift&color=f9d0c4)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Alevel-shift)<br>live counts; each badge opens its list of issues |
 | 🏛️ **Main instance** | [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3): IBAMA, and the full documentation |
 | 🧪 **Model choice** | [5ltep-layer3-modeltest](https://github.com/lsp3cesarschool/5ltep-layer3-modeltest): the monthly benchmark that picks the LLM judge |
+| 🔒 **Security** | [SECURITY.md](SECURITY.md): what is not trusted (the model, the data portal, web sources), how the toolkit contains it, and how to report a vulnerability |
 
 > **Status: research demonstration.** This repository is not operated by, affiliated with or endorsed
 > by ANEEL; it only reads ANEEL's open data. It shows that the toolkit can be reused on another portal.
@@ -53,7 +54,7 @@ What differs from the main repository is only:
 
 The IBAMA profiles and results are not included. Everything else (detectors, LLM-as-a-Judge,
 human-in-the-loop review, dashboard, workflows, tests) is identical to
-[`5ltep-layer3@1ce0bff`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/1ce0bffd9ab6c2aee13f64745600ede129b7bab4),
+[`5ltep-layer3@1554bc4`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/1554bc497d64e5d49eb3e6fa1ea775a6134713a8),
 and the built instance passes the same test suite before every update.
 
 ## Key terms

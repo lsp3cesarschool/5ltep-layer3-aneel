@@ -39,7 +39,7 @@
   "domain": "ANEEL, Brazil's federal electricity regulator, publishes every infraction notice (auto de infracao) issued by its inspection areas and by the state regulatory agencies that inspect on its behalf, under ANEEL Normative Resolution 846/2019. Each record is one notice to an electricity company (generation, transmission or distribution), dated when it was issued, with the penalty value.",
   "record_label": "infraction notices",
   "events_file": "profiles/events/brazil-electricity-regulation.json",
-  "events_include_suggested": true,
+  "events_include_suggested": false,
   "monetary_file": "profiles/monetary/brazil-currency.json",
   "event_sources": {"wikipedia": {"lang": "pt", "title": "{year} no Brasil"}},
   "categories": {

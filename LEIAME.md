@@ -14,6 +14,7 @@ montada pelo autor como caso de controle do estudo do IBAMA.**
 | 🧑‍⚖️ **Fila de revisão** | [![revisões abertas](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/layer3?label=revis%C3%B5es%20abertas&color=0366d6)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Alayer3) [![pendentes](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Apending?label=pendentes&color=d73a4a)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Apending) [![recomendadas](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Aadvisory?label=recomendadas&color=fbca04)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Aadvisory) [![mudança de nível](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Alevel-shift?label=mudan%C3%A7a%20de%20n%C3%ADvel&color=f9d0c4)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Alevel-shift)<br>contagens ao vivo; cada selo abre sua lista de issues |
 | 🏛️ **Instância principal** | [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3/blob/main/LEIAME.md): IBAMA, e a documentação completa |
 | 🧪 **Escolha do modelo** | [5ltep-layer3-modeltest](https://github.com/lsp3cesarschool/5ltep-layer3-modeltest/blob/main/LEIAME.md): o benchmark mensal que escolhe o LLM juiz |
+| 🔒 **Segurança** | [SECURITY.md](SECURITY.md): o que não é confiável (o modelo, o portal de dados, fontes da web), como o kit o contém, e como relatar uma vulnerabilidade |
 
 > **Situação: demonstração de pesquisa.** Este repositório não é operado pela ANEEL, não tem vínculo
 > com ela nem aval dela; apenas lê os dados abertos da ANEEL. Ele mostra que o kit pode ser reutilizado
@@ -54,7 +55,7 @@ O que difere do repositório principal é apenas:
 
 Os perfis e resultados do IBAMA não estão incluídos. Todo o resto (detectores, LLM-as-a-Judge, revisão
 humana, painel, workflows, testes) é idêntico a
-[`5ltep-layer3@1ce0bff`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/1ce0bffd9ab6c2aee13f64745600ede129b7bab4),
+[`5ltep-layer3@1554bc4`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/1554bc497d64e5d49eb3e6fa1ea775a6134713a8),
 e a instância montada passa na mesma suíte de testes antes de cada atualização.
 
 ## Termos-chave

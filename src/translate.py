@@ -17,6 +17,7 @@ import time
 
 from src import config
 from src.judge import has_judgment
+from src.safety import MAX_TRANSLATION, clean_text
 from src.profile import Profile
 
 logger = logging.getLogger("layer3")
@@ -143,7 +144,7 @@ def translate_pending(texts: list[str], store: dict, client, path, max_minutes: 
                 return {"translated": done, "failed": failed, "remaining": sum(1 for x in texts if not current(x))}
             try:
                 raw, _ = client.generate(systems[lang], t, seed=0, schema=SCHEMA, temperature=0.0)
-                out = keep_years(t, str(json.loads(raw)["translation"]).strip())
+                out = clean_text(keep_years(t, str(json.loads(raw)["translation"]).strip()), MAX_TRANSLATION)
             except Exception as exc:  # one bad answer must not stop the others
                 logger.warning("Translation failed (%s): %.60s", exc, t)
                 failed += 1

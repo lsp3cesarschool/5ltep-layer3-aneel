@@ -22,6 +22,7 @@ import requests
 
 from src import config
 from src.profile import Profile
+from src.safety import MAX_REASONING, clean_text
 
 logger = logging.getLogger(__name__)
 
@@ -218,9 +219,10 @@ def parse_response(text: str, categories: dict) -> dict:
             raise ValueError(f"unknown category {cat!r}")
         conf = float(data.get("confidence", 0))
         return {"category": cat, "confidence": round(min(max(conf, 0.0), 1.0), 3),
-                "reasoning": str(data.get("reasoning", "")).strip()}
+                "reasoning": clean_text(str(data.get("reasoning", "")).strip(), MAX_REASONING)}
     except (ValueError, TypeError, AttributeError) as exc:
-        return {"category": "INVALID", "confidence": 0.0, "reasoning": f"Unparseable answer ({exc}): {text[:300]}"}
+        return {"category": "INVALID", "confidence": 0.0,
+                "reasoning": clean_text(f"Unparseable answer ({exc}): {text[:300]}", MAX_REASONING)}
 
 
 def aggregate_runs(runs: list[dict]) -> dict:

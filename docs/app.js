@@ -152,6 +152,15 @@ function applyStaticLabels() {
   }
 }
 
+// Links built from data: only http(s), so a "javascript:" address can never run.
+const safeUrl = (u) => (/^https?:\/\//i.test(String(u || "")) ? String(u) : "#");
+
+// A category as a coloured tag; anything outside the known codes is shown escaped and uncoloured.
+function catTag(c) {
+  const known = CATS.includes(c) ? c : "PENDING";
+  return `<span class="tag" style="--c: var(--${known})">${esc(c)}</span>`;
+}
+
 // Final label of an anomaly: steward decision > LLM majority > pending.
 function label(a) {
   if (a.review && a.review.status === "decided") return a.review.steward_category;
@@ -320,17 +329,17 @@ function drawTable() {
     (f === "review" && a.llm && a.llm.review_level !== "none" && !(a.review && a.review.status === "decided")));
   const level = (l) => T.level[l === "mandatory" ? "pending" : l] || l;  // "mandatory": name used until 30/09/2026
   el("rows").innerHTML = rows.map((a) => {
-    const llm = a.llm ? `<span class="tag" style="--c: var(--${a.llm.category})">${a.llm.category}</span>` +
+    const llm = a.llm ? catTag(a.llm.category) +
       (a.llm.review_level !== "none" ? ` <span class="muted">${esc(level(a.llm.review_level))}</span>` : "") +
       `<br><span class="muted" title="${esc(t("model_hint"))}">${esc(a.llm.model)} · ${esc(a.llm.prompt_version)}</span>`
       : `<span class="muted">${esc(t("not_judged"))}</span>`;
     const steward = a.review
-      ? `<a href="${esc(a.review.url)}" target="_blank" rel="noopener">#${a.review.issue}</a> ` +
-        (a.review.status === "decided" ? `<span class="tag" style="--c: var(--${a.review.steward_category})">${a.review.steward_category}</span>`
+      ? `<a href="${esc(safeUrl(a.review.url))}" target="_blank" rel="noopener">#${esc(a.review.issue)}</a> ` +
+        (a.review.status === "decided" ? catTag(a.review.steward_category)
           : `<span class="muted">${esc(T.status[a.review.status] || a.review.status)}</span>`)
       : "";
-    return `<tr id="${rowId(a.series, a.month)}"><td class="num">${a.month}</td><td>${esc(a.series)}</td>
-      <td class="num">${a.votes}/4 · ${num(a.score)}${a.near_drift ? ` · ${esc(t("drift"))}` : ""}<br><span class="muted">${a.detectors.join(", ")}</span></td>
+    return `<tr id="${rowId(a.series, a.month)}"><td class="num">${esc(a.month)}</td><td>${esc(a.series)}</td>
+      <td class="num">${esc(a.votes)}/4 · ${num(a.score)}${a.near_drift ? ` · ${esc(t("drift"))}` : ""}<br><span class="muted">${esc(a.detectors.join(", "))}</span></td>
       <td>${llm}</td><td class="num">${a.llm ? num(a.llm.consistency) : ""}</td><td>${steward}</td>
       <td class="reason">${a.llm ? trHtml(a.llm.reasoning) : ""}</td></tr>`;
   }).join("") || `<tr><td colspan="7" class="muted">${esc(t("nothing"))}</td></tr>`;
@@ -359,7 +368,7 @@ function drawProvenance() {
   const s = data.summary, src = s.source, agg = src.aggregation || {};
   const n = (v) => (v || 0).toLocaleString(LOCALE);
   const items = [
-    [t("p_dataset"), src.dataset_url ? `<a href="${esc(src.dataset_url)}">${esc(src.dataset_url)}</a>` : esc(src.resource_url)],
+    [t("p_dataset"), src.dataset_url ? `<a href="${esc(safeUrl(src.dataset_url))}" rel="noopener">${esc(src.dataset_url)}</a>` : esc(src.resource_url)],
     [t("p_resource"), esc(src.resource_url)],
     [t("p_sha"), `<code>${esc(src.checksum_sha256)}</code>`],
     [t("p_downloaded"), esc(src.download_started_at || "")],

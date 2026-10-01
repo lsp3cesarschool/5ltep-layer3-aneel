@@ -91,7 +91,9 @@ class Profile:
         4B model inventing laws and impeachments when not grounded on a source.
         """
         if include_suggested is None:
-            include_suggested = self.raw.get("events_include_suggested", True)
+            # Off unless a profile turns it on: suggestions come from editable sources (Wikipedia)
+            # and would reach the prompt unchecked (SECURITY.md). Only verified events by default.
+            include_suggested = self.raw.get("events_include_suggested", False)
         events = []
         rel = self.raw.get("events_file")
         if rel:

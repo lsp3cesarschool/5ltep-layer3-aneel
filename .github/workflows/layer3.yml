@@ -10,6 +10,14 @@ name: 5L-TEP Layer 3 Anomaly Detection
 # pending, starts the next batch of the same chain. Batches after the first
 # re-use the series committed by the first one, so a whole chain analyses the
 # same data even if the portal is updated meanwhile.
+#
+# Three jobs, so that the model never runs where the repository can be written (SECURITY.md):
+#   plan     picks the profiles and marks the chain as running (writes; runs no model);
+#   analyse  downloads, detects, judges and translates with a READ-ONLY token, and hands its
+#            results over as an artifact (the model and its weights are not trusted);
+#   publish  accepts only this profile's data and results, well formed (main.py accept-artifact),
+#            opens the review issues, builds the reports and commits (writes; runs no model).
+# Values from inputs and data reach the scripts through the environment, never pasted into them.
 on:
   schedule:
     - cron: '0 6 5 * *'   # 5th of every month, 06:00 UTC
@@ -48,9 +56,7 @@ on:
         default: '1'
 
 permissions:
-  actions: write            # to start the next batch
-  contents: write
-  issues: write
+  contents: read
 
 concurrency:
   group: layer3-writes      # shared with reviews.yml: one writer at a time
@@ -60,37 +66,76 @@ env:
   # 'auto' follows the model benchmark (5ltep-layer3-modeltest); a tag pins the model.
   LLM_MODEL: ${{ vars.LLM_MODEL || 'auto' }}
   LLM_THINK: ${{ vars.LLM_THINK || '' }}
+  LLM_DIGEST: ''            # set by resolve-model when the benchmark gives one
   PYTHON_VERSION: '3.11'
   MAX_BATCHES: 60           # safety stop for a chain
+  BATCH: ${{ inputs.batch || '1' }}
+  SKIP_LLM: ${{ inputs.skip_llm && 'true' || 'false' }}
 
 jobs:
   plan:
     # Manual run: the chosen profile. Monthly run: every profile with "scheduled": true.
     runs-on: ubuntu-latest
+    permissions:
+      contents: write          # the "running" status badge
     outputs:
       profiles: ${{ steps.pick.outputs.profiles }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
       - id: pick
+        env:
+          WANTED: ${{ inputs.profile }}
         run: |
-          if [ -n "${{ inputs.profile }}" ]; then
-            echo "profiles=[\"${{ inputs.profile }}\"]" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          [[ "$BATCH" =~ ^[0-9]{1,3}$ ]] || { echo "::error::batch must be a number"; exit 1; }
+          if [ -n "$WANTED" ]; then
+            if ! [[ "$WANTED" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ ]] || [ ! -f "profiles/$WANTED.json" ]; then
+              echo "::error::Unknown profile: $WANTED"; exit 1
+            fi
+            echo "profiles=[\"$WANTED\"]" >> "$GITHUB_OUTPUT"
           else
             echo "profiles=$(jq -c -s '[.[] | select(.scheduled == true) | .id]' profiles/*.json)" >> "$GITHUB_OUTPUT"
           fi
+      - uses: actions/setup-python@v6
+        if: ${{ env.BATCH == '1' }}
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      # The "Layer 3" badge of the README reads docs/data/status-<profile>.json: running,
+      # done (date and counts) or interrupted, instead of GitHub's passed/failed of one run.
+      - name: Mark the chain as running (status badge)
+        if: ${{ env.BATCH == '1' }}
+        env:
+          PROFILES: ${{ steps.pick.outputs.profiles }}
+        run: |
+          set -euo pipefail
+          pip install -q -r requirements.txt
+          for p in $(echo "$PROFILES" | jq -r '.[]'); do python main.py status --profile "$p" --state running; done
+          git config user.name "5L-TEP L3 Bot"
+          git config user.email "5ltep-l3-bot@users.noreply.github.com"
+          git add docs/data/
+          git diff --cached --quiet || git commit -m "chore(l3): running [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
+          git pull --rebase --autostash
+          git push
 
-  layer3:
+  analyse:
     needs: plan
     runs-on: ubuntu-latest   # public repository: 4 vCPU / 16 GB RAM, no minute quota
     timeout-minutes: 330
+    permissions:
+      contents: read           # runs the model: no write access to anything
     strategy:
       fail-fast: false
-      max-parallel: 1        # profiles commit to the same branch: one at a time
+      max-parallel: 1
       matrix:
         profile: ${{ fromJSON(needs.plan.outputs.profiles) }}
     env:
       PROFILE: ${{ matrix.profile }}
-      BATCH: ${{ inputs.batch || '1' }}
+      MAX_JUDGMENTS: ${{ inputs.max_judgments || '25' }}
+      REJUDGE: ${{ inputs.rejudge || 'none' }}
+      REJUDGE_BEFORE_IN: ${{ inputs.rejudge_before }}
 
     steps:
       - name: Checkout repository
@@ -99,6 +144,7 @@ jobs:
           # the latest commit when the job starts (a queued run would otherwise start from the
           # commit of its trigger time and conflict with the batches committed in the meantime)
           ref: ${{ github.ref_name }}
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -109,21 +155,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # The "Layer 3" badge of the README reads docs/data/status-<profile>.json: running,
-      # done (date and counts) or interrupted, instead of GitHub's passed/failed of one run.
-      - name: Mark the chain as running (status badge)
-        if: ${{ env.BATCH == '1' }}
-        run: |
-          python main.py status --profile "$PROFILE" --state running
-          git config user.name "5L-TEP L3 Bot"
-          git config user.email "5ltep-l3-bot@users.noreply.github.com"
-          git add docs/data/
-          git diff --cached --quiet || git commit -m "chore(l3): $PROFILE running [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
-          git pull --rebase --autostash
-          git push
-
       - name: "Stage 1: download, aggregate, detect"
-        id: detect
         run: |
           echo "Batch $BATCH of the chain for $PROFILE"
           series="data/$PROFILE/monthly_series.csv"
@@ -138,51 +170,120 @@ jobs:
             python main.py detect --profile "$PROFILE" --from-series
           fi
 
-      - name: Resolve the model (auto = the model benchmark's choice)
-        if: ${{ !inputs.skip_llm }}
+      - name: Resolve the model (auto = the model benchmark's choice, checked)
+        if: ${{ env.SKIP_LLM != 'true' }}
         run: python main.py resolve-model
 
       - name: Set up Ollama
-        if: ${{ !inputs.skip_llm }}
+        if: ${{ env.SKIP_LLM != 'true' }}
         uses: ./.github/actions/setup-ollama
         with:
           model: ${{ env.LLM_MODEL }}
+          digest: ${{ env.LLM_DIGEST }}
 
       - name: "Stage 2: LLM-as-a-Judge"
         id: judge
-        if: ${{ !inputs.skip_llm }}
+        if: ${{ env.SKIP_LLM != 'true' }}
         run: |
-          before="${{ inputs.rejudge_before }}"
-          if [ "${{ inputs.rejudge }}" = "all" ] && [ -z "$before" ]; then before=$(date -u +%Y-%m-%dT%H:%M:%S+00:00); fi
+          set -euo pipefail
+          [[ "$MAX_JUDGMENTS" =~ ^[0-9]{1,4}$ ]] || { echo "::error::max_judgments must be a number"; exit 1; }
+          [[ "$REJUDGE" =~ ^(none|stale|all)$ ]] || { echo "::error::rejudge must be none, stale or all"; exit 1; }
+          before="$REJUDGE_BEFORE_IN"
+          [[ "$before" =~ ^[0-9T:+.-]{0,40}$ ]] || { echo "::error::unexpected rejudge_before"; exit 1; }
+          if [ "$REJUDGE" = "all" ] && [ -z "$before" ]; then before=$(date -u +%Y-%m-%dT%H:%M:%S+00:00); fi
           echo "REJUDGE_BEFORE=$before" >> "$GITHUB_ENV"
-          python main.py judge --profile "$PROFILE" --max-judgments "${{ inputs.max_judgments || '25' }}" \
-            --rejudge "${{ inputs.rejudge || 'none' }}" --rejudge-before "$before"
-
-      - name: Open review issues (human-in-the-loop)
-        id: issues
-        if: ${{ !inputs.skip_llm }}
-        run: python main.py issues --profile "$PROFILE"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          python main.py judge --profile "$PROFILE" --max-judgments "$MAX_JUDGMENTS" \
+            --rejudge "$REJUDGE" --rejudge-before "$before"
 
       # Portuguese version of the dashboard: the same local model translates the texts that have
       # no translation yet (cached by text; judgments are never changed). Never fails the run.
       - name: Translate the dashboard texts (Portuguese)
-        if: ${{ !inputs.skip_llm }}
+        if: ${{ env.SKIP_LLM != 'true' }}
         continue-on-error: true
         run: python main.py translate --profile "$PROFILE"
 
-      - name: Build summary and dashboard data
-        id: report
-        if: ${{ always() && steps.detect.outcome == 'success' }}
+      - name: Hand the results over to the publish job
         env:
-          # schedule runs have no inputs: they always continue until nothing is pending
-          CONTINUES: ${{ (inputs.skip_llm || (github.event_name == 'workflow_dispatch' && !inputs.continue_batches)) && 'no' || 'auto' }}
+          PENDING_AFTER: ${{ steps.judge.outputs.pending_after || '0' }}
+        run: |
+          jq -n --argjson p "${PENDING_AFTER:-0}" --arg b "${REJUDGE_BEFORE:-}" \
+            '{pending_after: $p, rejudge_before: $b}' > chain.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: l3-${{ matrix.profile }}
+          if-no-files-found: warn
+          retention-days: 7
+          path: |
+            chain.json
+            data/${{ matrix.profile }}/monthly_series.csv
+            data/${{ matrix.profile }}/source_manifest.json
+            results/${{ matrix.profile }}/detections.csv
+            results/${{ matrix.profile }}/drift_points.json
+            results/${{ matrix.profile }}/judgments.json
+            results/${{ matrix.profile }}/translations.json
+            results/${{ matrix.profile }}/run_log.jsonl
+
+  publish:
+    needs: [plan, analyse]
+    if: ${{ always() && needs.plan.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write            # to start the next batch
+      contents: write
+      issues: write
+    strategy:
+      fail-fast: false
+      max-parallel: 1            # profiles commit to the same branch: one at a time
+      matrix:
+        profile: ${{ fromJSON(needs.plan.outputs.profiles) }}
+    env:
+      PROFILE: ${{ matrix.profile }}
+      MAX_JUDGMENTS: ${{ inputs.max_judgments || '25' }}
+      REJUDGE: ${{ inputs.rejudge || 'none' }}
+      # schedule runs have no inputs: they always continue until nothing is pending
+      CONTINUES: ${{ (inputs.skip_llm || (github.event_name == 'workflow_dispatch' && !inputs.continue_batches)) && 'no' || 'auto' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download the analysis results
+        id: download
+        continue-on-error: true   # missing when the analysis failed: the chain is marked interrupted
+        uses: actions/download-artifact@v4
+        with:
+          name: l3-${{ matrix.profile }}
+          path: ${{ runner.temp }}/l3-artifact
+
+      - name: Accept the analysis results (checked, this profile only)
+        id: accept
+        if: ${{ steps.download.outcome == 'success' }}
+        run: python main.py accept-artifact --profile "$PROFILE" --dir "$RUNNER_TEMP/l3-artifact"
+
+      - name: Open review issues (human-in-the-loop)
+        id: issues
+        if: ${{ steps.accept.outcome == 'success' && env.SKIP_LLM != 'true' }}
+        run: python main.py issues --profile "$PROFILE"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build summary and dashboard data
+        if: ${{ always() && steps.accept.outcome == 'success' }}
         run: python main.py report --profile "$PROFILE" --chain-continues "$CONTINUES"
 
       - name: Commit results
-        id: commit
-        if: ${{ always() && steps.detect.outcome == 'success' }}
+        if: ${{ always() && steps.accept.outcome == 'success' }}
         run: |
           git config user.name "5L-TEP L3 Bot"
           git config user.email "5ltep-l3-bot@users.noreply.github.com"
@@ -194,36 +295,42 @@ jobs:
       - name: Start the next batch
         id: next
         if: >-
-          ${{ success() && !inputs.skip_llm && (github.event_name != 'workflow_dispatch' || inputs.continue_batches) &&
-              (steps.judge.outputs.pending_after > 0 || steps.issues.outputs.issues_remaining > 0) }}
+          ${{ success() && steps.accept.outcome == 'success' && env.SKIP_LLM != 'true' &&
+              (github.event_name != 'workflow_dispatch' || inputs.continue_batches) &&
+              (steps.accept.outputs.pending_after > 0 || steps.issues.outputs.issues_remaining > 0) }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PENDING_AFTER: ${{ steps.accept.outputs.pending_after }}
+          ISSUES_REMAINING: ${{ steps.issues.outputs.issues_remaining }}
+          REJUDGE_BEFORE: ${{ steps.accept.outputs.rejudge_before }}
+          REF: ${{ github.ref_name }}
         run: |
           if [ "$BATCH" -ge "$MAX_BATCHES" ]; then
             echo "::warning::Stopped after $MAX_BATCHES batches; run the workflow again to continue."
             exit 0
           fi
-          echo "${{ steps.judge.outputs.pending_after }} anomalies and ${{ steps.issues.outputs.issues_remaining }} issues still pending."
-          gh workflow run layer3.yml --ref "${{ github.ref_name }}" \
-            -f profile="$PROFILE" -f max_judgments="${{ inputs.max_judgments || '25' }}" \
+          echo "$PENDING_AFTER anomalies and ${ISSUES_REMAINING:-0} issues still pending."
+          gh workflow run layer3.yml --ref "$REF" \
+            -f profile="$PROFILE" -f max_judgments="$MAX_JUDGMENTS" \
             -f continue_batches=true -f batch="$((BATCH + 1))" \
-            -f rejudge="${{ inputs.rejudge || 'none' }}" -f rejudge_before="${REJUDGE_BEFORE:-}"
+            -f rejudge="$REJUDGE" -f rejudge_before="$REJUDGE_BEFORE"
           echo "started=true" >> "$GITHUB_OUTPUT"
 
       # Off by default: the review queue is a suggestion ready for a steward, not an obligation.
       # With the repository variable L3_REVIEW_ALERT=true, the end of a chain fails on purpose
       # while pending reviews are open, so GitHub e-mails the maintainer (no mail server needed).
       - name: Report open pending reviews (end of the chain)
-        if: ${{ success() && !inputs.skip_llm && steps.next.outputs.started != 'true' }}
+        if: ${{ success() && steps.accept.outcome == 'success' && env.SKIP_LLM != 'true' && steps.next.outputs.started != 'true' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ALERT: ${{ vars.L3_REVIEW_ALERT == 'true' }}
+          REPO: ${{ github.repository }}
         run: |
           open=$(gh issue list --state open --label layer3 --label review:pending --label "profile:$PROFILE" \
                    --limit 1000 --json number --jq length)
           echo "Open pending reviews for $PROFILE: $open"
           if [ "$open" -gt 0 ]; then
-            url="https://github.com/${{ github.repository }}/issues?q=is%3Aopen+label%3Areview%3Apending"
+            url="https://github.com/$REPO/issues?q=is%3Aopen+label%3Areview%3Apending"
             if [ "$ALERT" = "true" ]; then
               echo "::error::$open anomaly(ies) of $PROFILE await a steward review: $url"
               exit 1
@@ -232,7 +339,9 @@ jobs:
           fi
 
       - name: Mark the chain as interrupted (status badge)
-        if: ${{ failure() || cancelled() }}
+        if: ${{ failure() || cancelled() || steps.download.outcome != 'success' }}
+        env:
+          HANDED_OVER: ${{ steps.download.outcome }}
         run: |
           python main.py status --profile "$PROFILE" --state interrupted
           git config user.name "5L-TEP L3 Bot"
@@ -241,3 +350,7 @@ jobs:
           git diff --cached --quiet || git commit -m "chore(l3): $PROFILE interrupted [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
           git pull --rebase --autostash
           git push
+          if [ "$HANDED_OVER" != "success" ]; then
+            echo "::error::The analysis job did not hand over its results (see the analyse job)."
+            exit 1
+          fi

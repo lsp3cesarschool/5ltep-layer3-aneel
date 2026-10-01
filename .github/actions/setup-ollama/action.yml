@@ -1,9 +1,15 @@
 name: Set up Ollama
-description: Install Ollama, restore the model cache, start the server and pull the model.
+description: >-
+  Install a pinned, checksum-verified Ollama, restore the model cache (verified blob by blob),
+  start the server, pull the model and, when the model benchmark gives one, check its digest.
 inputs:
   model:
-    description: Ollama model to pull
+    description: Ollama model to pull (validated against a strict pattern)
     required: true
+  digest:
+    description: Expected manifest digest (sha256, from the model benchmark); empty to skip the check
+    required: false
+    default: ''
 runs:
   using: composite
   steps:
@@ -15,11 +21,33 @@ runs:
 
     - name: Install, start and pull
       shell: bash
+      env:
+        # Values reach the script through the environment, never pasted into it.
+        MODEL: ${{ inputs.model }}
+        DIGEST: ${{ inputs.digest }}
+        # Pinned release and the SHA-256 GitHub publishes for it: no "curl | sh" of a moving script.
+        OLLAMA_VERSION: v0.35.0
+        OLLAMA_SHA256: 1c114a6b220c5efca2ef2b1e5f01d1e535e26f6cd6d1678c8489325d2835e525
       run: |
-        curl -fsSL https://ollama.com/install.sh | sh
-        # The installer may start a system service with its own model store;
-        # run our own server so the cached ~/.ollama/models is used.
-        sudo systemctl stop ollama 2>/dev/null || true
+        set -euo pipefail
+        if ! printf '%s' "$MODEL" | grep -Eq '^[a-z0-9][a-z0-9._-]{0,63}(/[a-z0-9][a-z0-9._-]{0,63})?(:[A-Za-z0-9][A-Za-z0-9._-]{0,63})?$'; then
+          echo "::error::Refusing model name '$MODEL'"; exit 1
+        fi
+        curl -fsSL --retry 3 -o /tmp/ollama.tar.zst \
+          "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/ollama-linux-amd64.tar.zst"
+        echo "${OLLAMA_SHA256}  /tmp/ollama.tar.zst" | sha256sum -c -
+        sudo tar --use-compress-program=unzstd -xf /tmp/ollama.tar.zst -C /usr
+        rm /tmp/ollama.tar.zst
+
+        # A restored cache is only trusted if every blob still matches the hash in its name.
+        blobs="$HOME/.ollama/models/blobs"
+        if [ -d "$blobs" ]; then
+          for f in "$blobs"/sha256-*; do
+            [ -e "$f" ] || continue
+            [ "$(sha256sum "$f" | cut -d' ' -f1)" = "${f##*/sha256-}" ] || { echo "::warning::Cached blob does not match its hash; discarding the cache"; rm -rf "$HOME/.ollama/models"; break; }
+          done
+        fi
+
         export OLLAMA_MODELS="$HOME/.ollama/models"
         nohup ollama serve > /tmp/ollama.log 2>&1 &
         for i in $(seq 1 60); do
@@ -27,4 +55,13 @@ runs:
           sleep 2
         done
         ollama --version
-        ollama pull "${{ inputs.model }}"
+        ollama pull "$MODEL"
+
+        if [ -n "$DIGEST" ]; then
+          got=$(curl -sf http://127.0.0.1:11434/api/tags | jq -r --arg m "$MODEL" '.models[] | select(.name == $m or .model == $m) | .digest' | head -1)
+          if [ "${got#sha256:}" != "${DIGEST#sha256:}" ]; then
+            echo "::error::Model $MODEL has digest $got, but the benchmark approved ${DIGEST}; refusing to use it"
+            exit 1
+          fi
+          echo "Model digest matches the benchmark: $got"
+        fi

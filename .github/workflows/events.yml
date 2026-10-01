@@ -4,6 +4,10 @@ name: 5L-TEP Layer 3 Suggest Events
 # "year in <country>" Wikipedia pages of the years with anomalies) and opens a
 # pull request with them, marked "suggested". The steward reviews the diff,
 # edits it (status verified / rejected, labels) and merges.
+#
+# Two jobs (SECURITY.md): "suggest" runs the model and reads Wikipedia with a read-only token;
+# "pull-request" runs no model, accepts the calendar only if it just appends suggestions
+# (main.py accept-events) and opens the pull request.
 on:
   workflow_dispatch:
     inputs:
@@ -21,72 +25,134 @@ on:
         default: ''
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 env:
   LLM_MODEL: ${{ vars.LLM_MODEL || 'auto' }}
   LLM_THINK: ${{ vars.LLM_THINK || '' }}
+  LLM_DIGEST: ''
 
 jobs:
   suggest:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    permissions:
+      contents: read             # runs the model: no write access to anything
+    outputs:
+      added: ${{ steps.suggest.outputs.added }}
+      profile: ${{ steps.suggest.outputs.profile }}
     steps:
       - uses: actions/checkout@v5
         with:
           ref: ${{ github.ref_name }}  # latest commit when the job starts, not the one at trigger time
+          persist-credentials: false
 
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install dependencies (no PyTorch needed here)
-        run: pip install pandas numpy scikit-learn requests
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
-      - name: Resolve the model (auto = the model benchmark's choice)
+      - name: Resolve the model (auto = the model benchmark's choice, checked)
         run: python main.py resolve-model
 
       - uses: ./.github/actions/setup-ollama
         with:
           model: ${{ env.LLM_MODEL }}
+          digest: ${{ env.LLM_DIGEST }}
 
       - name: Suggest events
         id: suggest
+        env:
+          PROFILE_IN: ${{ inputs.profile }}
+          ONLINE: ${{ inputs.online }}
+          YEARS: ${{ inputs.years }}
         run: |
-          set -o pipefail
-          python main.py suggest-events --profile "${{ inputs.profile }}" \
-            ${{ !inputs.online && '--offline' || '' }} \
-            ${{ inputs.years != '' && format('--years {0}', inputs.years) || '' }} 2>&1 | tee /tmp/suggest.log
+          set -euo pipefail
+          [[ "$PROFILE_IN" =~ ^[a-z0-9_-]{0,64}$ ]] || { echo "::error::bad profile"; exit 1; }
+          [[ "$YEARS" =~ ^[0-9,\ ]{0,200}$ ]] || { echo "::error::years must be comma-separated numbers"; exit 1; }
+          args=(--profile "$PROFILE_IN")
+          [ "$ONLINE" = "true" ] || args+=(--offline)
+          [ -z "$YEARS" ] || args+=(--years "$YEARS")
+          python main.py suggest-events "${args[@]}"
+          python -c "import sys, json; from src import profile; p = profile.load(sys.argv[1] or None); print(p['events_file'])" "$PROFILE_IN" > events_path.txt
+
+      - name: Hand the calendar over to the pull-request job
+        if: ${{ steps.suggest.outputs.added > 0 }}
+        run: cp "$(cat events_path.txt)" suggested-calendar.json
+      - uses: actions/upload-artifact@v4
+        if: ${{ steps.suggest.outputs.added > 0 }}
+        with:
+          name: suggested-calendar
+          path: suggested-calendar.json
+          retention-days: 7
+
+  pull-request:
+    needs: suggest
+    if: ${{ needs.suggest.outputs.added > 0 }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: suggested-calendar
+          path: ${{ runner.temp }}/suggested
+
+      - name: Accept the suggestions (they may only be appended, marked "suggested")
+        id: accept
+        env:
+          PROFILE_OUT: ${{ needs.suggest.outputs.profile }}
+        run: |
+          set -euo pipefail
+          [[ "$PROFILE_OUT" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ ]] || { echo "::error::bad profile"; exit 1; }
+          python main.py accept-events --profile "$PROFILE_OUT" \
+            --file "$RUNNER_TEMP/suggested/suggested-calendar.json" --summary "$RUNNER_TEMP/summary.md"
 
       - name: Open pull request for review
-        if: ${{ steps.suggest.outputs.added > 0 }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROFILE_OUT: ${{ needs.suggest.outputs.profile }}
+          ADDED: ${{ steps.accept.outputs.added }}
+          EVENTS_FILE: ${{ steps.accept.outputs.events_file }}
+          ONLINE: ${{ inputs.online }}
+          RUN_ID: ${{ github.run_id }}
         run: |
-          branch="events/${{ steps.suggest.outputs.profile }}-${{ github.run_id }}"
+          set -euo pipefail
+          branch="events/${PROFILE_OUT}-${RUN_ID}"
           git config user.name "5L-TEP L3 Bot"
           git config user.email "5ltep-l3-bot@users.noreply.github.com"
           git checkout -b "$branch"
-          git add profiles/events/
-          git commit -m "events: ${{ steps.suggest.outputs.added }} suggestions for ${{ steps.suggest.outputs.profile }}"
+          git add "$EVENTS_FILE"
+          git commit -m "events: $ADDED suggestions for $PROFILE_OUT"
           git push origin "$branch"
           {
-            echo "The LLM suggested **${{ steps.suggest.outputs.added }}** events for \`${{ steps.suggest.outputs.profile }}\`,"
-            echo "all marked \`\"status\": \"suggested\"\`. Online grounding: ${{ inputs.online }}."
+            echo "The LLM suggested **$ADDED** events for \`$PROFILE_OUT\`,"
+            echo "all marked \`\"status\": \"suggested\"\`. Online grounding: $ONLINE."
             echo
             echo "**How to review:** open *Files changed*. For each new entry, check the \`evidence\` and \`source\`,"
             echo "then set \`status\` to \`verified\` or \`rejected\` (rejected entries stay so they are not suggested again),"
-            echo "fix the label if needed, and merge. Unverified suggestions reach the judge flagged as such."
+            echo "fix the label if needed, and merge. Unverified suggestions are not given to the judge."
             echo
-            echo '<details><summary>Log</summary>'
+            echo "**Suggestions:**"
             echo
-            echo '```'
-            grep -E "suggested|dropped" /tmp/suggest.log | sed -E 's/^.*INFO layer3: //'
-            echo '```'
-            echo '</details>'
-          } > /tmp/body.md
+            cat "$RUNNER_TEMP/summary.md"
+          } > "$RUNNER_TEMP/body.md"
           gh pr create --base main --head "$branch" \
-            --title "Event calendar: ${{ steps.suggest.outputs.added }} LLM suggestions for ${{ steps.suggest.outputs.profile }}" \
-            --body-file /tmp/body.md
+            --title "Event calendar: $ADDED LLM suggestions for $PROFILE_OUT" \
+            --body-file "$RUNNER_TEMP/body.md"

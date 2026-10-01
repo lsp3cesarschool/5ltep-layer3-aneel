@@ -31,6 +31,9 @@ import requests
 
 from src import config
 from src.judge import normalize_level
+from src.safety import safe_markdown
+
+TRUSTED_AUTHORS = {"github-actions[bot]"}  # the GITHUB_TOKEN of the workflows
 from src.profile import Profile
 
 logger = logging.getLogger(__name__)
@@ -88,7 +91,10 @@ class GitHub:
         while True:
             batch = self._req("GET", "/issues", params={
                 "labels": config.ISSUE_LABEL, "state": "all", "per_page": 100, "page": page})
-            out.extend(i for i in batch if "pull_request" not in i)
+            # Only issues the workflow itself opened: anyone can open an issue on a public
+            # repository and copy the hidden markers into it.
+            out.extend(i for i in batch if "pull_request" not in i
+                       and (i.get("user") or {}).get("login") in TRUSTED_AUTHORS)
             if len(batch) < 100:
                 return out
             page += 1
@@ -152,7 +158,7 @@ def drift_body(profile: Profile, gid: str, g: dict, judgments: dict, dashboard_u
         j = judgments.get(aid)
         if j:
             reason = next((r["reasoning"] for r in j["runs"] if r["category"] == j["category"]), "")
-            reason = reason.replace("|", "/").replace("\n", " ")[:300]
+            reason = safe_markdown(reason, 300)  # text written by the model: neutralised
             rows.append(f"| {j['month']} | **{j['category']}** | {j['consistency']:.2f} | {reason} |")
         else:
             rows.append(f"| {aid.split(':', 1)[1]} | not judged yet | | |")
@@ -192,7 +198,7 @@ def issue_title(profile: Profile, j: dict) -> str:
 def issue_body(profile: Profile, aid: str, j: dict, dashboard_url: str) -> str:
     runs = "\n".join(
         f"| {i + 1} | {r['category']} | {r['confidence']:.2f} | "
-        f"{r['reasoning'].replace('|', '/').replace(chr(10), ' ')} |"
+        f"{safe_markdown(r['reasoning'])} |"  # text written by the model: neutralised
         for i, r in enumerate(j["runs"])
     )
     if normalize_level(j["review_level"]) == "pending":
