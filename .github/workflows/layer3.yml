@@ -126,10 +126,16 @@ jobs:
         id: detect
         run: |
           echo "Batch $BATCH of the chain for $PROFILE"
-          if [ "$BATCH" != "1" ] && [ -f "data/$PROFILE/monthly_series.csv" ]; then
+          series="data/$PROFILE/monthly_series.csv"
+          if [ "$BATCH" != "1" ] && [ -f "$series" ]; then
             python main.py detect --profile "$PROFILE" --from-series
-          else
-            python main.py detect --profile "$PROFILE"
+          elif ! python main.py detect --profile "$PROFILE"; then
+            # The portal is down or refused the download: re-run detection on the series committed
+            # by the last run, so judging, translation and the dashboard still go on; the next run
+            # tries the portal again.
+            if [ ! -f "$series" ]; then exit 1; fi
+            echo "::warning::Could not download the data from the portal; this run used the monthly series committed earlier (no new data). The next run will try the portal again."
+            python main.py detect --profile "$PROFILE" --from-series
           fi
 
       - name: Resolve the model (auto = the model benchmark's choice)
