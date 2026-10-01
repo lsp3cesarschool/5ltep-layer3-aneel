@@ -12,9 +12,11 @@ authors:
   - family-names: Pinheiro
     given-names: Luciano Santos
     affiliation: "CESAR School, Recife, Brazil"
+    email: lsp3@cesar.school
   - family-names: Sérgio
     given-names: Anderson Tenório
     affiliation: "CESAR School, Recife, Brazil"
+    email: ats@cesar.school
 repository-code: "https://github.com/lsp3cesarschool/5ltep-layer3-aneel"
 url: "https://lsp3cesarschool.github.io/5ltep-layer3-aneel/"
 license: MIT
@@ -35,9 +37,10 @@ preferred-citation:
   authors:
     - family-names: Pinheiro
       given-names: Luciano Santos
+      email: lsp3@cesar.school
   institution:
     name: "CESAR School, Programa de Pós-Graduação em Engenharia de Software"
     city: Recife
     country: BR
   year: 2027
-  notes: "In preparation. Advisor: Prof. Anderson Tenório Sérgio."
+  notes: "In preparation. Advisor: Prof. Anderson Tenório Sérgio (ats@cesar.school)."

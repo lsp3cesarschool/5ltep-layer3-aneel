@@ -53,7 +53,7 @@ What differs from the main repository is only:
 
 The IBAMA profiles and results are not included. Everything else (detectors, LLM-as-a-Judge,
 human-in-the-loop review, dashboard, workflows, tests) is identical to
-[`5ltep-layer3@9307e32`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/9307e320cb0d09ed6e751b2238e50fdceee2be49),
+[`5ltep-layer3@a839cca`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/a839cca794f4d26110dc1cd215c7e33a622ae8ea),
 and the built instance passes the same test suite before every update.
 
 ## Key terms
