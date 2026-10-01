@@ -893,3 +893,12 @@ def test_event_suggestions_may_only_be_appended():
     for new in bad_cases:
         with pytest.raises(ValueError):
             safety.check_events_update(old, new)
+
+
+def test_translation_that_rewrites_is_refused():
+    from src import translate
+    src = "Seasonality check shows 2010-01's ratio (0.33) is below 1 in 9 of 10 years."
+    assert translate.plausible(src, "Verificação de sazonalidade mostra que a razão de 2010-01 (0,33) está abaixo de 1.")
+    assert not translate.plausible(src, "The anomaly in 2019-01 is characterized by a drop.")  # a date not in the source
+    assert not translate.plausible(src, "The anomaly in 2.019-01 is characterized by a drop.")  # same, written 2.019
+    assert not translate.plausible(src, "Sim.")                                             # far too short

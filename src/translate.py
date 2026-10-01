@@ -73,6 +73,17 @@ def keep_years(source: str, out: str) -> str:
     return out
 
 
+def plausible(source: str, out: str) -> bool:
+    """A translation keeps the source's dates and roughly its length. A model that rewrites
+    instead of translating (new dates, much longer or shorter text) is refused, and the
+    dashboard keeps the original text."""
+    def dates(s: str) -> set:  # 2.019-01 counts as 2019-01
+        return {f"{a}{b}-{m}" for a, b, m in re.findall(r"\b(\d)[.,]?(\d{3})-(\d{2})\b", s)}
+    if not dates(out) <= dates(source):
+        return False
+    return len(source) < 40 or 0.5 <= len(out) / len(source) <= 2.5
+
+
 def text_key(text: str) -> str:
     return hashlib.sha256(text.strip().encode("utf-8")).hexdigest()
 
@@ -137,19 +148,27 @@ def translate_pending(texts: list[str], store: dict, client, path, max_minutes: 
             text_key(x) in table and table[text_key(x)].get("version") == version)
         for t in texts:
             k = text_key(t)
+            entry = table.get(k)
+            if entry and entry.get("version") != "manual" and not plausible(t, entry["text"]):
+                del table[k]  # stored before this check existed: redo it
             if current(t):
                 continue
             if time.monotonic() - start > max_minutes * 60:
                 logger.info("Translation budget of %.0f min reached", max_minutes)
                 return {"translated": done, "failed": failed, "remaining": sum(1 for x in texts if not current(x))}
-            try:
-                raw, _ = client.generate(systems[lang], t, seed=0, schema=SCHEMA, temperature=0.0)
-                out = clean_text(keep_years(t, str(json.loads(raw)["translation"]).strip()), MAX_TRANSLATION)
-            except Exception as exc:  # one bad answer must not stop the others
-                logger.warning("Translation failed (%s): %.60s", exc, t)
-                failed += 1
-                continue
+            out = None
+            for seed in (0, 1):  # a second chance when the first answer is not a translation
+                try:
+                    raw, _ = client.generate(systems[lang], t, seed=seed, schema=SCHEMA, temperature=0.0 if seed == 0 else 0.3)
+                    candidate = clean_text(keep_years(t, str(json.loads(raw)["translation"]).strip()), MAX_TRANSLATION)
+                except Exception as exc:  # one bad answer must not stop the others
+                    logger.warning("Translation failed (%s): %.60s", exc, t)
+                    continue
+                if candidate and plausible(t, candidate):
+                    out = candidate
+                    break
             if not out:
+                logger.warning("No plausible translation; the dashboard keeps the original: %.60s", t)
                 failed += 1
                 continue
             table[k] = {"text": out, "model": client.model, "version": version}
