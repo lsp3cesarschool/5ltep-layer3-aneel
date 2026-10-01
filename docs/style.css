@@ -50,3 +50,5 @@ td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
 dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 10px 0 0; font-size: .88rem; }
 dt { color: var(--muted); } dd { margin: 0; overflow-wrap: anywhere; }
 footer { padding: 10px 20px 40px; font-size: .85rem; }
+tr.flash td { animation: flash 2.5s ease-out; }
+@keyframes flash { from { background: color-mix(in srgb, var(--accent) 28%, transparent); } to { background: transparent; } }

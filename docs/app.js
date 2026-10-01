@@ -59,6 +59,8 @@ async function load(profileId) {
   drawTable();
   drawEvents();
   drawProvenance();
+  const m = location.hash.match(/^#anomaly-(.+)-(\d{4}-\d{2})$/);  // link to one anomaly
+  if (m) showAnomaly(m[1], m[2]);
 }
 
 function drawEvents() {
@@ -117,7 +119,7 @@ function drawCharts() {
       { label: name, data: values.map((v) => (log && v <= 0 ? null : v)), borderColor: css("muted"),
         borderWidth: 1.2, pointRadius: 0, tension: 0.1, order: 2 },
       ...CATS.map((c) => ({ label: c, data: byCat[c], showLine: false, pointRadius: 4.5,
-        pointHoverRadius: 7, backgroundColor: css(c), borderColor: css(c), order: 1 })),
+        pointHoverRadius: 7, pointHitRadius: 8, backgroundColor: css(c), borderColor: css(c), order: 1 })),
     ];
     const driftLines = {
       id: "driftLines",
@@ -141,13 +143,24 @@ function drawCharts() {
       options: {
         maintainAspectRatio: false, animation: false, spanGaps: true,
         interaction: { mode: "nearest", intersect: false, axis: "x" },
+        // Clicking an anomaly point opens its row in the Anomalies table below.
+        onClick: (evt, _els, chart) => {
+          const hit = chart.getElementsAtEventForMode(evt, "nearest", { intersect: true }, false)
+            .find((e) => e.datasetIndex > 0);
+          if (hit) showAnomaly(name, data.months[hit.index]);
+        },
+        onHover: (evt, _els, chart) => {
+          const over = chart.getElementsAtEventForMode(evt, "nearest", { intersect: true }, false)
+            .some((e) => e.datasetIndex > 0);
+          chart.canvas.style.cursor = over ? "pointer" : "default";
+        },
         plugins: {
           legend: { display: false },
           tooltip: { callbacks: {
             label: (ctx) => {
               const a = info[ctx.label];
               if (ctx.datasetIndex === 0) return `${name}: ${fmt(ctx.parsed.y)}`;
-              return a ? `${label(a)} · ${a.votes}/4 detectors${a.llm ? ` · C=${a.llm.consistency}` : ""}` : "";
+              return a ? `${label(a)} · ${a.votes}/4 detectors${a.llm ? ` · C=${a.llm.consistency}` : ""} · click for details` : "";
             },
           } },
         },
@@ -174,11 +187,30 @@ function drawTable() {
       ? `<a href="${esc(a.review.url)}" target="_blank" rel="noopener">#${a.review.issue}</a> ` +
         (a.review.status === "decided" ? `<span class="tag" style="--c: var(--${a.review.steward_category})">${a.review.steward_category}</span>` : `<span class="muted">${esc(a.review.status)}</span>`)
       : "";
-    return `<tr><td class="num">${a.month}</td><td>${esc(a.series)}</td>
+    return `<tr id="${rowId(a.series, a.month)}"><td class="num">${a.month}</td><td>${esc(a.series)}</td>
       <td class="num">${a.votes}/4 · ${a.score.toFixed(2)}${a.near_drift ? " · drift" : ""}<br><span class="muted">${a.detectors.join(", ")}</span></td>
       <td>${llm}</td><td class="num">${a.llm ? a.llm.consistency.toFixed(2) : ""}</td><td>${steward}</td>
       <td class="reason">${esc(a.llm ? a.llm.reasoning : "")}</td></tr>`;
   }).join("") || `<tr><td colspan="7" class="muted">Nothing to show.</td></tr>`;
+}
+
+function rowId(series, month) {
+  return `anomaly-${String(series).replace(/[^\w-]/g, "_")}-${month}`;
+}
+
+function showAnomaly(series, month) {
+  let row = document.getElementById(rowId(series, month));
+  if (!row) {  // hidden by the table filter: show everything
+    el("filter").value = "all";
+    drawTable();
+    row = document.getElementById(rowId(series, month));
+  }
+  if (!row) return;
+  history.replaceState(null, "", `${location.search}#${row.id}`);
+  row.scrollIntoView({ behavior: "smooth", block: "center" });
+  row.classList.remove("flash");
+  void row.offsetWidth;  // restart the highlight animation
+  row.classList.add("flash");
 }
 
 function drawProvenance() {
