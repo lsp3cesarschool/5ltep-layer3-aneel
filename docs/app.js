@@ -38,6 +38,7 @@ const I18N = {
     no_events: "No events.", original: "Original (English): ",
     level: { pending: "pending", advisory: "advisory", "level-shift": "level shift" },
     status: { pending: "pending", decided: "decided", conflicting_labels: "conflicting labels" },
+    cat: {},  // English names come from the profile
     kind: { policy: "policy", political: "political", external: "external", monetary: "monetary" },
     ev_status: { verified: "verified", suggested: "suggested", rejected: "rejected" },
     p_dataset: "Source dataset", p_resource: "Resource", p_sha: "SHA-256 of the file analysed", p_downloaded: "Downloaded",
@@ -72,6 +73,8 @@ const I18N = {
     no_events: "Nenhum evento.", original: "Original (inglês): ",
     level: { pending: "pendente", advisory: "recomendada", "level-shift": "mudança de nível" },
     status: { pending: "pendente", decided: "decidida", conflicting_labels: "rótulos conflitantes" },
+    cat: { PDC: "Mudança por política", SP: "Padrão sazonal", DQE: "Evento de qualidade de dados",
+           GES: "Mudança genuína de fiscalização", INVALID: "resposta inválida" },
     kind: { policy: "política pública", political: "política", external: "externo", monetary: "monetário" },
     ev_status: { verified: "verificado", suggested: "sugerido", rejected: "rejeitado" },
     p_dataset: "Conjunto de dados de origem", p_resource: "Recurso", p_sha: "SHA-256 do arquivo analisado", p_downloaded: "Baixado em",
@@ -112,6 +115,12 @@ function tr(text) {
 function trHtml(text) {
   const out = tr(text);
   return out !== text ? `<span title="${esc(t("original") + text)}">${esc(out)}</span>` : esc(text);
+}
+
+// Short name of a category: hand-written for the four standard codes, else from the profile.
+function categoryName(code) {
+  if (T.cat[code]) return T.cat[code];
+  return data.categories[code] ? tr(data.categories[code]).split(":")[0] : "";
 }
 
 function repoFromLocation() {
@@ -219,7 +228,7 @@ function drawCards() {
   el("cards").innerHTML = cards.map(([k, v, n, cls]) =>
     `<div class="card"><div class="label">${esc(k)}</div><div class="value ${cls || ""}">${esc(v)}</div><div class="note">${esc(n)}</div></div>`).join("");
   el("legend").innerHTML = CATS.map((c) =>
-    `<span style="--c: var(--${c})">${c === "PENDING" ? esc(t("not_judged")) : c}${data.categories[c] ? ` · ${esc(tr(data.categories[c]).split(":")[0])}` : ""}</span>`).join("");
+    `<span style="--c: var(--${c})">${c === "PENDING" ? esc(t("not_judged")) : c}${categoryName(c) ? ` · ${esc(categoryName(c))}` : ""}</span>`).join("");
 }
 
 function drawCharts() {
