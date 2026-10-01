@@ -159,6 +159,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Portuguese version of the dashboard: the same local model translates the texts that have
+      # no translation yet (cached by text; judgments are never changed). Never fails the run.
+      - name: Translate the dashboard texts (Portuguese)
+        if: ${{ !inputs.skip_llm }}
+        continue-on-error: true
+        run: python main.py translate --profile "$PROFILE"
+
       - name: Build summary and dashboard data
         id: report
         if: ${{ always() && steps.detect.outcome == 'success' }}

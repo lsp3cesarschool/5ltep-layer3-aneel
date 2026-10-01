@@ -21,6 +21,7 @@ import pandas as pd
 
 from src import __version__, config
 from src.judge import DETECTOR_NAMES, anomaly_id, has_judgment, is_current, normalize_level
+from src import translate
 from src.profile import Profile
 
 
@@ -154,6 +155,10 @@ def dashboard_data(profile: Profile, monthly: pd.DataFrame, detections: pd.DataF
         "anomalies": anomalies,
         "drift": drift,
         "events": profile.events(),
+        # Machine translations of the texts above, for the Portuguese version of the dashboard.
+        "translations": {lang: translate.lookup(translate.load(profile.paths.translations),
+                                                translate.dashboard_texts(profile, judgments), lang)
+                         for lang in translate.LANGS},
     }
 
 

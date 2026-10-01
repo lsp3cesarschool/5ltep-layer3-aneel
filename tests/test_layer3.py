@@ -704,3 +704,49 @@ def test_status_badge(tmp_path, monkeypatch):
     assert pt["label"] == "Camada 3" and pt["message"] == "rodando · faltam 19 anomalias para julgar"
     report.write_status("p", "interrupted")
     assert json.loads(paths["en"].read_text(encoding="utf-8"))["color"] == "lightgrey"
+
+
+def test_translation_cache_and_dashboard(tmp_path, monkeypatch):
+    """Dashboard texts are translated once (keyed by the source text), never touching judgments."""
+    from src import translate
+    monkeypatch.setattr(config, "ROOT", tmp_path)
+
+    class FakeTranslator:
+        model = "fake"
+        calls = 0
+
+        def generate(self, system, prompt, seed, schema, temperature=None, num_ctx=None):
+            FakeTranslator.calls += 1
+            return json.dumps({"translation": f"PT: {prompt}"}), 0.01
+
+    p = Profile(copy.deepcopy(BASE_PROFILE))
+    judgments = {"notices:2020-01": {"category": "SP", "consistency": 1.0, "review_level": "none",
+                                     "runs": [{"category": "SP", "reasoning": "January drops every year.",
+                                               "confidence": 0.9}]}}
+    texts = translate.dashboard_texts(p, judgments)
+    assert "January drops every year." in texts and p.get("title") in texts
+    store = translate.load(p.paths.translations)
+    res = translate.translate_pending(texts, store, FakeTranslator(), p.paths.translations, 5)
+    assert res["translated"] == len(texts) and FakeTranslator.calls == len(texts)
+    again = translate.translate_pending(texts, translate.load(p.paths.translations), FakeTranslator(),
+                                        p.paths.translations, 5)
+    assert again["translated"] == 0 and FakeTranslator.calls == len(texts)  # cached
+    table = translate.lookup(translate.load(p.paths.translations), texts, "pt")
+    assert table["January drops every year."] == "PT: January drops every year."
+
+
+def test_dashboard_labels_exist_in_both_languages():
+    """Every label of the dashboard (app.js I18N) exists in English and Portuguese, and every
+    data-i18n marker of index.html has a label."""
+    import re
+    js = (config.ROOT / "docs" / "app.js").read_text(encoding="utf-8")
+    html = (config.ROOT / "docs" / "index.html").read_text(encoding="utf-8")
+    en = js[js.index("  en: {"):js.index("\n  pt: {")]
+    pt = js[js.index("\n  pt: {"):js.index("\n};", js.index("\n  pt: {"))]
+    values = re.compile(r'"(?:[^"\\]|\\.)*"(?=\s*[,}\n])')  # string values (keys are followed by ":")
+    key = re.compile(r'(?:^|[\s,{])("?[a-z][\w-]*"?):\s')
+    keys_en = set(key.findall(values.sub('""', en))) - {"en"}
+    keys_pt = set(key.findall(values.sub('""', pt))) - {"pt"}
+    assert keys_en == keys_pt, keys_en ^ keys_pt
+    markers = set(re.findall(r'data-i18n(?:-title)?="([\w-]+)"', html))
+    assert markers <= keys_en, markers - keys_en

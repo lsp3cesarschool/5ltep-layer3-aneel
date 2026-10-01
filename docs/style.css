@@ -17,6 +17,8 @@ header, main, footer, .topbar { max-width: 1200px; margin: 0 auto; padding: 0 20
 .topbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-top: 16px; font-size: .9rem; }
 .topbar a { text-decoration: none; font-weight: 600; }
 .topbar a:hover { text-decoration: underline; }
+.lang-switch { margin-left: auto; display: flex; gap: 8px; }
+.lang-switch a.current { color: var(--text); pointer-events: none; }
 [hidden] { display: none !important; }
 header { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: flex-end; padding-top: 28px; }
 h1 { margin: 2px 0 4px; font-size: 1.6rem; }

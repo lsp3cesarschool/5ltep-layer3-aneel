@@ -31,7 +31,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src import aggregate, config, detectors, judge, report, review
+from src import aggregate, config, detectors, judge, report, review, translate
 from src import profile as profiles
 from src.ckan_source import download, resolve_resource
 
@@ -142,6 +142,19 @@ def cmd_judge(args) -> None:
     _log_run(p, "judge", res)
     _set_output("judged_now", res["judged_now"])
     _set_output("pending_after", res["pending_before"] - res["judged_now"])
+
+
+def cmd_translate(args) -> None:
+    """Machine-translate the dashboard texts that have no Portuguese version yet."""
+    p = profiles.load(args.profile)
+    judgments = judge.load_judgments(p.paths.judgments)
+    store = translate.load(p.paths.translations)
+    client = judge.OllamaClient(model=args.model or _model())
+    res = translate.translate_pending(translate.dashboard_texts(p, judgments), store, client,
+                                      p.paths.translations, args.max_minutes)
+    logger.info("Translated %d texts (%d failed, %d left for the next run)", res["translated"],
+                res["failed"], res["remaining"])
+    _log_run(p, "translate", res)
 
 
 def cmd_issues(args) -> None:
@@ -312,6 +325,9 @@ def main(argv=None) -> None:
         "--max-new", type=int, default=config.MAX_NEW_ISSUES)
     add("sync-reviews", cmd_sync_reviews, "read steward decisions").add_argument(
         "--all", action="store_true", help="every profile in profiles/")
+    sp = add("translate", cmd_translate, "machine-translate the dashboard texts into Portuguese")
+    sp.add_argument("--model", default=None)
+    sp.add_argument("--max-minutes", type=float, default=config.TRANSLATE_MAX_MINUTES)
     add("report", cmd_report, "summary + dashboard data").add_argument(
         "--chain-continues", choices=["auto", "yes", "no"], default="auto",
         help="for the status badge: whether another batch follows (auto: while anomalies await judgment)")

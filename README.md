@@ -10,7 +10,7 @@ the IBAMA study.**
 
 | Resource | What you find there |
 |---|---|
-| 📊 **Dashboard** | [lsp3cesarschool.github.io/5ltep-layer3-aneel](https://lsp3cesarschool.github.io/5ltep-layer3-aneel/): anomalies, LLM labels, steward decisions and the provenance of every result |
+| 📊 **Dashboard** | [lsp3cesarschool.github.io/5ltep-layer3-aneel](https://lsp3cesarschool.github.io/5ltep-layer3-aneel/?lang=en): anomalies, LLM labels, steward decisions and the provenance of every result |
 | 🧑‍⚖️ **Review queue** | [![open reviews](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/layer3?label=open%20reviews&color=0366d6)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Alayer3) [![pending](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Apending?label=pending&color=d73a4a)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Apending) [![advisory](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Aadvisory?label=advisory&color=fbca04)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Aadvisory) [![level shift](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Alevel-shift?label=level%20shift&color=f9d0c4)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Alevel-shift)<br>live counts; each badge opens its list of issues |
 | 🏛️ **Main instance** | [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3): IBAMA, and the full documentation |
 | 🧪 **Model choice** | [5ltep-layer3-modeltest](https://github.com/lsp3cesarschool/5ltep-layer3-modeltest): the monthly benchmark that picks the LLM judge |
@@ -53,7 +53,7 @@ What differs from the main repository is only:
 
 The IBAMA profiles and results are not included. Everything else (detectors, LLM-as-a-Judge,
 human-in-the-loop review, dashboard, workflows, tests) is identical to
-[`5ltep-layer3@b79d764`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/b79d7645e417171ae7e6a907c97962214734e5bc),
+[`5ltep-layer3@b28834e`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/b28834e620af3caddf633a7508069bea56eae2b0),
 and the built instance passes the same test suite before every update.
 
 ## Key terms

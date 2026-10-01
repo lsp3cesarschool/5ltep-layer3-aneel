@@ -10,7 +10,7 @@ montada pelo autor como caso de controle do estudo do IBAMA.**
 
 | Recurso | O que tem lá |
 |---|---|
-| 📊 **Painel** | [lsp3cesarschool.github.io/5ltep-layer3-aneel](https://lsp3cesarschool.github.io/5ltep-layer3-aneel/): anomalias, rótulos do LLM, decisões do gestor e a proveniência de cada resultado |
+| 📊 **Painel** | [lsp3cesarschool.github.io/5ltep-layer3-aneel](https://lsp3cesarschool.github.io/5ltep-layer3-aneel/?lang=pt): anomalias, rótulos do LLM, decisões do gestor e a proveniência de cada resultado |
 | 🧑‍⚖️ **Fila de revisão** | [![revisões abertas](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/layer3?label=revis%C3%B5es%20abertas&color=0366d6)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Alayer3) [![pendentes](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Apending?label=pendentes&color=d73a4a)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Apending) [![recomendadas](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Aadvisory?label=recomendadas&color=fbca04)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Aadvisory) [![mudança de nível](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Alevel-shift?label=mudan%C3%A7a%20de%20n%C3%ADvel&color=f9d0c4)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Alevel-shift)<br>contagens ao vivo; cada selo abre sua lista de issues |
 | 🏛️ **Instância principal** | [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3/blob/main/LEIAME.md): IBAMA, e a documentação completa |
 | 🧪 **Escolha do modelo** | [5ltep-layer3-modeltest](https://github.com/lsp3cesarschool/5ltep-layer3-modeltest/blob/main/LEIAME.md): o benchmark mensal que escolhe o LLM juiz |
@@ -54,7 +54,7 @@ O que difere do repositório principal é apenas:
 
 Os perfis e resultados do IBAMA não estão incluídos. Todo o resto (detectores, LLM-as-a-Judge, revisão
 humana, painel, workflows, testes) é idêntico a
-[`5ltep-layer3@b79d764`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/b79d7645e417171ae7e6a907c97962214734e5bc),
+[`5ltep-layer3@b28834e`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/b28834e620af3caddf633a7508069bea56eae2b0),
 e a instância montada passa na mesma suíte de testes antes de cada atualização.
 
 ## Termos-chave

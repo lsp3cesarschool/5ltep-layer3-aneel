@@ -81,6 +81,7 @@ PROMPT_VERSION = "v2"
 # when the time budget runs out. The next run continues where it stopped.
 MAX_JUDGMENTS = _env("MAX_JUDGMENTS", 25)
 MAX_JUDGE_MINUTES = _env("MAX_JUDGE_MINUTES", 240.0)
+TRANSLATE_MAX_MINUTES = _env("TRANSLATE_MAX_MINUTES", 30.0)  # Portuguese dashboard, per run
 
 # --- Human-in-the-loop review (GitHub Issues) --------------------------------
 ADVISORY_CONSISTENCY = _env("ADVISORY_CONSISTENCY", 0.6)  # below this: advisory review

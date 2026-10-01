@@ -30,6 +30,7 @@ class Paths:
     summary: Path
     run_log: Path
     dashboard: Path
+    translations: Path
 
     @classmethod
     def for_profile(cls, profile_id: str, root: Path | None = None) -> "Paths":
@@ -47,6 +48,7 @@ class Paths:
             summary=results / "layer3_summary.json",
             run_log=results / "run_log.jsonl",
             dashboard=root / "docs" / "data" / f"{profile_id}.json",
+            translations=results / "translations.json",
         )
 
 
