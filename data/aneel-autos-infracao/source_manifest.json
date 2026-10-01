@@ -1,7 +1,7 @@
 {
  "profile": "aneel-autos-infracao",
  "profile_sha256": "fd6b5b4b77d305d62529a2dbf40e81ea5bc99d9085fb7a4cef200ad30e327a49",
- "as_of": "2026-10-01T11:48:28.664177",
+ "as_of": "2026-10-01T13:25:57.176614",
  "dataset_id": "auto-de-infracao",
  "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/auto-de-infracao",
  "dataset_metadata_modified": "2026-09-28T08:01:17.035771",
@@ -9,7 +9,7 @@
  "resource_id": "f221158a-93a3-423f-b794-4312b6985a24",
  "resource_name": "auto-infracao.csv",
  "resource_url": "https://dadosabertos.aneel.gov.br/dataset/4d690c9d-8158-4b04-ae44-7d3de8616271/resource/f221158a-93a3-423f-b794-4312b6985a24/download/auto-infracao.csv",
- "download_started_at": "2026-10-01T11:48:29+00:00",
+ "download_started_at": "2026-10-01T13:25:58+00:00",
  "size_bytes": 702933,
  "checksum_sha256": "fc59416c977cedcd1f7f127b025480f7f38d05c679b31587a57e0040aae2bd6d",
  "aggregation": {
