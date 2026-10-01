@@ -7,9 +7,9 @@
   "state": "open",
   "status": "pending",
   "steward_category": null,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "closed_at": null,
-  "updated_at": "2026-09-30T11:03:57Z"
+  "updated_at": "2026-10-01T10:37:18Z"
  },
  "penalty_total_brl:2023-05": {
   "profile": "aneel-autos-infracao",
@@ -19,9 +19,9 @@
   "state": "open",
   "status": "pending",
   "steward_category": null,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "closed_at": null,
-  "updated_at": "2026-09-30T11:04:03Z"
+  "updated_at": "2026-10-01T10:37:19Z"
  },
  "penalty_total_brl:2023-12": {
   "profile": "aneel-autos-infracao",
@@ -31,9 +31,9 @@
   "state": "open",
   "status": "pending",
   "steward_category": null,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "closed_at": null,
-  "updated_at": "2026-09-30T11:04:01Z"
+  "updated_at": "2026-10-01T10:37:19Z"
  },
  "penalty_total_brl:2024-07": {
   "profile": "aneel-autos-infracao",
@@ -43,9 +43,9 @@
   "state": "open",
   "status": "pending",
   "steward_category": null,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "closed_at": null,
-  "updated_at": "2026-09-30T11:03:59Z"
+  "updated_at": "2026-10-01T10:37:20Z"
  },
  "penalty_total_brl:2025-01": {
   "profile": "aneel-autos-infracao",
@@ -55,9 +55,9 @@
   "state": "open",
   "status": "pending",
   "steward_category": null,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "closed_at": null,
-  "updated_at": "2026-09-30T11:03:56Z"
+  "updated_at": "2026-10-01T10:37:20Z"
  },
  "penalty_total_brl:2025-07": {
   "profile": "aneel-autos-infracao",
@@ -67,9 +67,9 @@
   "state": "open",
   "status": "pending",
   "steward_category": null,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "closed_at": null,
-  "updated_at": "2026-09-30T11:03:54Z"
+  "updated_at": "2026-10-01T10:37:21Z"
  },
  "penalty_total_brl:2026-02": {
   "profile": "aneel-autos-infracao",
@@ -79,7 +79,7 @@
   "state": "open",
   "status": "pending",
   "steward_category": null,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "closed_at": null,
   "updated_at": "2026-09-30T11:03:53Z"
  }

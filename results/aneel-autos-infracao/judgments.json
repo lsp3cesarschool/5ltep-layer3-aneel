@@ -108,7 +108,7 @@
   "month": "2024-12",
   "category": "DQE",
   "consistency": 0.667,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "ensemble_score": 0.6509,
   "votes": 2,
   "near_drift": false,
@@ -153,7 +153,8 @@
     "data_fingerprint": "b65f3186db398075ea5b0b3b480a00c88471ade93e477236590473201481d664",
     "judged_at": "2026-09-29T19:16:21+00:00"
    }
-  ]
+  ],
+  "issue_notified_judged_at": "2026-09-30T10:51:07+00:00"
  },
  "notices:2025-01": {
   "series": "notices",
@@ -213,7 +214,7 @@
   "month": "2023-05",
   "category": "DQE",
   "consistency": 0.333,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "ensemble_score": 0.4963,
   "votes": 2,
   "near_drift": false,
@@ -258,14 +259,15 @@
     "data_fingerprint": "f76863911c16ba4ebd4bae6b3251d462f48180ed75228bd712d6485d7dd62128",
     "judged_at": "2026-09-29T19:23:35+00:00"
    }
-  ]
+  ],
+  "issue_notified_judged_at": "2026-09-30T11:01:25+00:00"
  },
  "penalty_total_brl:2023-12": {
   "series": "penalty_total_brl",
   "month": "2023-12",
   "category": "DQE",
   "consistency": 1.0,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "ensemble_score": 0.6479,
   "votes": 2,
   "near_drift": false,
@@ -310,14 +312,15 @@
     "data_fingerprint": "41d9cb2c4d6cbbb9fada87640040d90ded18ea797a05c4e1e80b24b19742fb4c",
     "judged_at": "2026-09-29T19:21:46+00:00"
    }
-  ]
+  ],
+  "issue_notified_judged_at": "2026-09-30T10:58:56+00:00"
  },
  "penalty_total_brl:2024-07": {
   "series": "penalty_total_brl",
   "month": "2024-07",
   "category": "DQE",
   "consistency": 1.0,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "ensemble_score": 0.5608,
   "votes": 2,
   "near_drift": false,
@@ -362,14 +365,15 @@
     "data_fingerprint": "6c54ae049a89c911df32b391aaf5989ab80d7e4942411c4f08c11dd852117dfd",
     "judged_at": "2026-09-29T19:20:02+00:00"
    }
-  ]
+  ],
+  "issue_notified_judged_at": "2026-09-30T10:56:16+00:00"
  },
  "penalty_total_brl:2025-01": {
   "series": "penalty_total_brl",
   "month": "2025-01",
   "category": "DQE",
   "consistency": 0.667,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "ensemble_score": 0.6347,
   "votes": 4,
   "near_drift": false,
@@ -414,14 +418,15 @@
     "data_fingerprint": "6de0832850c4ccf1fb3ca3b7f900d63b459b2dbe3b574e2e8ea024cd17a80996",
     "judged_at": "2026-09-29T19:14:31+00:00"
    }
-  ]
+  ],
+  "issue_notified_judged_at": "2026-09-30T10:48:29+00:00"
  },
  "penalty_total_brl:2025-07": {
   "series": "penalty_total_brl",
   "month": "2025-07",
   "category": "DQE",
   "consistency": 1.0,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "ensemble_score": 0.592,
   "votes": 2,
   "near_drift": false,
@@ -466,14 +471,15 @@
     "data_fingerprint": "381d564b3809acb4d28f391cc217a8ea3245b576d6e898ff9b08e7e0c8ef9a86",
     "judged_at": "2026-09-29T19:10:48+00:00"
    }
-  ]
+  ],
+  "issue_notified_judged_at": "2026-09-30T10:43:32+00:00"
  },
  "penalty_total_brl:2026-02": {
   "series": "penalty_total_brl",
   "month": "2026-02",
   "category": "DQE",
   "consistency": 1.0,
-  "review_level": "mandatory",
+  "review_level": "pending",
   "ensemble_score": 0.5395,
   "votes": 2,
   "near_drift": false,

@@ -1,7 +1,7 @@
 {
  "summary": {
   "toolkit": "5ltep-layer3 v0.1.0",
-  "generated_at": "2026-09-30T11:04:09+00:00",
+  "generated_at": "2026-10-01T10:37:22+00:00",
   "profile": {
    "id": "aneel-autos-infracao",
    "title": "ANEEL infraction notices (Autos de Infração), Brazil",
@@ -14,7 +14,7 @@
   "source": {
    "profile": "aneel-autos-infracao",
    "profile_sha256": "fd6b5b4b77d305d62529a2dbf40e81ea5bc99d9085fb7a4cef200ad30e327a49",
-   "as_of": "2026-09-30T10:37:09.484228",
+   "as_of": "2026-10-01T10:36:05.611315",
    "dataset_id": "auto-de-infracao",
    "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/auto-de-infracao",
    "dataset_metadata_modified": "2026-09-28T08:01:17.035771",
@@ -22,7 +22,7 @@
    "resource_id": "f221158a-93a3-423f-b794-4312b6985a24",
    "resource_name": "auto-infracao.csv",
    "resource_url": "https://dadosabertos.aneel.gov.br/dataset/4d690c9d-8158-4b04-ae44-7d3de8616271/resource/f221158a-93a3-423f-b794-4312b6985a24/download/auto-infracao.csv",
-   "download_started_at": "2026-09-30T10:37:12+00:00",
+   "download_started_at": "2026-10-01T10:36:06+00:00",
    "size_bytes": 702933,
    "checksum_sha256": "fc59416c977cedcd1f7f127b025480f7f38d05c679b31587a57e0040aae2bd6d",
    "aggregation": {
@@ -35,11 +35,11 @@
     "rows_future_date": 0,
     "rows_without_penalty_total_brl": 18,
     "first_month": "2018-06",
-    "last_complete_month": "2026-08"
+    "last_complete_month": "2026-09"
    },
    "analysis_period": [
     "2018-06",
-    "2026-08"
+    "2026-09"
    ]
   },
   "series": {
@@ -48,9 +48,9 @@
   },
   "analysis_period": [
    "2018-06",
-   "2026-08"
+   "2026-09"
   ],
-  "months": 99,
+  "months": 100,
   "method_parameters": {
    "baseline_window": 12,
    "zscore_k": 3.0,
@@ -89,7 +89,7 @@
     "pandas": "3.0.6",
     "numpy": "2.4.6",
     "scikit-learn": "1.9.1",
-    "torch": "2.14.0+cpu",
+    "torch": "2.14.1+cpu",
     "requests": "2.34.2"
    }
   },
@@ -108,6 +108,11 @@
   },
   "llm": {
    "model": "qwen3:4b",
+   "model_source": "benchmark",
+   "judged_by": {
+    "qwen3:4b / prompt v2": 10
+   },
+   "judged_by_other_model_or_prompt": 0,
    "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
    "categories": {
     "DQE": 7,
@@ -120,14 +125,14 @@
    "issues": 7,
    "decided": 0,
    "open_by_level": {
-    "mandatory": 7
+    "pending": 7
    },
    "human_llm_agreement": null
   },
   "layer3": {
    "window": [
-    "2025-09",
-    "2026-08"
+    "2025-10",
+    "2026-09"
    ],
    "pairs_evaluated": 24,
    "l3_rate": 0.9583,
@@ -248,7 +253,8 @@
   "2026-05",
   "2026-06",
   "2026-07",
-  "2026-08"
+  "2026-08",
+  "2026-09"
  ],
  "series": {
   "notices": [
@@ -350,7 +356,8 @@
    3.0,
    9.0,
    9.0,
-   12.0
+   12.0,
+   9.0
   ],
   "penalty_total_brl": [
    520000.0,
@@ -451,11 +458,13 @@
    7623740.0,
    80775200.0,
    94573400.0,
-   125419000.0
+   125419000.0,
+   58988300.0
   ]
  },
  "context": {
   "excluded": [
+   0,
    0,
    0,
    0,
@@ -656,6 +665,7 @@
    0,
    0,
    0,
+   0,
    0
   ]
  },
@@ -666,7 +676,7 @@
    "month": "2026-02",
    "value": 0.0,
    "votes": 2,
-   "score": 0.5395,
+   "score": 0.5334,
    "detectors": [
     "mad",
     "iforest"
@@ -675,7 +685,10 @@
    "llm": {
     "category": "DQE",
     "consistency": 1.0,
-    "review_level": "mandatory",
+    "review_level": "pending",
+    "model": "qwen3:4b",
+    "prompt_version": "v2",
+    "current": true,
     "reasoning": "The anomalous month (2026-02) has penalty_total_brl=0, which is a severe drop from the median of previous 12 months (30.5M). Seasonality check shows the calendar month 2 (February) deviated below 1 in 2 of 6 years (2021-02: 0.93, 2023-02: 0.57), but the same month was not flagged in other years. The data quality indicators (excluded, no_id) are 0, so no reporting failure. No known events. The Page-Hinkley test shows no sustained level shift. The penalty value of 0 is implausible for an active series (expected 30.5M). This suggests a data-quality event (e.g., retroactive correction or system migration) causing the zero value.",
     "runs": [
      "DQE",
@@ -696,7 +709,7 @@
    "month": "2025-07",
    "value": 0.0,
    "votes": 2,
-   "score": 0.592,
+   "score": 0.5922,
    "detectors": [
     "mad",
     "iforest"
@@ -705,7 +718,10 @@
    "llm": {
     "category": "DQE",
     "consistency": 1.0,
-    "review_level": "mandatory",
+    "review_level": "pending",
+    "model": "qwen3:4b",
+    "prompt_version": "v2",
+    "current": true,
     "reasoning": "The anomalous month (2025-07) has penalty_total_brl = 0, which is implausible for an active series. Seasonality check shows the same month (Jul) deviated below 1 in 3 of 6 years (2022-2024), but the 2025-07 value is 0, while previous years had ratios >0.19. No known events in +-6 months. The data shows no excluded or no_id records, but the value is implausibly low (zero) in a series where monthly penalties are typically millions. A Page-Hinkley test found no sustained level shift. This is a data-quality event (DQE) as the value is implausible, likely a reporting failure or system error.",
     "runs": [
      "DQE",
@@ -726,7 +742,7 @@
    "month": "2025-01",
    "value": 0.0,
    "votes": 3,
-   "score": 0.6269,
+   "score": 0.6279,
    "detectors": [
     "mad",
     "iforest",
@@ -737,6 +753,9 @@
     "category": "GES",
     "consistency": 0.667,
     "review_level": "none",
+    "model": "qwen3:4b",
+    "prompt_version": "v2",
+    "current": true,
     "reasoning": "The anomaly is January 2025 with 0 infraction notices (0% of previous median 6). Seasonality check shows 2024-01:1.40, 2023-01:1.12, 2022-01:1.20, 2021-01:0.47, 2020-01:0.36. The same calendar month deviated below 1 in 2 of 5 years (2021, 2020), but not flagged in other years. No known events within +-6 months. The data shows no excluded records or records without identifier (no_id=0) and plausible values (no zeros in other months except Jan 2025). The anomaly is a single month with 0 notices, while previous months had active enforcement (e.g., 195 in Nov 2024). A data-quality event would require a burst of excluded records or no_id records, but these are 0. The sustained level shift test is negative. Thus, the anomaly is likely a genuine enforcement shift (GES), as it's a real drop with no seasonal pattern or data issue evidence.",
     "runs": [
      "DQE",
@@ -752,7 +771,7 @@
    "month": "2025-01",
    "value": 0.0,
    "votes": 4,
-   "score": 0.6347,
+   "score": 0.6362,
    "detectors": [
     "zscore",
     "mad",
@@ -763,7 +782,10 @@
    "llm": {
     "category": "DQE",
     "consistency": 0.667,
-    "review_level": "mandatory",
+    "review_level": "pending",
+    "model": "qwen3:4b",
+    "prompt_version": "v2",
+    "current": true,
     "reasoning": "Seasonality check shows consistent low values in January for 4/5 years (ratio <1), indicating a recurring pattern. No known policy events. Records show no exclusions or missing IDs. Value 0 is implausible (penalty_total_brl was active in prior months). The anomaly is a sustained zero, which is likely a data-quality issue (e.g., system error causing no records to be reported).",
     "runs": [
      "DQE",
@@ -784,7 +806,7 @@
    "month": "2024-12",
    "value": 455.0,
    "votes": 2,
-   "score": 0.6509,
+   "score": 0.6534,
    "detectors": [
     "mad",
     "iforest"
@@ -793,7 +815,10 @@
    "llm": {
     "category": "DQE",
     "consistency": 0.667,
-    "review_level": "mandatory",
+    "review_level": "pending",
+    "model": "qwen3:4b",
+    "prompt_version": "v2",
+    "current": true,
     "reasoning": "Seasonality check shows 2023-12 has 0 notices (ratio 0.00), 2022-12 has 100% of the median (ratio 1.00), 2021-12 has 67% of the median, etc. Only 1 of 5 years had a deviation above 1 in December. The same calendar month was not flagged in other years. No known events. Data quality checks: no excluded or no_id records, values are plausible (non-zero). The anomaly is a large spike (455 vs median 6) but no persistent step or implausible values. Since seasonality is weak (only 1 year with similar deviation) and no policy events, the anomaly likely stems from a data-quality issue (e.g., retroactive correction or system migration) despite the large deviation.",
     "runs": [
      "DQE",
@@ -814,7 +839,7 @@
    "month": "2024-11",
    "value": 195.0,
    "votes": 3,
-   "score": 0.5638,
+   "score": 0.5711,
    "detectors": [
     "zscore",
     "mad",
@@ -825,6 +850,9 @@
     "category": "GES",
     "consistency": 1.0,
     "review_level": "none",
+    "model": "qwen3:4b",
+    "prompt_version": "v2",
+    "current": true,
     "reasoning": "Seasonality check shows 2023-11 ratio 0.15 (low), 2022-11 0.94 (near median), 2021-11 2.29 (high), 2020-11 0.10 (low), 2019-11 1.50 (high). Only 2022 and 2021 had ratios above 1 (high) for Nov, while 2024-11 is 39x median. But the same calendar month deviated in the same direction (above 1) in 2 of 5 years, so seasonal pattern exists. However, the 2024-11 value is unusually high (195 vs median 5) and the same month wasn't flagged in other years. The anomaly is flagged by multiple detectors (zscore, mad, iforest) but Page-Hinkley test shows no sustained level shift. No data quality indicators (excluded/no_id records) are present. The high value could be a genuine enforcement shift (GES) as no policy events, seasonal pattern, or data issues are evident.",
     "runs": [
      "GES",
@@ -840,7 +868,7 @@
    "month": "2024-07",
    "value": 40000.01,
    "votes": 2,
-   "score": 0.5608,
+   "score": 0.5612,
    "detectors": [
     "mad",
     "iforest"
@@ -849,7 +877,10 @@
    "llm": {
     "category": "DQE",
     "consistency": 1.0,
-    "review_level": "mandatory",
+    "review_level": "pending",
+    "model": "qwen3:4b",
+    "prompt_version": "v2",
+    "current": true,
     "reasoning": "Seasonality check shows 2023-07, 2022-07, 2021-07, 2020-07 had ratios >1, but 2024-07 is 0.00 (40k vs 22.6M median). Only 2 of 5 years had same downward deviation. 2025-07 also flagged (0 penalty). No known events. Records show no excluded/no_id records; penalty value is implausibly low (40k vs typical millions). No sustained shift. Data quality event fits: zero penalty with no identifier, unlikely to be genuine enforcement. Confidence: 0.95",
     "runs": [
      "DQE",
@@ -870,7 +901,7 @@
    "month": "2023-12",
    "value": 0.0,
    "votes": 2,
-   "score": 0.6479,
+   "score": 0.6526,
    "detectors": [
     "zscore",
     "mad"
@@ -879,7 +910,10 @@
    "llm": {
     "category": "DQE",
     "consistency": 1.0,
-    "review_level": "mandatory",
+    "review_level": "pending",
+    "model": "qwen3:4b",
+    "prompt_version": "v2",
+    "current": true,
     "reasoning": "The anomaly is in 2023-12 with penalty_total_brl = 0, while the median of previous 12 months was 21.2M. Seasonality check shows 2022-12: 0.04, 2021-12: 1.62, 2020-12: 0.02, 2019-12: 3.48. The same calendar month deviated below 1 in 2 of 4 years (2020-12, 2022-12), but no other year was flagged. No known policy events. Records show no excluded or no_id entries, no data quality issues. The zero value is implausible for an active series (all prior months had positive penalties). This suggests a data problem: likely a system error or retroactive correction that caused the month to have no penalties. The Page-Hinkley test shows no sustained level shift, ruling out genuine enforcement shifts.",
     "runs": [
      "DQE",
@@ -900,7 +934,7 @@
    "month": "2023-05",
    "value": 399142.92,
    "votes": 2,
-   "score": 0.4963,
+   "score": 0.4923,
    "detectors": [
     "zscore",
     "mad"
@@ -909,7 +943,10 @@
    "llm": {
     "category": "DQE",
     "consistency": 0.333,
-    "review_level": "mandatory",
+    "review_level": "pending",
+    "model": "qwen3:4b",
+    "prompt_version": "v2",
+    "current": true,
     "reasoning": "Seasonality check shows 2023-05 had a ratio of 0.01 (vs median 44.7M), while previous years had ratios 3.29 (2022-05), 1.97 (2021-05), 0.59 (2020-05). Only 1 of 3 years had a below-1 deviation, so not strong seasonal pattern. No other years had this month flagged as anomalous. Known event: 2023-01 political change (policy-driven). But data shows no excluded/no_id records (0), no implausible values (399k is plausible for 5 notices), and no sustained shift. Since no data quality issues, and event is policy-driven, but the anomaly is a single month with very low penalties (399k vs 44.7M median), likely a data error (e.g., misreported value) rather than genuine shift. No other data issues, so DQE most plausible.",
     "runs": [
      "DQE",
@@ -930,7 +967,7 @@
    "month": "2022-09",
    "value": 68.0,
    "votes": 2,
-   "score": 0.58,
+   "score": 0.5831,
    "detectors": [
     "zscore",
     "mad"
@@ -940,6 +977,9 @@
     "category": "GES",
     "consistency": 0.667,
     "review_level": "none",
+    "model": "qwen3:4b",
+    "prompt_version": "v2",
+    "current": true,
     "reasoning": "Seasonality check shows 2021-09: 1.17 (above median), 2020-09: 0.35 (below), 2019-09: 2.33 (above). The same calendar month deviated above median in 2 of 3 years (2019, 2021), but not in 2020. However, no other year had this month flagged as anomalous. The spike in 2022-09 (68 notices vs. median 6) is unusually high but not explained by prior seasonal patterns. No data quality issues (excluded/no_id records = 0) and no policy events within 6 months except a political change in 2023-01 (4 months later), too late to impact 2022-09. The Page-Hinkley test shows no sustained shift. Thus, the anomaly is likely a genuine enforcement shift (GES).",
     "runs": [
      "GES",

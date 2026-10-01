@@ -1,6 +1,6 @@
 {
  "toolkit": "5ltep-layer3 v0.1.0",
- "generated_at": "2026-09-30T11:04:09+00:00",
+ "generated_at": "2026-10-01T10:37:22+00:00",
  "profile": {
   "id": "aneel-autos-infracao",
   "title": "ANEEL infraction notices (Autos de Infração), Brazil",
@@ -13,7 +13,7 @@
  "source": {
   "profile": "aneel-autos-infracao",
   "profile_sha256": "fd6b5b4b77d305d62529a2dbf40e81ea5bc99d9085fb7a4cef200ad30e327a49",
-  "as_of": "2026-09-30T10:37:09.484228",
+  "as_of": "2026-10-01T10:36:05.611315",
   "dataset_id": "auto-de-infracao",
   "dataset_url": "https://dadosabertos.aneel.gov.br/dataset/auto-de-infracao",
   "dataset_metadata_modified": "2026-09-28T08:01:17.035771",
@@ -21,7 +21,7 @@
   "resource_id": "f221158a-93a3-423f-b794-4312b6985a24",
   "resource_name": "auto-infracao.csv",
   "resource_url": "https://dadosabertos.aneel.gov.br/dataset/4d690c9d-8158-4b04-ae44-7d3de8616271/resource/f221158a-93a3-423f-b794-4312b6985a24/download/auto-infracao.csv",
-  "download_started_at": "2026-09-30T10:37:12+00:00",
+  "download_started_at": "2026-10-01T10:36:06+00:00",
   "size_bytes": 702933,
   "checksum_sha256": "fc59416c977cedcd1f7f127b025480f7f38d05c679b31587a57e0040aae2bd6d",
   "aggregation": {
@@ -34,11 +34,11 @@
    "rows_future_date": 0,
    "rows_without_penalty_total_brl": 18,
    "first_month": "2018-06",
-   "last_complete_month": "2026-08"
+   "last_complete_month": "2026-09"
   },
   "analysis_period": [
    "2018-06",
-   "2026-08"
+   "2026-09"
   ]
  },
  "series": {
@@ -47,9 +47,9 @@
  },
  "analysis_period": [
   "2018-06",
-  "2026-08"
+  "2026-09"
  ],
- "months": 99,
+ "months": 100,
  "method_parameters": {
   "baseline_window": 12,
   "zscore_k": 3.0,
@@ -88,7 +88,7 @@
    "pandas": "3.0.6",
    "numpy": "2.4.6",
    "scikit-learn": "1.9.1",
-   "torch": "2.14.0+cpu",
+   "torch": "2.14.1+cpu",
    "requests": "2.34.2"
   }
  },
@@ -107,6 +107,11 @@
  },
  "llm": {
   "model": "qwen3:4b",
+  "model_source": "benchmark",
+  "judged_by": {
+   "qwen3:4b / prompt v2": 10
+  },
+  "judged_by_other_model_or_prompt": 0,
   "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
   "categories": {
    "DQE": 7,
@@ -119,14 +124,14 @@
   "issues": 7,
   "decided": 0,
   "open_by_level": {
-   "mandatory": 7
+   "pending": 7
   },
   "human_llm_agreement": null
  },
  "layer3": {
   "window": [
-   "2025-09",
-   "2026-08"
+   "2025-10",
+   "2026-09"
   ],
   "pairs_evaluated": 24,
   "l3_rate": 0.9583,
