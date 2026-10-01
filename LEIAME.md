@@ -1,24 +1,24 @@
 # 5LTEP-L3 · instância ANEEL (experimento de controle)
 
+[![Tests](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml/badge.svg)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml) [![Layer 3](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/layer3.yml/badge.svg)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/layer3.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 [English](README.md) · **Português**
 
 **Detecção de anomalias da Camada 3 do 5L-TEP aplicada aos autos de infração da ANEEL, a agência
-reguladora do setor elétrico: uma segunda instância do [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3),
+reguladora do setor elétrico: uma segunda instância do [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3/blob/main/LEIAME.md),
 montada pelo autor como caso de controle do estudo do IBAMA.**
+
+| Recurso | O que tem lá |
+|---|---|
+| 📊 **Painel** | [lsp3cesarschool.github.io/5ltep-layer3-aneel](https://lsp3cesarschool.github.io/5ltep-layer3-aneel/): anomalias, rótulos do LLM, decisões do gestor e a proveniência de cada resultado |
+| 🧑‍⚖️ **Fila de revisão** | [![revisões abertas](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/layer3?label=revis%C3%B5es%20abertas&color=0366d6)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Alayer3) [![pendentes](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Apending?label=pendentes&color=d73a4a)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Apending) [![recomendadas](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Aadvisory?label=recomendadas&color=fbca04)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Aadvisory) [![mudança de nível](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Alevel-shift?label=mudan%C3%A7a%20de%20n%C3%ADvel&color=f9d0c4)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Alevel-shift)<br>contagens ao vivo; cada selo abre sua lista de issues |
+| 🏛️ **Instância principal** | [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3/blob/main/LEIAME.md): IBAMA, e a documentação completa |
+| 🧪 **Escolha do modelo** | [5ltep-layer3-modeltest](https://github.com/lsp3cesarschool/5ltep-layer3-modeltest/blob/main/LEIAME.md): o benchmark mensal que escolhe o LLM juiz |
 
 > **Situação: demonstração de pesquisa.** Este repositório não é operado pela ANEEL, não tem vínculo
 > com ela nem aval dela; apenas lê os dados abertos da ANEEL. Ele mostra que o kit pode ser reutilizado
 > em outro portal. Não pressupõe que a ANEEL vá revisar seus resultados ou adotá-lo. As issues de
 > revisão abertas demonstram o fluxo: não há gestor designado.
-
-[![Tests](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml/badge.svg)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml)
-[![Layer 3](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/layer3.yml/badge.svg)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/layer3.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-
-📊 **Painel:** <https://lsp3cesarschool.github.io/5ltep-layer3-aneel/>
-🧑‍⚖️ **Fila de revisão** (contagens ao vivo; cada selo abre sua lista de issues): [![revisões abertas](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/layer3?label=revis%C3%B5es%20abertas&color=0366d6)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Alayer3) [![pendentes](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Apending?label=pendentes&color=d73a4a)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Apending) [![recomendadas](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Aadvisory?label=recomendadas&color=fbca04)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Aadvisory) [![mudança de nível](https://img.shields.io/github/issues/lsp3cesarschool/5ltep-layer3-aneel/review%3Alevel-shift?label=mudan%C3%A7a%20de%20n%C3%ADvel&color=f9d0c4)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/issues?q=is%3Aissue+is%3Aopen+label%3Areview%3Alevel-shift)
-🏛️ **Instância principal (IBAMA) e documentação completa:** [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3/blob/main/LEIAME.md)
-🧪 **Qual LLM julga, e por quê:** [5ltep-layer3-modeltest](https://github.com/lsp3cesarschool/5ltep-layer3-modeltest/blob/main/LEIAME.md), o benchmark mensal de modelos
 
 ## Caso de uso em um parágrafo
 
@@ -54,7 +54,7 @@ O que difere do repositório principal é apenas:
 
 Os perfis e resultados do IBAMA não estão incluídos. Todo o resto (detectores, LLM-as-a-Judge, revisão
 humana, painel, workflows, testes) é idêntico a
-[`5ltep-layer3@7009abe`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/7009abe010ae1ce22adabf08ecb821030b0d9bcf),
+[`5ltep-layer3@bd3212f`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/bd3212f0218fedfee1aa598fcaf38eba90c94949),
 e a instância montada passa na mesma suíte de testes antes de cada atualização.
 
 ## Termos-chave
