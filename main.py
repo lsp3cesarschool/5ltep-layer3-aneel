@@ -198,6 +198,9 @@ def cmd_report(args) -> None:
     report.write_json(p.paths.summary, summary)
     report.write_json(p.paths.dashboard, report.dashboard_data(p, monthly, det, drift, judgments, reviews, summary))
     report.write_index(profiles.available(), config.ROOT / "docs" / "data" / "index.json")
+    continues = {"yes": True, "no": False}.get(getattr(args, "chain_continues", "no" if getattr(args, "skip_llm", False) else "auto"))
+    state, info = report.status_from_summary(summary, continues)
+    report.write_status(p.id, state, **info)
     l3 = summary["layer3"]
     logger.info("%s: l3_rate=%s l3_pass=%s", p.id, l3["l3_rate"], l3["l3_pass"])
     _set_output("l3_pass", str(l3["l3_pass"]).lower())
@@ -267,6 +270,12 @@ def cmd_check_model(args) -> None:
     logger.info("check-model: %s", res)
 
 
+def cmd_status(args) -> None:
+    """Mark the status badge as running (start of a chain) or interrupted (failed/cancelled run)."""
+    p = profiles.load(args.profile)
+    report.write_status(p.id, args.state)
+
+
 def cmd_list_profiles(args) -> None:
     for p in profiles.available():
         flag = "scheduled" if p.get("scheduled") else "on demand"
@@ -303,7 +312,11 @@ def main(argv=None) -> None:
         "--max-new", type=int, default=config.MAX_NEW_ISSUES)
     add("sync-reviews", cmd_sync_reviews, "read steward decisions").add_argument(
         "--all", action="store_true", help="every profile in profiles/")
-    add("report", cmd_report, "summary + dashboard data")
+    add("report", cmd_report, "summary + dashboard data").add_argument(
+        "--chain-continues", choices=["auto", "yes", "no"], default="auto",
+        help="for the status badge: whether another batch follows (auto: while anomalies await judgment)")
+    add("status", cmd_status, "set the status badge").add_argument(
+        "--state", choices=["running", "interrupted"], required=True)
     add("check-profile", cmd_check_profile, "validate a profile against the live portal")
     sp = add("suggest-events", cmd_suggest_events, "LLM suggestions for the event calendar (for review)")
     sp.add_argument("--offline", action="store_true", help="no online source: the model answers from memory")

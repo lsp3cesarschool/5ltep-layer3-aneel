@@ -684,3 +684,23 @@ def test_legacy_mandatory_level_reads_as_pending():
     assert report.effective("notices:2020-01", {"notices:2020-01": j}, {})["pending_review"] is True
     assert judge.normalize_level("mandatory") == "pending"
     assert judge.normalize_level("advisory") == "advisory"
+
+
+def test_status_badge(tmp_path, monkeypatch):
+    """The README badge says what the chain is doing: running, done (with counts) or interrupted."""
+    monkeypatch.setattr(config, "ROOT", tmp_path)
+    summary = {"anomalies": {"flagged": 46, "pending_judgment": 0},
+               "hitl": {"open_by_level": {"pending": 2, "advisory": 1, "mandatory": 1}}}
+    assert report.status_from_summary(summary) == ("done", {"flagged": 46, "pending": 3})
+    summary["anomalies"]["pending_judgment"] = 19
+    assert report.status_from_summary(summary) == ("judging", {"left": 19})
+    assert report.status_from_summary(summary, chain_continues=False)[0] == "done"
+    report.write_status("p", "judging", left=19)
+    paths = report.status_paths("p")
+    en = json.loads(paths["en"].read_text(encoding="utf-8"))
+    pt = json.loads(paths["pt"].read_text(encoding="utf-8"))
+    assert en == {"schemaVersion": 1, "label": "Layer 3", "message": "running · 19 anomalies left to judge",
+                  "color": "blue"}
+    assert pt["label"] == "Camada 3" and pt["message"] == "rodando · faltam 19 anomalias para julgar"
+    report.write_status("p", "interrupted")
+    assert json.loads(paths["en"].read_text(encoding="utf-8"))["color"] == "lightgrey"

@@ -1,6 +1,6 @@
 # 5LTEP-L3 · ANEEL instance (control experiment)
 
-[![Tests](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml/badge.svg)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml) [![Layer 3](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/layer3.yml/badge.svg)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/layer3.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Tests](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml/badge.svg)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml) [![Layer 3](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Flsp3cesarschool%2F5ltep-layer3-aneel%2Fmain%2Fdocs%2Fdata%2Fstatus-aneel-autos-infracao.json)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/layer3.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **English** · [Português](LEIAME.md)
 
@@ -53,7 +53,7 @@ What differs from the main repository is only:
 
 The IBAMA profiles and results are not included. Everything else (detectors, LLM-as-a-Judge,
 human-in-the-loop review, dashboard, workflows, tests) is identical to
-[`5ltep-layer3@bd3212f`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/bd3212f0218fedfee1aa598fcaf38eba90c94949),
+[`5ltep-layer3@21440a4`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/21440a4303885fe550dbe997d88f6d7e98e55648),
 and the built instance passes the same test suite before every update.
 
 ## Key terms

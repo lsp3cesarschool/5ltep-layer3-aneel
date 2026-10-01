@@ -162,6 +162,45 @@ def write_json(path, data) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
 
 
+# Status badge (shields.io "endpoint" format), in English and Portuguese: what the latest chain
+# of batches is doing, instead of GitHub's passed/failed badge of the last single run.
+STATUS_TEXT = {
+    "en": {"label": "Layer 3", "running": "running · started {date}",
+           "judging": "running · {left} anomalies left to judge",
+           "done": "done {date} · {flagged} anomalies · {pending} pending review",
+           "interrupted": "interrupted {date} · see Actions"},
+    "pt": {"label": "Camada 3", "running": "rodando · iniciada em {date}",
+           "judging": "rodando · faltam {left} anomalias para julgar",
+           "done": "concluída em {date} · {flagged} anomalias · {pending} em revisão pendente",
+           "interrupted": "interrompida em {date} · ver Actions"},
+}
+STATUS_COLORS = {"running": "blue", "judging": "blue", "done": "brightgreen", "interrupted": "lightgrey"}
+
+
+def status_paths(profile_id: str) -> dict:
+    base = config.ROOT / "docs" / "data"
+    return {"en": base / f"status-{profile_id}.json", "pt": base / f"status-{profile_id}.pt.json"}
+
+
+def status_from_summary(summary: dict, chain_continues: bool | None = None) -> tuple[str, dict]:
+    """"judging" while anomalies are still waiting for the LLM and the chain goes on, else "done"."""
+    a = summary["anomalies"]
+    open_levels = summary.get("hitl", {}).get("open_by_level", {})
+    pending = sum(n for level, n in open_levels.items() if normalize_level(level) == "pending")
+    left = a.get("pending_judgment", 0)
+    if left and (chain_continues if chain_continues is not None else True):
+        return "judging", {"left": left}
+    return "done", {"flagged": a.get("flagged", 0), "pending": pending}
+
+
+def write_status(profile_id: str, state: str, **info) -> None:
+    date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    for lang, path in status_paths(profile_id).items():
+        t = STATUS_TEXT[lang]
+        write_json(path, {"schemaVersion": 1, "label": t["label"],
+                          "message": t[state].format(date=date, **info), "color": STATUS_COLORS[state]})
+
+
 def write_index(profiles: list[Profile], path) -> None:
     """docs/data/index.json: the profiles that have dashboard data."""
     items = [{"id": p.id, "title": p["title"]} for p in profiles if p.paths.dashboard.exists()]

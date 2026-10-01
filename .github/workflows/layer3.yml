@@ -109,6 +109,19 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # The "Layer 3" badge of the README reads docs/data/status-<profile>.json: running,
+      # done (date and counts) or interrupted, instead of GitHub's passed/failed of one run.
+      - name: Mark the chain as running (status badge)
+        if: ${{ env.BATCH == '1' }}
+        run: |
+          python main.py status --profile "$PROFILE" --state running
+          git config user.name "5L-TEP L3 Bot"
+          git config user.email "5ltep-l3-bot@users.noreply.github.com"
+          git add docs/data/
+          git diff --cached --quiet || git commit -m "chore(l3): $PROFILE running [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
+          git pull --rebase --autostash
+          git push
+
       - name: "Stage 1: download, aggregate, detect"
         id: detect
         run: |
@@ -149,7 +162,10 @@ jobs:
       - name: Build summary and dashboard data
         id: report
         if: ${{ always() && steps.detect.outcome == 'success' }}
-        run: python main.py report --profile "$PROFILE"
+        env:
+          # schedule runs have no inputs: they always continue until nothing is pending
+          CONTINUES: ${{ (inputs.skip_llm || (github.event_name == 'workflow_dispatch' && !inputs.continue_batches)) && 'no' || 'auto' }}
+        run: python main.py report --profile "$PROFILE" --chain-continues "$CONTINUES"
 
       - name: Commit results
         id: commit
@@ -165,7 +181,7 @@ jobs:
       - name: Start the next batch
         id: next
         if: >-
-          ${{ success() && !inputs.skip_llm && inputs.continue_batches != false &&
+          ${{ success() && !inputs.skip_llm && (github.event_name != 'workflow_dispatch' || inputs.continue_batches) &&
               (steps.judge.outputs.pending_after > 0 || steps.issues.outputs.issues_remaining > 0) }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -201,3 +217,14 @@ jobs:
             fi
             echo "::notice::$open anomaly(ies) of $PROFILE await a steward review: $url (e-mail alert off; set L3_REVIEW_ALERT=true to turn it on)"
           fi
+
+      - name: Mark the chain as interrupted (status badge)
+        if: ${{ failure() || cancelled() }}
+        run: |
+          python main.py status --profile "$PROFILE" --state interrupted
+          git config user.name "5L-TEP L3 Bot"
+          git config user.email "5ltep-l3-bot@users.noreply.github.com"
+          git add docs/data/
+          git diff --cached --quiet || git commit -m "chore(l3): $PROFILE interrupted [$(date -u +%Y-%m-%dT%H:%M:%SZ)]"
+          git pull --rebase --autostash
+          git push
