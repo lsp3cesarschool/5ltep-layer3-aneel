@@ -19,3 +19,7 @@
 {"at": "2026-10-01T13:37:23+00:00", "stage": "judge", "run_id": "36868979004", "judged_now": 0, "pending_before": 0, "model": {"model": "qwen3:4b", "ollama_version": "0.35.0", "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7", "quantization": "Q4_K_M"}}
 {"at": "2026-10-01T13:37:24+00:00", "stage": "issues", "run_id": "36868979004", "created": [], "shifts_created": [], "superseded": [], "remaining": 0, "notified_rejudged": []}
 {"at": "2026-10-01T13:45:43+00:00", "stage": "translate", "run_id": "36868979004", "translated": 21, "failed": 0, "remaining": 0}
+{"at": "2026-10-01T13:59:15+00:00", "stage": "detect", "run_id": "36872579797", "months": 100, "flagged": 10, "from_series": false}
+{"at": "2026-10-01T13:59:48+00:00", "stage": "judge", "run_id": "36872579797", "judged_now": 0, "pending_before": 0, "model": {"model": "qwen3:4b", "ollama_version": "0.35.0", "model_digest": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7", "quantization": "Q4_K_M"}}
+{"at": "2026-10-01T13:59:48+00:00", "stage": "translate", "run_id": "36872579797", "translated": 0, "failed": 0, "remaining": 0}
+{"at": "2026-10-01T14:00:48+00:00", "stage": "issues", "run_id": "36872579797", "created": [], "shifts_created": [], "superseded": [], "remaining": 0, "notified_rejudged": []}
