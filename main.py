@@ -166,7 +166,7 @@ def cmd_issues(args) -> None:
     judgments = judge.load_judgments(p.paths.judgments)
     policy_changes = judge.apply_review_policy(judgments)
     owner, name = gh.repo.split("/")
-    url = f"https://{owner}.github.io/{name}/?profile={p.id}"
+    url = f"https://{owner}.github.io/{name}/?profile={p.id}&lang=en"  # issues are written in English
     drift = json.loads(p.paths.drift.read_text(encoding="utf-8")) if p.paths.drift.exists() else {}
     groups = review.drift_groups(det, drift)
     res = review.open_review_issues(p, judgments, current, gh, url, args.max_new, groups)
