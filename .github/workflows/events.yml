@@ -5,9 +5,16 @@ name: 5L-TEP Layer 3 Suggest Events
 # pull request with them, marked "suggested". The steward reviews the diff,
 # edits it (status verified / rejected, labels) and merges.
 #
+# Batches: each run asks the years it can within SUGGEST_MAX_MINUTES and, while years are
+# left, starts the next batch of the same chain with them. All batches of a chain write to one
+# branch and one pull request, so a batch sees what the earlier ones suggested. The chain stops
+# when every year has been asked, when CHAIN_MAX_DAYS have passed since it started (the next monthly
+# cycle is near), or when a batch asks no year.
+#
 # Two jobs (SECURITY.md): "suggest" runs the model and reads Wikipedia with a read-only token;
 # "pull-request" runs no model, accepts the calendar only if it just appends suggestions
-# (main.py accept-events) and opens the pull request.
+# (main.py accept-events), updates the pull request and starts the next batch. The code always
+# comes from the default branch; the chain's branch only gives the calendar file.
 on:
   workflow_dispatch:
     inputs:
@@ -23,28 +30,68 @@ on:
         description: 'Comma-separated years (empty: every year with anomalies, most recent first)'
         required: false
         default: ''
+      batch:
+        description: 'Batch number in the chain (set automatically)'
+        required: false
+        default: '1'
+      chain_branch:
+        description: 'Branch of the chain (set automatically; empty = a new chain)'
+        required: false
+        default: ''
+      chain_started:
+        description: 'Start of the chain, Unix time (set automatically)'
+        required: false
+        default: ''
 
 permissions:
   contents: read
+
+concurrency:
+  group: layer3-events-${{ inputs.profile }}
+  cancel-in-progress: false
 
 env:
   LLM_MODEL: ${{ vars.LLM_MODEL || 'auto' }}
   LLM_THINK: ${{ vars.LLM_THINK || '' }}
   LLM_DIGEST: ''
+  CHAIN_MAX_DAYS: 28        # the chain may run until the next monthly cycle; then the years left are reported
+  BATCH: ${{ inputs.batch || '1' }}
 
 jobs:
   suggest:
     runs-on: ubuntu-latest
-    timeout-minutes: 350         # every year with anomalies, within SUGGEST_MAX_MINUTES (GitHub: 6 h per job)
+    timeout-minutes: 350         # within SUGGEST_MAX_MINUTES (GitHub: 6 h per job); the years left go to the next batch
     permissions:
       contents: read             # runs the model: no write access to anything
     outputs:
       added: ${{ steps.suggest.outputs.added }}
       profile: ${{ steps.suggest.outputs.profile }}
+      remaining: ${{ steps.suggest.outputs.remaining }}
+      asked: ${{ steps.suggest.outputs.asked }}
     steps:
       - uses: actions/checkout@v5
         with:
           ref: ${{ github.ref_name }}  # latest commit when the job starts, not the one at trigger time
+          persist-credentials: false
+
+      - name: Check the inputs
+        env:
+          PROFILE_IN: ${{ inputs.profile }}
+          YEARS: ${{ inputs.years }}
+          CHAIN_BRANCH: ${{ inputs.chain_branch }}
+        run: |
+          set -euo pipefail
+          [[ "$PROFILE_IN" =~ ^[a-z0-9_-]{0,64}$ ]] || { echo "::error::bad profile"; exit 1; }
+          [[ "$YEARS" =~ ^[0-9,\ ]{0,1000}$ ]] || { echo "::error::years must be comma-separated numbers"; exit 1; }
+          [[ "$CHAIN_BRANCH" =~ ^(events/[a-z0-9_-]{1,64}-[0-9]{1,20})?$ ]] || { echo "::error::bad chain branch"; exit 1; }
+          [[ "$BATCH" =~ ^[0-9]{1,4}$ ]] || { echo "::error::bad batch"; exit 1; }
+
+      # A later batch starts from the calendar of the chain's branch (with the earlier suggestions).
+      - uses: actions/checkout@v5
+        if: ${{ inputs.chain_branch != '' }}
+        with:
+          ref: ${{ inputs.chain_branch }}
+          path: chain
           persist-credentials: false
 
       - uses: actions/setup-python@v6
@@ -69,15 +116,16 @@ jobs:
           PROFILE_IN: ${{ inputs.profile }}
           ONLINE: ${{ inputs.online }}
           YEARS: ${{ inputs.years }}
+          CHAIN_BRANCH: ${{ inputs.chain_branch }}
         run: |
           set -euo pipefail
-          [[ "$PROFILE_IN" =~ ^[a-z0-9_-]{0,64}$ ]] || { echo "::error::bad profile"; exit 1; }
-          [[ "$YEARS" =~ ^[0-9,\ ]{0,200}$ ]] || { echo "::error::years must be comma-separated numbers"; exit 1; }
+          python -c "import sys, json; from src import profile; p = profile.load(sys.argv[1] or None); print(p['events_file'])" "$PROFILE_IN" > events_path.txt
+          events_file="$(cat events_path.txt)"
+          if [ -n "$CHAIN_BRANCH" ] && [ -f "chain/$events_file" ]; then cp "chain/$events_file" "$events_file"; fi
           args=(--profile "$PROFILE_IN")
           [ "$ONLINE" = "true" ] || args+=(--offline)
           [ -z "$YEARS" ] || args+=(--years "$YEARS")
           python main.py suggest-events "${args[@]}"
-          python -c "import sys, json; from src import profile; p = profile.load(sys.argv[1] or None); print(p['events_file'])" "$PROFILE_IN" > events_path.txt
 
       - name: Hand the calendar over to the pull-request job
         if: ${{ steps.suggest.outputs.added > 0 }}
@@ -91,9 +139,10 @@ jobs:
 
   pull-request:
     needs: suggest
-    if: ${{ needs.suggest.outputs.added > 0 }}
+    if: ${{ needs.suggest.outputs.added > 0 || needs.suggest.outputs.remaining != '' }}
     runs-on: ubuntu-latest
     permissions:
+      actions: write             # to start the next batch
       contents: write
       pull-requests: write
     steps:
@@ -109,50 +158,112 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: The chain's branch
+        id: branch
+        env:
+          CHAIN_BRANCH: ${{ inputs.chain_branch }}
+          PROFILE_OUT: ${{ needs.suggest.outputs.profile }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          [[ "$PROFILE_OUT" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ ]] || { echo "::error::bad profile"; exit 1; }
+          [[ "$CHAIN_BRANCH" =~ ^(events/[a-z0-9_-]{1,64}-[0-9]{1,20})?$ ]] || { echo "::error::bad chain branch"; exit 1; }
+          branch="${CHAIN_BRANCH:-events/${PROFILE_OUT}-${RUN_ID}}"
+          echo "name=$branch" >> "$GITHUB_OUTPUT"
+          # the chain's branch, in its own folder: only its calendar file is used
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
+            git fetch --depth=1 origin "+refs/heads/$branch:refs/remotes/origin/$branch"
+            git worktree add chain "origin/$branch"
+            git -C chain checkout -B "$branch"
+          else
+            git worktree add -b "$branch" chain HEAD
+          fi
+
       - uses: actions/download-artifact@v4
+        if: ${{ needs.suggest.outputs.added > 0 }}
         with:
           name: suggested-calendar
           path: ${{ runner.temp }}/suggested
 
       - name: Accept the suggestions (they may only be appended, marked "suggested")
         id: accept
+        if: ${{ needs.suggest.outputs.added > 0 }}
         env:
           PROFILE_OUT: ${{ needs.suggest.outputs.profile }}
         run: |
           set -euo pipefail
-          [[ "$PROFILE_OUT" =~ ^[a-z0-9][a-z0-9_-]{0,63}$ ]] || { echo "::error::bad profile"; exit 1; }
+          events_file="$(python -c "import sys; from src import profile; print(profile.load(sys.argv[1])['events_file'])" "$PROFILE_OUT")"
+          cp "chain/$events_file" "$events_file"            # compared with the chain's calendar so far
           python main.py accept-events --profile "$PROFILE_OUT" \
             --file "$RUNNER_TEMP/suggested/suggested-calendar.json" --summary "$RUNNER_TEMP/summary.md"
+          cp "$events_file" "chain/$events_file"
 
-      - name: Open pull request for review
+      - name: Commit to the chain's branch and open or update the pull request
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROFILE_OUT: ${{ needs.suggest.outputs.profile }}
-          ADDED: ${{ steps.accept.outputs.added }}
+          ADDED: ${{ steps.accept.outputs.added || '0' }}
           EVENTS_FILE: ${{ steps.accept.outputs.events_file }}
           ONLINE: ${{ inputs.online }}
-          RUN_ID: ${{ github.run_id }}
+          BRANCH: ${{ steps.branch.outputs.name }}
+          REMAINING: ${{ needs.suggest.outputs.remaining }}
         run: |
           set -euo pipefail
-          branch="events/${PROFILE_OUT}-${RUN_ID}"
+          cd chain
           git config user.name "5L-TEP L3 Bot"
           git config user.email "5ltep-l3-bot@users.noreply.github.com"
-          git checkout -b "$branch"
-          git add "$EVENTS_FILE"
-          git commit -m "events: $ADDED suggestions for $PROFILE_OUT"
-          git push origin "$branch"
-          {
-            echo "The LLM suggested **$ADDED** events for \`$PROFILE_OUT\`,"
-            echo "all marked \`\"status\": \"suggested\"\`. Online grounding: $ONLINE."
-            echo
-            echo "**How to review:** open *Files changed*. For each new entry, check the \`evidence\` and \`source\`,"
-            echo "then set \`status\` to \`verified\` or \`rejected\` (rejected entries stay so they are not suggested again),"
-            echo "fix the label if needed, and merge. Unverified suggestions are not given to the judge."
-            echo
-            echo "**Suggestions:**"
-            echo
-            cat "$RUNNER_TEMP/summary.md"
-          } > "$RUNNER_TEMP/body.md"
-          gh pr create --base main --head "$branch" \
-            --title "Event calendar: $ADDED LLM suggestions for $PROFILE_OUT" \
-            --body-file "$RUNNER_TEMP/body.md"
+          if [ "$ADDED" -gt 0 ]; then
+            git add "$EVENTS_FILE"
+            git commit -m "events: $ADDED suggestions for $PROFILE_OUT (batch $BATCH)"
+          fi
+          git push origin "$BRANCH"
+          [ "$ADDED" -gt 0 ] || exit 0
+          left="${REMAINING:-none}"
+          pr=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -z "$pr" ]; then
+            {
+              echo "The LLM suggested events for \`$PROFILE_OUT\`, all marked \`\"status\": \"suggested\"\`."
+              echo "Online grounding: $ONLINE. Each batch of the chain adds its suggestions here (see the comments)."
+              echo
+              echo "**How to review:** open *Files changed*. For each new entry, check the \`evidence\` and \`source\`,"
+              echo "then set \`status\` to \`verified\` or \`rejected\` (rejected entries stay so they are not suggested again),"
+              echo "fix the label if needed, and merge. Unverified suggestions are not given to the judge."
+              echo
+              echo "**Batch $BATCH: $ADDED suggestions** (years still to ask: $left)"
+              echo
+              cat "$RUNNER_TEMP/summary.md"
+            } > "$RUNNER_TEMP/body.md"
+            gh pr create --base main --head "$BRANCH" \
+              --title "Event calendar: LLM suggestions for $PROFILE_OUT" --body-file "$RUNNER_TEMP/body.md"
+          else
+            { echo "**Batch $BATCH: $ADDED suggestions** (years still to ask: $left)"; echo
+              cat "$RUNNER_TEMP/summary.md"; } > "$RUNNER_TEMP/comment.md"
+            gh pr comment "$pr" --body-file "$RUNNER_TEMP/comment.md"
+          fi
+
+      - name: Start the next batch
+        if: ${{ needs.suggest.outputs.remaining != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROFILE_OUT: ${{ needs.suggest.outputs.profile }}
+          ONLINE: ${{ inputs.online }}
+          REMAINING: ${{ needs.suggest.outputs.remaining }}
+          ASKED: ${{ needs.suggest.outputs.asked }}
+          CHAIN_STARTED: ${{ inputs.chain_started }}
+          BRANCH: ${{ steps.branch.outputs.name }}
+          REF: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          [[ "$CHAIN_STARTED" =~ ^[0-9]{0,12}$ ]] || { echo "::error::bad chain start"; exit 1; }
+          started="${CHAIN_STARTED:-$(date +%s)}"
+          if [ $(( $(date +%s) - started )) -ge $(( CHAIN_MAX_DAYS * 86400 )) ]; then
+            echo "::warning::The chain has run for $CHAIN_MAX_DAYS days; years not asked: $REMAINING"
+            exit 0
+          fi
+          if [ "${ASKED:-0}" -eq 0 ]; then
+            echo "::warning::This batch asked no year (a single year longer than the budget?); stopped. Years left: $REMAINING"
+            exit 0
+          fi
+          echo "Years still to ask: $REMAINING"
+          gh workflow run events.yml --ref "$REF" -f profile="$PROFILE_OUT" -f online="$ONLINE" \
+            -f years="$REMAINING" -f batch="$((BATCH + 1))" -f chain_branch="$BRANCH" -f chain_started="$started"

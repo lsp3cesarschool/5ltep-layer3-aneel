@@ -308,9 +308,10 @@ def cmd_suggest_events(args) -> None:
                                    "dropped": len(res["dropped"]), "online": not args.offline})
     _set_output("added", len(res["added"]))
     _set_output("profile", p.id)
+    _set_output("asked", len(res["years"]))
+    _set_output("remaining", ",".join(map(str, res["remaining_years"])))   # the next batch of the chain asks these
     if res["remaining_years"]:
-        print(f"::warning::Time budget reached; years not asked yet (run again with them): "
-              f"{','.join(map(str, res['remaining_years']))}")
+        print(f"Time budget reached; years left for the next batch: {','.join(map(str, res['remaining_years']))}")
 
 
 def cmd_check_model(args) -> None:
@@ -388,7 +389,7 @@ def main(argv=None) -> None:
     sp.add_argument("--offline", action="store_true", help="no online source: the model answers from memory")
     sp.add_argument("--years", help="comma-separated years (default: years with anomalies, most recent first)")
     sp.add_argument("--max-years", type=int, default=0, help="at most this many years (default: all)")
-    sp.add_argument("--minutes", type=float, default=None, help="time budget (default SUGGEST_MAX_MINUTES)")
+    sp.add_argument("--minutes", type=float, default=None, help="time budget of this batch (default SUGGEST_MAX_MINUTES)")
     sp.add_argument("--model", default=None)
     sub.add_parser("list-profiles", help="list available profiles").set_defaults(fn=cmd_list_profiles)
     sub.add_parser("resolve-model", help="resolve LLM_MODEL=auto through the model benchmark").set_defaults(
