@@ -26,7 +26,7 @@ THINK_VALUES = {"", "true", "false"}
 
 MAX_REASONING = 2000      # characters kept from one answer of the model
 MAX_TRANSLATION = 6000    # characters of one translation
-MAX_FILE_BYTES = 30_000_000
+MAX_FILE_BYTES = 80_000_000      # per result file; GitHub refuses files above 100 MB
 
 
 def valid_model(name: str) -> bool:

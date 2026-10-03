@@ -296,16 +296,21 @@ def cmd_suggest_events(args) -> None:
     det = _load_detections(p.paths.detections)
     years = [int(y) for y in args.years.split(",")] if args.years else None
     client = judge.OllamaClient(model=args.model or _model())
-    res = events_suggest.suggest(p, det, client, online=not args.offline, years=years, max_years=args.max_years)
+    res = events_suggest.suggest(p, det, client, online=not args.offline, years=years, max_years=args.max_years,
+                                 minutes=args.minutes)
     for e in res["added"]:
         logger.info("suggested %s %-9s %s", e["month"], e["kind"], e["label"])
     for d in res["dropped"]:
         logger.info("dropped   %s: %s (%s)", d["year"], d["label"], d["reason"])
     logger.info("%d suggestions added to %s for review", len(res["added"]), p["events_file"])
-    _log_run(p, "suggest-events", {"years": res["years"], "added": len(res["added"]),
+    _log_run(p, "suggest-events", {"years": res["years"], "remaining_years": res["remaining_years"],
+                                   "added": len(res["added"]),
                                    "dropped": len(res["dropped"]), "online": not args.offline})
     _set_output("added", len(res["added"]))
     _set_output("profile", p.id)
+    if res["remaining_years"]:
+        print(f"::warning::Time budget reached; years not asked yet (run again with them): "
+              f"{','.join(map(str, res['remaining_years']))}")
 
 
 def cmd_check_model(args) -> None:
@@ -382,7 +387,8 @@ def main(argv=None) -> None:
     sp = add("suggest-events", cmd_suggest_events, "LLM suggestions for the event calendar (for review)")
     sp.add_argument("--offline", action="store_true", help="no online source: the model answers from memory")
     sp.add_argument("--years", help="comma-separated years (default: years with anomalies, most recent first)")
-    sp.add_argument("--max-years", type=int, default=8)
+    sp.add_argument("--max-years", type=int, default=0, help="at most this many years (default: all)")
+    sp.add_argument("--minutes", type=float, default=None, help="time budget (default SUGGEST_MAX_MINUTES)")
     sp.add_argument("--model", default=None)
     sub.add_parser("list-profiles", help="list available profiles").set_defaults(fn=cmd_list_profiles)
     sub.add_parser("resolve-model", help="resolve LLM_MODEL=auto through the model benchmark").set_defaults(

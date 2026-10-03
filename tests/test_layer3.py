@@ -533,6 +533,45 @@ def test_suggest_events_appends_grounded_suggestions_only(tmp_path, monkeypatch)
     assert "Change of federal administration" in client.prompts[0][1]  # known events are shown to the model
 
 
+def test_a_long_source_is_read_whole_in_pieces(tmp_path, monkeypatch):
+    # The events section was cut at 12,000 characters: the last months of a long year never reached
+    # the model. Now every piece is asked, and quotes and dates are checked against the whole text.
+    from src import events_suggest as es
+
+    monkeypatch.setattr(config, "ROOT", tmp_path)
+    (tmp_path / "ev.json").write_text(json.dumps({"events": []}), encoding="utf-8")
+    p = make_profile(tmp_path, events_file="ev.json", event_sources={"wikipedia": {"lang": "pt", "title": "{year} no Brasil"}})
+    filler = "".join(f"{d} de marco – Acontecimento comum numero {d} sem relacao com o setor.\n" for d in range(1, 29))
+    text = ("=== Marco ===\n" + filler * 12 + "=== Dezembro ===\n"
+            + "20 de dezembro – Nova lei de crimes ambientais muda as multas aplicadas pelo orgao federal.\n")
+    assert len(text) > es.SOURCE_PIECE_CHARS and "".join(es.pieces(text)) == text
+    monkeypatch.setattr(es, "fetch_wikipedia", lambda lang, title: (text, "https://pt.wikipedia.org/wiki/2019_no_Brasil"))
+    late = {"events": [{"month": "2019-12", "kind": "policy", "label": "Environmental crimes law", "relevance": "r",
+                        "relevance_score": 0.9,
+                        "evidence": "Nova lei de crimes ambientais muda as multas aplicadas pelo orgao federal"}]}
+    n = len(es.pieces(text))
+    client = FakeClient([json.dumps({"events": []})] * (n - 1) + [json.dumps(late)])
+    det = pd.DataFrame({"series": "notices", "anomaly": [True]}, index=pd.PeriodIndex(["2019-12"], freq="M"))
+    res = es.suggest(p, det, client)
+    assert len(client.prompts) == n > 1
+    assert [(e["month"], e["label"]) for e in res["added"]] == [("2019-12", "Environmental crimes law")]
+    assert res["remaining_years"] == []
+
+
+def test_every_year_is_asked_and_the_years_left_are_reported(tmp_path, monkeypatch):
+    from src import events_suggest as es
+
+    monkeypatch.setattr(config, "ROOT", tmp_path)
+    (tmp_path / "ev.json").write_text(json.dumps({"events": []}), encoding="utf-8")
+    p = make_profile(tmp_path, events_file="ev.json")
+    months = [f"{y}-06" for y in range(2005, 2016)]                      # 11 years with anomalies
+    det = pd.DataFrame({"series": "notices", "anomaly": [True] * 11}, index=pd.PeriodIndex(months, freq="M"))
+    res = es.suggest(p, det, FakeClient([json.dumps({"events": []})] * 11), online=False)
+    assert res["years"] == list(range(2015, 2004, -1))                    # all of them, not only 8
+    res = es.suggest(p, det, FakeClient([]), online=False, minutes=0)
+    assert res["years"] == [] and res["remaining_years"] == list(range(2015, 2004, -1))
+
+
 def test_month_in_source_reads_the_preceding_date():
     from src import events_suggest as es
 

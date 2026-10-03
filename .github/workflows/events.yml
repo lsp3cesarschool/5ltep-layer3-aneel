@@ -20,7 +20,7 @@ on:
         type: boolean
         default: true
       years:
-        description: 'Comma-separated years (empty: years with anomalies, most recent first)'
+        description: 'Comma-separated years (empty: every year with anomalies, most recent first)'
         required: false
         default: ''
 
@@ -35,7 +35,7 @@ env:
 jobs:
   suggest:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 350         # every year with anomalies, within SUGGEST_MAX_MINUTES (GitHub: 6 h per job)
     permissions:
       contents: read             # runs the model: no write access to anything
     outputs:

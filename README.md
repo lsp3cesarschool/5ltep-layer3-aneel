@@ -54,7 +54,7 @@ What differs from the main repository is only:
 
 The IBAMA profiles and results are not included. Everything else (detectors, LLM-as-a-Judge,
 human-in-the-loop review, dashboard, workflows, tests) is identical to
-[`5ltep-layer3@d66cb68`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/d66cb68641e27a504f288efdb1565f96808cb52c),
+[`5ltep-layer3@8ae029c`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/8ae029cf0f1644a9177b7aa495b54ba6cefeb62a),
 and the built instance passes the same test suite before every update.
 
 ## Key terms
@@ -198,6 +198,8 @@ portal's file changes over time.
 - No steward decisions, by design: the review flow is working and ready to be adopted, and the
   review metrics (human-LLM agreement, review time) fill in automatically if and when a steward uses
   it. The author does not act as a steward, which would be self-evaluation.
+- The [size and time limits](https://github.com/lsp3cesarschool/5ltep-layer3#size-and-time-limits) of
+  the main instance apply (what GitHub and the system accept).
 
 ## Documentation and references
 

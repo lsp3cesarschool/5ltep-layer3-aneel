@@ -8,6 +8,10 @@ source text are discarded, which filters out invented events. Without the
 online source (--offline) the LLM answers from memory; those suggestions are
 marked origin "llm-memory" and deserve extra care.
 
+The whole events section is read: a long page goes to the model in pieces (each fits in its
+context), every piece is asked, and the year keeps its best-scored suggestions. Every year with
+anomalies is asked, most recent first, within a time budget; the years left are reported.
+
 Suggestions are appended to the profile's events file with
 status "suggested". The steward edits that file: "verified" to confirm,
 "rejected" to discard (rejected entries are kept so they are not suggested
@@ -18,6 +22,7 @@ the profile sets "events_include_suggested".
 import json
 import logging
 import re
+import time
 import unicodedata
 from datetime import datetime, timezone
 
@@ -31,7 +36,9 @@ from src.profile import Profile
 logger = logging.getLogger(__name__)
 
 KINDS = ("policy", "political", "external")
-MAX_SOURCE_CHARS = 12000
+# Size of each piece of the source text sent to the model: ~4,000 tokens, which with the instructions
+# and the answer fits in the 8,192-token context of the call. A longer page is read in several pieces.
+SOURCE_PIECE_CHARS = 12000
 
 SYSTEM = """You help curate a calendar of events that may explain anomalies in open government data.
 {domain}
@@ -148,7 +155,24 @@ def fetch_wikipedia(lang: str, title: str) -> tuple[str, str] | None:
     m = re.search(r"==\s*(Eventos|Events|Acontecimentos)\s*==(.*?)(\n==\s*[^=]|\Z)", text, re.S)
     body = m.group(2) if m else text
     url = f"https://{lang}.wikipedia.org/wiki/{page['title'].replace(' ', '_')}"
-    return body[:MAX_SOURCE_CHARS], url
+    return body, url
+
+
+def pieces(text: str, limit: int = SOURCE_PIECE_CHARS) -> list[str]:
+    """The text in pieces of at most `limit` characters, cut between lines (nothing left out)."""
+    out, cur = [], ""
+    for line in text.splitlines(keepends=True):
+        while len(line) > limit:
+            if cur:
+                out.append(cur)
+                cur = ""
+            out.append(line[:limit])
+            line = line[limit:]
+        if len(cur) + len(line) > limit:
+            out.append(cur)
+            cur = ""
+        cur += line
+    return [p for p in out + [cur] if p.strip()]
 
 
 def _similar(a: str, b: str) -> bool:
@@ -169,18 +193,28 @@ def anomaly_months_by_year(detections: pd.DataFrame) -> dict[int, list[str]]:
 
 
 def suggest(profile: Profile, detections: pd.DataFrame, client, online: bool = True,
-            years: list[int] | None = None, max_years: int = 8, max_events: int = 3) -> dict:
-    """Append suggested events to the profile's events file; returns a summary."""
+            years: list[int] | None = None, max_years: int = 0, max_events: int = 3,
+            minutes: float | None = None) -> dict:
+    """Append suggested events to the profile's events file; returns a summary. Every year with
+    anomalies is asked (max_years > 0 caps them), most recent first, until the time budget ends."""
     events_path = config.ROOT / profile["events_file"]
     calendar = json.loads(events_path.read_text(encoding="utf-8"))
     known = calendar["events"] + profile.events(include_suggested=True)
     by_year = anomaly_months_by_year(detections)
-    todo = sorted(years or by_year, reverse=True)[:max_years]
+    todo = sorted(years or by_year, reverse=True)
+    if max_years:
+        todo = todo[:max_years]
+    deadline = time.monotonic() + (minutes if minutes is not None else config.SUGGEST_MAX_MINUTES) * 60
+    done_years, remaining = [], []
     source_cfg = (profile.get("event_sources") or {}).get("wikipedia")
     model = client.info()
     system = SYSTEM.format(domain=profile["domain"], records=profile["record_label"])
     added, dropped = [], []
     for year in todo:
+        if time.monotonic() >= deadline:
+            remaining.append(year)
+            continue
+        done_years.append(year)
         months = ", ".join(by_year.get(year, [])) or "none"
         known_year = "; ".join(f"{e['month']} {e['label']}" for e in known if e["month"].startswith(str(year)))
         base = dict(records=profile["record_label"], months=months, year=year, known=known_year or "none",
@@ -193,18 +227,27 @@ def suggest(profile: Profile, detections: pd.DataFrame, client, online: bool = T
             continue
         if source:
             text, url = source
-            prompt = PROMPT_ONLINE.format(**base, source=url, text=text)
+            prompts = [PROMPT_ONLINE.format(**base, source=url, text=piece) for piece in pieces(text)]
         else:
             text, url = "", None
-            prompt = PROMPT_OFFLINE.format(**base, country=(profile.get("country") or "the publisher's country"))
-        try:
-            answer, _ = client.generate(system, prompt, seed=config.LLM_SEEDS[0], schema=schema(),
-                                        temperature=0.0, num_ctx=8192)
-            items = json.loads(answer).get("events", [])
-        except (requests.RequestException, ValueError) as exc:
-            logger.warning("%d: model call failed: %s", year, exc)
-            continue
-        for it in items[:max_events]:
+            prompts = [PROMPT_OFFLINE.format(**base, country=(profile.get("country") or "the publisher's country"))]
+        items = []
+        for prompt in prompts:
+            try:
+                answer, _ = client.generate(system, prompt, seed=config.LLM_SEEDS[0], schema=schema(),
+                                            temperature=0.0, num_ctx=8192)
+                items += json.loads(answer).get("events", [])[:max_events]
+            except (requests.RequestException, ValueError) as exc:
+                logger.warning("%d: model call failed: %s", year, exc)
+        # every piece was asked: the year keeps its best-scored suggestions, as one answer would
+        def score_of(it):
+            try:
+                return float(it.get("relevance_score", 0))
+            except (TypeError, ValueError):
+                return 0.0
+        items.sort(key=score_of, reverse=True)
+        kept_year = 0
+        for it in items:
             month = str(it.get("month", ""))[:7]
             evidence = it.get("evidence", "")
             corrected_from = None
@@ -227,6 +270,8 @@ def suggest(profile: Profile, detections: pd.DataFrame, client, online: bool = T
                 reason = f"relevance {score:.2f} below {MIN_RELEVANCE}"
             elif is_known({"month": month, "label": it.get("label", "")}, known):
                 reason = "already in the calendar"
+            elif kept_year >= max_events:
+                reason = f"beyond the {max_events} best-scored of the year"
             if reason:
                 dropped.append({"year": year, "label": it.get("label"), "reason": reason})
                 continue
@@ -249,7 +294,11 @@ def suggest(profile: Profile, detections: pd.DataFrame, client, online: bool = T
             calendar["events"].append(entry)
             known.append(entry)
             added.append(entry)
+            kept_year += 1
         logger.info("%d: %d suggested so far, %d dropped so far", year, len(added), len(dropped))
     calendar["events"].sort(key=lambda e: e["month"])
     events_path.write_text(json.dumps(calendar, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    return {"years": todo, "added": added, "dropped": dropped}
+    if remaining:
+        logger.warning("time budget reached: years not asked yet (run again with --years): %s",
+                       ",".join(map(str, remaining)))
+    return {"years": done_years, "remaining_years": remaining, "added": added, "dropped": dropped}

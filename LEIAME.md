@@ -55,7 +55,7 @@ O que difere do repositório principal é apenas:
 
 Os perfis e resultados do IBAMA não estão incluídos. Todo o resto (detectores, LLM-as-a-Judge, revisão
 humana, painel, workflows, testes) é idêntico a
-[`5ltep-layer3@d66cb68`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/d66cb68641e27a504f288efdb1565f96808cb52c),
+[`5ltep-layer3@8ae029c`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/8ae029cf0f1644a9177b7aa495b54ba6cefeb62a),
 e a instância montada passa na mesma suíte de testes antes de cada atualização.
 
 ## Termos-chave
@@ -201,6 +201,8 @@ pode ser refeita exatamente sobre os dados de qualquer commit passado com
 - Nenhuma decisão de gestor, por desenho: o fluxo de revisão funciona e está pronto para ser adotado, e
   as métricas de revisão (concordância humano-LLM, tempo de revisão) se preenchem automaticamente se e
   quando um gestor o usar. O autor não faz o papel de gestor, o que seria autoavaliação.
+- Valem os [limites de tamanho e de tempo](https://github.com/lsp3cesarschool/5ltep-layer3/blob/main/LEIAME.md#limites-de-tamanho-e-de-tempo)
+  da instância principal (o que o GitHub e o sistema aceitam).
 
 ## Documentação e referências
 
