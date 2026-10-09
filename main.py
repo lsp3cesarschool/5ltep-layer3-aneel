@@ -16,7 +16,7 @@ Stages, each a sub-command so GitHub Actions can run them as separate steps:
 Examples:
   python main.py detect --profile ibama-autos-infracao
   python main.py judge --max-judgments 5
-  python main.py check-profile profiles/my-portal.json
+  python main.py check-profile --profile profiles/my-portal.json
 """
 
 import argparse
@@ -31,9 +31,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from src import aggregate, config, detectors, judge, report, review, safety, translate
+from src import aggregate, config, detectors, judge, report, review, safety, source_checks, translate
 from src import profile as profiles
-from src.ckan_source import download, resolve_resource
+from src.ckan_source import download, resolve_resources
 
 logger = logging.getLogger("layer3")
 
@@ -81,7 +81,6 @@ def cmd_detect(args) -> None:
 
 
 def _build_series(p: profiles.Profile, args) -> pd.DataFrame:
-    src = p["source"]
     as_of = pd.Timestamp(args.as_of) if args.as_of else pd.Timestamp.now(tz="UTC").tz_localize(None)
     manifest = {"profile": p.id,
                 "profile_sha256": hashlib.sha256(p.path.read_bytes()).hexdigest(),
@@ -91,20 +90,63 @@ def _build_series(p: profiles.Profile, args) -> pd.DataFrame:
             raw = Path(args.input)
             manifest.update({"resource_url": f"local file {raw.name}",
                              "checksum_sha256": hashlib.sha256(raw.read_bytes()).hexdigest()})
+            files = []
+            records = _read_file(p, raw, raw.name, files)
         else:
-            manifest.update(resolve_resource(src["portal_url"], src["dataset_id"], src["resource_name"],
-                                             src.get("resource_format", "CSV")))
-            raw = Path(tmp) / "resource"
-            manifest.update(download(manifest["resource_url"], raw))
-        records = aggregate.load_records(raw, p)
+            records, files = _fetch_records(p, Path(tmp), manifest)
         monthly, stats = aggregate.monthly_series(records, p, as_of)
         del records
     manifest["aggregation"] = stats
+    manifest["source_checks"] = source_checks.evaluate(p, files, stats, as_of)
+    for check in manifest["source_checks"]:
+        (logger.warning if check["level"] == "warning" else logger.info)("Source check %s", source_checks.describe(check))
     monthly = aggregate.analysis_window(monthly, p)
     manifest["analysis_period"] = [str(monthly.index.min()), str(monthly.index.max())]
     aggregate.save_series(monthly, p.paths.series)
     report.write_json(p.paths.manifest, manifest)
     return monthly
+
+
+def _read_file(p: profiles.Profile, raw: Path, name: str, files: list) -> pd.DataFrame:
+    """Read one downloaded file, recording what the source checks need (counts and shapes only)."""
+    invalid = source_checks.invalid_bytes(raw, p["file"])
+    try:
+        records = aggregate.load_records(raw, p)
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"{name}: {invalid} bytes are not valid {p['file'].get('encoding', 'utf-8')} in the "
+                         f"columns read ({exc}); check file.encoding or set file.encoding_errors to "
+                         f"\"replace\"") from exc
+    files.append({"resource_name": name, "invalid_bytes": invalid,
+                  "dates": source_checks.date_profile(records[p["columns"]["date"]])})
+    return records
+
+
+def _fetch_records(p: profiles.Profile, tmp: Path, manifest: dict) -> tuple[pd.DataFrame, list[dict]]:
+    """Download and read the profile's resources one at a time, filling `manifest`.
+
+    Each file is deleted as soon as its columns are read: a dataset published as one file per
+    year can add up to gigabytes. One resource keeps the manifest of a single file; several
+    are listed under "resources", with a checksum over their own checksums."""
+    src = p["source"]
+    dataset, resources = resolve_resources(src)
+    manifest.update(dataset)
+    frames, files = [], []
+    for i, res in enumerate(resources):
+        raw = tmp / f"resource-{i}"
+        res.update(download(res["resource_url"], raw))
+        frames.append(_read_file(p, raw, res["resource_name"], files))
+        raw.unlink()
+    if len(resources) == 1:
+        manifest.update(resources[0])
+    else:
+        combined = "".join(f"{r['resource_id']} {r['checksum_sha256']}\n" for r in resources)
+        manifest.update({"resource_name": f"{len(resources)} resources matching {src['resource_pattern']!r}",
+                         "resource_url": dataset["dataset_url"],
+                         "download_started_at": resources[0]["download_started_at"],
+                         "size_bytes": sum(r["size_bytes"] for r in resources),
+                         "checksum_sha256": hashlib.sha256(combined.encode()).hexdigest(),
+                         "resources": resources})
+    return pd.concat(frames, ignore_index=True), files
 
 
 def _model() -> str:
@@ -271,19 +313,18 @@ def cmd_check_profile(args) -> None:
     p = profiles.load(args.profile)
     print(f"Profile {p.id!r} is valid: {len(p.series)} series, {len(p.categories)} categories, "
           f"{len(p.events())} events.")
-    src = p["source"]
-    res = resolve_resource(src["portal_url"], src["dataset_id"], src["resource_name"],
-                           src.get("resource_format", "CSV"))
-    print(f"Resource found: {res['resource_url']}")
+    manifest = {}
     with tempfile.TemporaryDirectory() as tmp:
-        raw = Path(tmp) / "resource"
-        meta = download(res["resource_url"], raw)
-        print(f"Downloaded {meta['size_bytes'] / 1e6:.1f} MB, sha256 {meta['checksum_sha256'][:16]}...")
-        records = aggregate.load_records(raw, p)
+        records, files = _fetch_records(p, Path(tmp), manifest)
+    for res in manifest.get("resources", [manifest]):
+        print(f"Resource {res['resource_name']!r}: {res['size_bytes'] / 1e6:.1f} MB, "
+              f"sha256 {res['checksum_sha256'][:16]}...")
     print(f"Read {len(records):,} rows with columns {aggregate.needed_columns(p)}")
     monthly, stats = aggregate.monthly_series(records, p, pd.Timestamp.now())
-    window = aggregate.analysis_window(monthly, p)
     print(f"Aggregation: {json.dumps(stats)}")
+    for check in source_checks.evaluate(p, files, stats, pd.Timestamp.now()):
+        print("Source check " + source_checks.describe(check))
+    window = aggregate.analysis_window(monthly, p)
     print(f"Analysis window: {window.index.min()} to {window.index.max()} ({len(window)} months). Ready.")
 
 

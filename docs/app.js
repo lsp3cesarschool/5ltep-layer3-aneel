@@ -41,9 +41,24 @@ const I18N = {
     cat: {},  // English names come from the profile
     kind: { policy: "policy", political: "political", external: "external", monetary: "monetary" },
     ev_status: { verified: "verified", suggested: "suggested", rejected: "rejected" },
-    p_dataset: "Source dataset", p_resource: "Resource", p_sha: "SHA-256 of the file analysed", p_downloaded: "Downloaded",
+    p_dataset: "Source dataset", p_resource: "Resource", p_sha: "SHA-256 of the file analysed", p_sha_many: "SHA-256 over the checksums of the files", p_resources: "files", p_downloaded: "Downloaded",
     p_rows: "Rows read / excluded / without id", p_profile: "Profile", p_params: "Method parameters",
     p_env: "Environment", p_toolkit: "Toolkit", p_machine: "Machine-readable", p_all: "all results",
+    checks_h: "Source checks",
+    checks_note: "Problems of the published files that can distort a monthly series, checked at every download. Handled: the profile already takes care of it. Warning: it may be changing the results, and the profile should be adjusted (README, Source checks).",
+    checks_none: "No problem found in the files of this run.", chk_warning: "warning", chk_info: "handled",
+    chk_mixed_date_formats: "Dates come in {n} shapes across the files ({shapes}; digits shown as 9), with more than one order of day, month and year.",
+    chk_ambiguous_day_month: "Day and month can be swapped in {files}: a value like 02/01/2024 is read as 1 February unless the profile declares columns.date_formats (day-first evidence: {day} rows; month-first: {month}).",
+    chk_invalid_encoding: "{n} file(s) have bytes that are not valid {encoding}: {files}.",
+    chk_invalid_dates: "{rows} rows ({share}) have a date that could not be read and were left out.",
+    chk_publication_lag: "No record after {last} ({months} months before this run): the portal publishes late, or stopped publishing.",
+    chk_future_dates: "{rows} rows are dated after this run and were left out.",
+    fix_warning_mixed_date_formats: "Declare columns.date_formats, one per format.",
+    fix_info_mixed_date_formats: "Read with the formats of columns.date_formats.",
+    fix_warning_invalid_encoding: "Check file.encoding; if the bytes are only in other columns, set file.encoding_errors to \"replace\".",
+    fix_info_invalid_encoding: "Read with file.encoding_errors; damaged dates appear as unreadable dates.",
+    fix_warning_publication_lag: "The months after it count as zero and look like a drop; set period.end to \"last_record\".",
+    fix_info_publication_lag: "The series stops at the last record (period.end = \"last_record\").",
   },
   pt: {
     back: "← Voltar ao repositório", eyebrow: "5L-TEP · Camada 3 · Detecção de Anomalias", loading: "Carregando…",
@@ -77,9 +92,24 @@ const I18N = {
            GES: "Mudança genuína de fiscalização", INVALID: "resposta inválida" },
     kind: { policy: "política pública", political: "política", external: "externo", monetary: "monetário" },
     ev_status: { verified: "verificado", suggested: "sugerido", rejected: "rejeitado" },
-    p_dataset: "Conjunto de dados de origem", p_resource: "Recurso", p_sha: "SHA-256 do arquivo analisado", p_downloaded: "Baixado em",
+    p_dataset: "Conjunto de dados de origem", p_resource: "Recurso", p_sha: "SHA-256 do arquivo analisado", p_sha_many: "SHA-256 das somas de verificação dos arquivos", p_resources: "arquivos", p_downloaded: "Baixado em",
     p_rows: "Linhas lidas / excluídas / sem identificador", p_profile: "Perfil", p_params: "Parâmetros do método",
     p_env: "Ambiente", p_toolkit: "Kit", p_machine: "Legível por máquina", p_all: "todos os resultados",
+    checks_h: "Verificações da fonte",
+    checks_note: "Problemas dos arquivos publicados que podem distorcer uma série mensal, verificados a cada download. Tratado: o perfil já cuida dele. Alerta: pode estar alterando os resultados, e o perfil deve ser ajustado (LEIAME, Verificações da fonte).",
+    checks_none: "Nenhum problema encontrado nos arquivos desta execução.", chk_warning: "alerta", chk_info: "tratado",
+    chk_mixed_date_formats: "As datas vêm em {n} formas entre os arquivos ({shapes}; dígitos mostrados como 9), com mais de uma ordem de dia, mês e ano.",
+    chk_ambiguous_day_month: "Dia e mês podem estar trocados em {files}: um valor como 02/01/2024 é lido como 1º de fevereiro, a menos que o perfil declare columns.date_formats (indício de dia primeiro: {day} linhas; de mês primeiro: {month}).",
+    chk_invalid_encoding: "{n} arquivo(s) têm bytes inválidos em {encoding}: {files}.",
+    chk_invalid_dates: "{rows} linhas ({share}) têm data ilegível e ficaram de fora.",
+    chk_publication_lag: "Nenhum registro depois de {last} ({months} meses antes desta execução): o portal publica com atraso ou parou de publicar.",
+    chk_future_dates: "{rows} linhas têm data posterior a esta execução e ficaram de fora.",
+    fix_warning_mixed_date_formats: "Declare columns.date_formats, um por formato.",
+    fix_info_mixed_date_formats: "Lidas com os formatos de columns.date_formats.",
+    fix_warning_invalid_encoding: "Confira file.encoding; se os bytes estiverem só em outras colunas, defina file.encoding_errors como \"replace\".",
+    fix_info_invalid_encoding: "Lidos com file.encoding_errors; datas danificadas aparecem como datas ilegíveis.",
+    fix_warning_publication_lag: "Os meses seguintes contam como zero e parecem uma queda; defina period.end como \"last_record\".",
+    fix_info_publication_lag: "A série termina no último registro (period.end = \"last_record\").",
   },
 };
 
@@ -204,6 +234,7 @@ async function load(profileId) {
   drawCharts();
   drawTable();
   drawEvents();
+  drawChecks();
   drawProvenance();
   const m = location.hash.match(/^#anomaly-(.+)-(\d{4}-\d{2})$/);  // link to one anomaly
   if (m) showAnomaly(m[1], m[2]);
@@ -364,13 +395,40 @@ function showAnomaly(series, month) {
   row.classList.add("flash");
 }
 
+// Source checks (src/source_checks.py): problems of the published files, handled or not.
+function drawChecks() {
+  const checks = data.summary.source.source_checks;
+  el("checks-section").hidden = !Array.isArray(checks);  // results produced before the checks existed
+  if (!Array.isArray(checks)) return;
+  const list = (v) => Array.isArray(v) ? v.join(", ") : Object.entries(v || {}).map(([k, n]) => `${k} (${n.toLocaleString(LOCALE)})`).join("; ");
+  const n = (v) => Number(v || 0).toLocaleString(LOCALE);
+  const text = (c) => {
+    const p = c.params || {};
+    const vars = {
+      n: (p.shapes || (Array.isArray(p.files) ? p.files : Object.keys(p.files || {}))).length,
+      shapes: list(p.shapes), files: list(p.files), encoding: p.encoding, rows: n(p.rows),
+      share: (p.share || 0).toLocaleString(LOCALE, { style: "percent", maximumFractionDigits: 1 }),
+      last: p.last_record_month, months: n(p.months_without_records),
+      day: n(p.day_first_evidence), month: n(p.month_first_evidence),
+    };
+    const fix = T[`fix_${c.level}_${c.check}`] || I18N.en[`fix_${c.level}_${c.check}`] || "";
+    return `${t(`chk_${c.check}`, vars)} ${fix}`;
+  };
+  el("checks").innerHTML = checks.length
+    ? checks.map((c) => `<li><span class="tag" style="--c: var(${c.level === "warning" ? "--DQE" : "--PENDING"})">${esc(t(`chk_${c.level}`))}</span> ${esc(text(c))}</li>`).join("")
+    : `<li class="muted">${esc(t("checks_none"))}</li>`;
+}
+
 function drawProvenance() {
   const s = data.summary, src = s.source, agg = src.aggregation || {};
   const n = (v) => (v || 0).toLocaleString(LOCALE);
   const items = [
     [t("p_dataset"), src.dataset_url ? `<a href="${esc(safeUrl(src.dataset_url))}" rel="noopener">${esc(src.dataset_url)}</a>` : esc(src.resource_url)],
-    [t("p_resource"), esc(src.resource_url)],
-    [t("p_sha"), `<code>${esc(src.checksum_sha256)}</code>`],
+    // A dataset published as one file per year: every file, each with its own checksum.
+    [t("p_resource"), Array.isArray(src.resources)
+      ? `${src.resources.length} ${esc(t("p_resources"))}: ` + src.resources.map((r) => `<span title="sha256 ${esc(r.checksum_sha256)}">${esc(r.resource_name)}</span>`).join("; ")
+      : esc(src.resource_url)],
+    [t(Array.isArray(src.resources) ? "p_sha_many" : "p_sha"), `<code>${esc(src.checksum_sha256)}</code>`],
     [t("p_downloaded"), esc(src.download_started_at || "")],
     [t("p_rows"), `${n(agg.rows_read)} / ${n(agg.rows_excluded)} / ${n(agg.rows_missing_key)}`],
     [t("p_profile"), `<a href="https://github.com/${REPO}/blob/main/profiles/${esc(s.profile.id)}.json">${esc(s.profile.id)}</a> (sha256 <code>${esc((src.profile_sha256 || "").slice(0, 12))}</code>)`],

@@ -8,6 +8,7 @@ portal means writing a new profile; no code changes. See the README.
 """
 
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -118,6 +119,19 @@ def validate(raw: dict) -> None:
         raise ValueError(f"Profile is missing required keys: {missing}")
     if "date" not in raw["columns"]:
         raise ValueError("Profile 'columns' must name the 'date' column")
+    if bool(raw["source"].get("resource_name")) == bool(raw["source"].get("resource_pattern")):
+        raise ValueError("Profile 'source' needs exactly one of 'resource_name' and 'resource_pattern'")
+    if raw["source"].get("resource_pattern"):
+        try:
+            re.compile(raw["source"]["resource_pattern"])
+        except re.error as exc:
+            raise ValueError(f"Profile 'source.resource_pattern' is not a valid regular expression: {exc}") from exc
+    formats = raw["columns"].get("date_formats")
+    if formats is not None and (not isinstance(formats, list) or not all(isinstance(f, str) and f for f in formats)):
+        raise ValueError("Profile 'columns.date_formats' must be a list of strptime formats")
+    end = (raw.get("period") or {}).get("end")
+    if end and end != "last_record" and not re.fullmatch(r"\d{4}-\d{2}", end):
+        raise ValueError("Profile 'period.end' must be YYYY-MM, \"last_record\" or null")
     names = set()
     for s in raw["series"]:
         if s.get("kind") not in SERIES_KINDS:

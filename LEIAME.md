@@ -55,7 +55,7 @@ O que difere do repositório principal é apenas:
 
 Os perfis e resultados do IBAMA não estão incluídos. Todo o resto (detectores, LLM-as-a-Judge, revisão
 humana, painel, workflows, testes) é idêntico a
-[`5ltep-layer3@21082a2`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/21082a29a9aaae2ae2f23c8cbd627212b8829590),
+[`5ltep-layer3@65fa850`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/65fa8503f94d6e41f5350c455f739453ba4bcf9a),
 e a instância montada passa na mesma suíte de testes antes de cada atualização.
 
 ## Termos-chave
@@ -179,7 +179,7 @@ benchmark, construído sobre as séries grandes do IBAMA, ainda não representa 
 | `tests.yml` | push / pull request | suíte de testes |
 
 Esta instância é, ela mesma, a receita para uma terceira: faça um fork do repositório principal,
-substitua os perfis pelos seus (`python main.py check-profile profiles/<seu>.json` valida um perfil
+substitua os perfis pelos seus (`python main.py check-profile --profile profiles/<seu>.json` valida um perfil
 contra o portal real), marque-o `"scheduled": true`, apague `data/`, `results/` e `docs/data/`,
 habilite o Actions e o Pages, e rode o workflow uma vez. O LEIAME principal detalha cada passo e cada
 campo do perfil.

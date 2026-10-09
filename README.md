@@ -54,7 +54,7 @@ What differs from the main repository is only:
 
 The IBAMA profiles and results are not included. Everything else (detectors, LLM-as-a-Judge,
 human-in-the-loop review, dashboard, workflows, tests) is identical to
-[`5ltep-layer3@21082a2`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/21082a29a9aaae2ae2f23c8cbd627212b8829590),
+[`5ltep-layer3@65fa850`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/65fa8503f94d6e41f5350c455f739453ba4bcf9a),
 and the built instance passes the same test suite before every update.
 
 ## Key terms
@@ -177,7 +177,7 @@ on IBAMA's large series, does not yet represent low-volume data.
 | `tests.yml` | push / pull request | test suite |
 
 This instance is itself the recipe for a third one: fork the main repository, replace the profiles
-with your own (`python main.py check-profile profiles/<yours>.json` validates one against the live
+with your own (`python main.py check-profile --profile profiles/<yours>.json` validates one against the live
 portal), mark it `"scheduled": true`, delete `data/`, `results/` and `docs/data/`, enable Actions and
 Pages, and run the workflow once. The main README details each step and every profile field.
 

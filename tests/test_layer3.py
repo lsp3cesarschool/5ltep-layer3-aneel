@@ -77,6 +77,11 @@ def test_shipped_profiles_are_valid():
     {"columns": {"key": "ID"}},
     {"filters": [{"column": "UF"}]},
     {"categories": {"INVALID": "reserved"}},
+    {"source": {"portal_url": "https://example.org", "dataset_id": "d"}},
+    {"source": {"portal_url": "https://example.org", "dataset_id": "d", "resource_name": "r", "resource_pattern": "r.*"}},
+    {"source": {"portal_url": "https://example.org", "dataset_id": "d", "resource_pattern": "(unclosed"}},
+    {"columns": {"date": "DATA", "date_formats": "%Y-%m-%d"}},
+    {"period": {"start": None, "end": "last"}},
 ])
 def test_invalid_profiles_are_rejected(breakage):
     raw = copy.deepcopy(BASE_PROFILE)
@@ -159,6 +164,98 @@ def test_plain_csv_resource(tmp_path):
     csv = tmp_path / "r.csv"
     csv.write_text("ID;DATA;VALOR;CANCELADO;UF\n1;2024-01-05;2,00;N;PA\n", encoding="utf-8")
     assert len(aggregate.load_records(csv, p)) == 1
+
+
+def test_resource_pattern_matches_every_yearly_file(monkeypatch):
+    from src import ckan_source
+
+    package = {"metadata_modified": "2026-03-06", "license_title": "ODbL", "resources": [
+        {"id": "a", "name": "Registro das infrações - 2025", "format": "CSV", "url": "https://x/2025.csv"},
+        {"id": "b", "name": "Registro de Infrações - 2018", "format": "CSV", "url": "https://x/2018.csv"},
+        {"id": "c", "name": "Dicionário de dados", "format": "CSV", "url": "https://x/dic.csv"},
+        {"id": "d", "name": "Registro das infrações - 2024", "format": "PDF", "url": "https://x/2024.pdf"},
+    ]}
+
+    class Resp:
+        def json(self):
+            return {"result": package}
+
+    monkeypatch.setattr(ckan_source, "_get_with_retry", lambda url: Resp())
+    src = {"portal_url": "https://portal/", "dataset_id": "infracoes", "resource_pattern": r"registro d[aeo]s? infrações - \d{4}"}
+    dataset, found = ckan_source.resolve_resources(src)
+    assert dataset["dataset_url"] == "https://portal/dataset/infracoes"
+    assert [r["resource_id"] for r in found] == ["a", "b"]          # name order; PDF and dictionary left out
+    dataset, found = ckan_source.resolve_resources({**src, "resource_pattern": None, "resource_name": "Dicionário de dados"})
+    assert [r["resource_id"] for r in found] == ["c"]
+    with pytest.raises(LookupError):
+        ckan_source.resolve_resources({**src, "resource_pattern": "nothing"})
+
+
+def test_date_formats_read_day_first_files_correctly():
+    values = pd.Series(["2025-01-02", "02/01/2024 00:00", "2015/10/05 00:00:00.000", "garbage"])
+    parsed = aggregate.parse_dates(values, ["%Y-%m-%d", "%d/%m/%Y %H:%M", "%Y/%m/%d %H:%M:%S.%f"])
+    assert parsed.dt.strftime("%Y-%m-%d").tolist()[:3] == ["2025-01-02", "2024-01-02", "2015-10-05"]
+    assert pd.isna(parsed.iloc[3])
+
+
+def test_last_record_ends_a_yearly_published_series(tmp_path):
+    rows = ["1;2023-11-05;1,00;N;PA", "2;2023-12-06;1,00;N;PA", "3;2023-12-07;1,00;N;PA"]
+    csv = tmp_path / "r.csv"
+    csv.write_text("ID;DATA;VALOR;CANCELADO;UF\n" + "\n".join(rows) + "\n", encoding="utf-8")
+    file = {"compression": "none", "sep": ";", "encoding": "utf-8"}
+    as_of = pd.Timestamp("2026-10-09")
+    p = make_profile(tmp_path, file=file)
+    monthly, _ = aggregate.monthly_series(aggregate.load_records(csv, p), p, as_of)
+    assert str(monthly.index.max()) == "2026-09" and monthly["notices"].iloc[-1] == 0   # zeros up to last month
+    p = make_profile(tmp_path, file=file, period={"start": None, "end": "last_record"})
+    monthly, _ = aggregate.monthly_series(aggregate.load_records(csv, p), p, as_of)
+    assert list(monthly.index.astype(str)) == ["2023-11", "2023-12"]
+    assert monthly["notices"].tolist() == [1, 2]
+
+
+def test_source_checks_report_what_the_profile_does_not_handle(tmp_path):
+    from src import source_checks
+
+    damaged = tmp_path / "2014.csv"
+    damaged.write_bytes("DATA;X\n2014-01-02;Cart\xf3rio\n".encode("latin-1"))
+    assert source_checks.invalid_bytes(damaged, {"encoding": "utf-8"}) == 1
+    assert source_checks.invalid_bytes(damaged, {"encoding": "latin-1"}) == 0
+    files = [
+        {"resource_name": "2025", "invalid_bytes": 0,
+         "dates": source_checks.date_profile(pd.Series(["2025-01-02"] * 50))},
+        {"resource_name": "2024", "invalid_bytes": 0,
+         "dates": source_checks.date_profile(pd.Series(["02/01/2024 00:00"] * 40 + ["25/01/2024 00:00"] * 10))},
+        {"resource_name": "2014", "invalid_bytes": 3, "dates": source_checks.date_profile(pd.Series(["2014-03-04"]))},
+    ]
+    assert files[1]["dates"]["shapes"] == {"99/99/9999 99:99": 50}
+    assert files[1]["dates"]["first_field_over_12"] == 10
+    stats = {"rows_after_filters": 101, "rows_invalid_date": 0, "last_record_month": "2025-12", "rows_future_date": 0}
+    as_of = pd.Timestamp("2026-10-09")
+    p = make_profile(tmp_path, file={"compression": "none", "sep": ";", "encoding": "utf-8"})
+    found = {c["check"]: c for c in source_checks.evaluate(p, files, stats, as_of)}
+    assert set(found) == {"mixed_date_formats", "ambiguous_day_month", "invalid_encoding", "publication_lag"}
+    assert all(c["level"] == "warning" for c in found.values())
+    assert found["publication_lag"]["params"]["months_without_records"] == 9   # Jan to Sep 2026; October is still open
+    assert found["invalid_encoding"]["params"]["files"] == {"2014": 3}
+    assert all(source_checks.describe(c) for c in found.values())
+    handled = make_profile(tmp_path, file={"compression": "none", "sep": ";", "encoding": "utf-8", "encoding_errors": "replace"},
+                           columns={"date": "DATA", "date_formats": ["%Y-%m-%d", "%d/%m/%Y %H:%M"]},
+                           period={"start": None, "end": "last_record"})
+    found = {c["check"]: c for c in source_checks.evaluate(handled, files, stats, as_of)}
+    assert set(found) == {"mixed_date_formats", "invalid_encoding", "publication_lag"}
+    assert all(c["level"] == "info" for c in found.values())
+    assert source_checks.evaluate(handled, files[:1], {**stats, "last_record_month": "2026-09"}, as_of) == []
+
+
+def test_encoding_errors_replace_reads_a_damaged_file(tmp_path):
+    csv = tmp_path / "r.csv"
+    # Only the columns read are decoded: the stray byte is in one of them (CANCELADO).
+    csv.write_bytes("ID;DATA;VALOR;CANCELADO;UF\n1;2024-01-05;2,00;N\xe3o;PA\n".encode("latin-1"))
+    p = make_profile(tmp_path, file={"compression": "none", "sep": ";", "encoding": "utf-8"})
+    with pytest.raises(UnicodeDecodeError):
+        aggregate.load_records(csv, p)
+    p = make_profile(tmp_path, file={"compression": "none", "sep": ";", "encoding": "utf-8", "encoding_errors": "replace"})
+    assert aggregate.load_records(csv, p)["DATA"].tolist() == ["2024-01-05"]
 
 
 # --- detectors ---------------------------------------------------------------

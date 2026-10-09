@@ -47,6 +47,7 @@ table { border-collapse: collapse; width: 100%; font-size: .88rem; }
 th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
 th { font-weight: 600; color: var(--muted); white-space: nowrap; }
 td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.checks { margin: 10px 0 0; padding-left: 0; list-style: none; display: grid; gap: 6px; }
 .tag { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: .78rem; font-weight: 700; color: #fff; background: var(--c); }
 .reason { max-width: 520px; }
 dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 10px 0 0; font-size: .88rem; }
