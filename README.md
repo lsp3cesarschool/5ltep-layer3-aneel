@@ -1,12 +1,11 @@
-# 5LTEP-L3 · ANEEL instance (control experiment)
+# 5LTEP-L3 · ANEEL instance (application in another context)
 
 [![Tests](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml/badge.svg)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml) [![Layer 3](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Flsp3cesarschool%2F5ltep-layer3-aneel%2Fmain%2Fdocs%2Fdata%2Fstatus-aneel-autos-infracao.json)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/layer3.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **English** · [Português](LEIAME.md)
 
 **5L-TEP Layer 3 anomaly detection applied to the infraction notices of ANEEL, Brazil's electricity
-regulator: a second instance of [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3), set up by the author as a control case for
-the IBAMA study.**
+regulator: a second instance of [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3), set up by the author as an application of the same system in another context.**
 
 | Resource | What you find there |
 |---|---|
@@ -33,7 +32,9 @@ inspection cycle) and which look like a **data problem** (a month with no record
 a batch of notices entered at once). The unexplained ones go to a person first; the AI only proposes,
 and a data steward confirms or corrects every decision that leads to action.
 
-## Why a control experiment
+## Why apply the system in another context
+
+This instance demonstrates reuse of the same system in another context and helps assess the limits of that transfer.
 
 The Layer 3 toolkit of the Five-Layer Trust Engineering Pyramid (5L-TEP) was built on IBAMA's open
 data. A method that works on one dataset may only have learned that dataset's quirks. This repository
@@ -54,7 +55,7 @@ What differs from the main repository is only:
 
 The IBAMA profiles and results are not included. Everything else (detectors, LLM-as-a-Judge,
 human-in-the-loop review, dashboard, workflows, tests) is identical to
-[`5ltep-layer3@65fa850`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/65fa8503f94d6e41f5350c455f739453ba4bcf9a),
+[`5ltep-layer3@6a6c9ce`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/6a6c9ce354722c1c3acd27a3f6d9b089e2f70a5c),
 and the built instance passes the same test suite before every update.
 
 ## Key terms
@@ -77,7 +78,7 @@ The four causes (categories) the judge chooses from:
 
 ## How ANEEL's data differ from IBAMA's
 
-| | IBAMA (main study) | ANEEL (control) |
+| | IBAMA (main study) | ANEEL (application in another context) |
 |---|---|---|
 | Records | ~711,000 notices since 1977 | ~1,600 notices since 2018 |
 | Resource | zip with one CSV per year | one CSV |
@@ -155,7 +156,7 @@ seasonal. On a series where empty months are normal, neither reading is obviousl
 exactly the kind of decision the design leaves to a steward, and it shows that the benchmark's gold set, built
 on IBAMA's large series, does not yet represent low-volume data.
 
-## What the control experiment showed
+## What applying the system in another context showed
 
 - **Reuse without code changes: yes, after two fixes.** Only the profile, the calendar and this README
   were written. Running it exposed two assumptions that held for IBAMA but not in general, both fixed

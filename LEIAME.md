@@ -1,4 +1,4 @@
-# 5LTEP-L3 · instância ANEEL (experimento de controle)
+# 5LTEP-L3 · instância ANEEL (aplicação em outro contexto)
 
 [![Tests](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml/badge.svg)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/tests.yml) [![Camada 3](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Flsp3cesarschool%2F5ltep-layer3-aneel%2Fmain%2Fdocs%2Fdata%2Fstatus-aneel-autos-infracao.pt.json)](https://github.com/lsp3cesarschool/5ltep-layer3-aneel/actions/workflows/layer3.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -6,7 +6,7 @@
 
 **Detecção de anomalias da Camada 3 do 5L-TEP aplicada aos autos de infração da ANEEL, a agência
 reguladora do setor elétrico: uma segunda instância do [5ltep-layer3](https://github.com/lsp3cesarschool/5ltep-layer3/blob/main/LEIAME.md),
-montada pelo autor como caso de controle do estudo do IBAMA.**
+montada pelo autor como aplicação do mesmo sistema em outro contexto.**
 
 | Recurso | O que tem lá |
 |---|---|
@@ -33,7 +33,9 @@ fiscalização) e quais parecem **problema nos dados** (mês sem registros numa 
 lançado de uma vez). Os não explicados vão primeiro para uma pessoa; a IA apenas propõe, e um gestor de
 dados confirma ou corrige toda decisão que leve a uma ação.
 
-## Por que um experimento de controle
+## Por que aplicar o sistema em outro contexto
+
+Esta instância demonstra a reutilização do mesmo sistema em outro contexto e permite avaliar os limites dessa transferência.
 
 O kit da Camada 3 da Pirâmide de Engenharia da Confiança em Cinco Camadas (5L-TEP) foi construído
 sobre os dados abertos do IBAMA. Um método que funciona num conjunto de dados pode ter aprendido apenas
@@ -55,7 +57,7 @@ O que difere do repositório principal é apenas:
 
 Os perfis e resultados do IBAMA não estão incluídos. Todo o resto (detectores, LLM-as-a-Judge, revisão
 humana, painel, workflows, testes) é idêntico a
-[`5ltep-layer3@65fa850`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/65fa8503f94d6e41f5350c455f739453ba4bcf9a),
+[`5ltep-layer3@6a6c9ce`](https://github.com/lsp3cesarschool/5ltep-layer3/tree/6a6c9ce354722c1c3acd27a3f6d9b089e2f70a5c),
 e a instância montada passa na mesma suíte de testes antes de cada atualização.
 
 ## Termos-chave
@@ -78,7 +80,7 @@ As quatro causas (categorias) entre as quais o juiz escolhe:
 
 ## Como os dados da ANEEL diferem dos do IBAMA
 
-| | IBAMA (estudo principal) | ANEEL (controle) |
+| | IBAMA (estudo principal) | ANEEL (aplicação em outro contexto) |
 |---|---|---|
 | Registros | ~711.000 autos desde 1977 | ~1.600 autos desde 2018 |
 | Recurso | zip com um CSV por ano | um CSV |
@@ -157,7 +159,7 @@ maioria deles de sazonal. Numa série em que meses vazios são normais, nenhuma 
 certa: é exatamente o tipo de decisão que o desenho deixa para um gestor, e mostra que o gabarito do
 benchmark, construído sobre as séries grandes do IBAMA, ainda não representa dados de baixo volume.
 
-## O que o experimento de controle mostrou
+## O que a aplicação do sistema em outro contexto mostrou
 
 - **Reutilização sem mudar código: sim, depois de duas correções.** Só foram escritos o perfil, o
   calendário e o README. Rodá-lo expôs duas suposições que valiam para o IBAMA mas não em geral, ambas
